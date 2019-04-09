@@ -10,6 +10,8 @@ react-native link react-native-yamap
 - **ios** - добавить в `Images.xcassets` изображения с именем `selected`, `normal`, `base_location`
 - **android** - при создании `RNYamapPackage` необходимо передать экземпляры `ImageProvider` для всех изображений. Ниже пример кода, когда изображения помещены в `android/app/src/main/res/mipmap` с именами `selected`, `normal`, `base_location`:
 ```
+    import com.yandex.runtime.image.ImageProvider;
+    ...
     ImageProvider location = ImageProvider.fromResource(getApplication(), R.mipmap.base_location);
     ImageProvider selected = ImageProvider.fromResource(getApplicationContext(), R.mipmap.selected);
     ImageProvider marker = ImageProvider.fromResource(getApplicationContext(), R.mipmap.normal);
