@@ -20,7 +20,6 @@ export default class YaMap extends React.Component {
   }
 
   prepareMarkers = () => {
-    console.log(this.props.markers);
     if (this.props.markers) {
       return this.props.markers.map(marker => ({
         id: String(marker.id),
