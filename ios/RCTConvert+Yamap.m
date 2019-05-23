@@ -16,4 +16,9 @@
     return target;
 }
 
++ (float)Zoom:(id)json {
+    json = [self NSDictionary:json];
+    return [self float:json[@"zoom"]];
+}
+
 @end

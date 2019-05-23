@@ -36,9 +36,9 @@ public class YaMapView extends MapView {
         userLocationLayer.setHeadingEnabled(true);
     }
 
-    public void setCenter(Point location) {
+    public void setCenter(Point location, float zoom) {
         getMap().move(
-                new CameraPosition(location, 14.0f, 0.0f, 0.0f),
+                new CameraPosition(location, zoom, 0.0f, 0.0f),
                 new Animation(Animation.Type.SMOOTH, 2),
                 null);
     }

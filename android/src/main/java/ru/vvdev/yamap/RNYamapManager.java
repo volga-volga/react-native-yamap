@@ -80,7 +80,7 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
 
     @ReactProp(name = "center")
     public void setCenter(View _view, ReadableMap center) {
-        view.setCenter(new Point(center.getDouble("lat"), center.getDouble("lon")));
+        view.setCenter(new Point(center.getDouble("lat"), center.getDouble("lon")), (float)center.getDouble("zoom"));
     }
 
     @ReactProp(name = "markers")

@@ -113,8 +113,9 @@ RCT_CUSTOM_VIEW_PROPERTY (markers, NSArray<YMKPoint>, YMKMapView) {
 RCT_CUSTOM_VIEW_PROPERTY(center, YMKPoint, YMKMapView) {
     if (json) {
         YMKPoint *center = [RCTConvert YMKPoint:json];
+        float zoom = [RCTConvert Zoom:json];
         [self.map.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center
-                                                                                              zoom:11
+                                                                                    zoom:zoom
                                                                                            azimuth:0
                                                                                               tilt:0]];
     }
