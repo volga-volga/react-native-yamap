@@ -20,6 +20,9 @@ public class RNYamapPackage implements ReactPackage {
         this.marker = marker;
     }
 
+    public RNYamapPackage() {
+    }
+
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         return Arrays.<NativeModule>asList(new RNYamapModule(reactContext));
@@ -27,7 +30,7 @@ public class RNYamapPackage implements ReactPackage {
 
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
         return Arrays.<ViewManager>asList(
-            new RNYamapManager(userLocation, selectedMarker, marker)
+                new RNYamapManager(userLocation, selectedMarker, marker)
         );
     }
 }

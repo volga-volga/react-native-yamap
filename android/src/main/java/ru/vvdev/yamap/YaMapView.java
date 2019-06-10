@@ -2,6 +2,7 @@ package ru.vvdev.yamap;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
@@ -45,7 +46,7 @@ public class YaMapView extends MapView implements Session.RouteListener {
 
     private MapObjectCollection mapObjects;
 
-    public YaMapView(Context context, ImageProvider selectedMarker, ImageProvider marker) {
+    public YaMapView(Context context, @Nullable ImageProvider selectedMarker, @Nullable ImageProvider marker) {
         super(context);
         this.selectedMarker = selectedMarker;
         this.marker = marker;
@@ -73,7 +74,9 @@ public class YaMapView extends MapView implements Session.RouteListener {
         objects.clear();
         for (final RNMarker marker : markers) {
             PlacemarkMapObject placemark = objects.addPlacemark(new Point(marker.lat, marker.lon));
-            placemark.setIcon(marker.isSelected ? selectedMarker : this.marker);
+            if (selectedMarker != null && this.marker != null) {
+                placemark.setIcon(marker.isSelected ? selectedMarker : this.marker);
+            }
             placemark.setIconStyle(new IconStyle().setScale(0.3f));
             placemark.addTapListener(new MapObjectTapListener() {
                 @Override

@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class RNYamapManager extends SimpleViewManager<View> implements UserLocationObjectListener {
     public static final String REACT_CLASS = "YamapView";
@@ -43,7 +44,7 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
     private ImageProvider selectedMarker;
     private ImageProvider marker;
 
-    public RNYamapManager(ImageProvider userLocation, ImageProvider selectedMarker, ImageProvider marker) {
+    public RNYamapManager(@Nullable ImageProvider userLocation, @Nullable ImageProvider selectedMarker, @Nullable ImageProvider marker) {
         this.userLocation = userLocation;
         this.selectedMarker = selectedMarker;
         this.marker = marker;
@@ -127,7 +128,9 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
     public void onObjectAdded(@NonNull UserLocationView userLocationView) {
         YaMapView mapView = view;
         PlacemarkMapObject pin = userLocationView.getPin();
-        pin.setIcon(userLocation);
+        if (userLocation != null) {
+            pin.setIcon(userLocation);
+        }
         pin.setIconStyle(new IconStyle().setScale(0.3f));
         userLocationView.getAccuracyCircle().setFillColor(Color.TRANSPARENT);
 

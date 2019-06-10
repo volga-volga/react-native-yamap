@@ -41,8 +41,12 @@ YaMap.init('API_KEY');
 ### Использование компонента
 ```jsx harmony
 <YaMap
-  center={{ lat: selectedShop.lat, lon: selectedShop.lon }}
+  center={{ lat: 0.0, lon: 0.0, zoom: 10.0 }}
   markers={markers}
+  route={{
+  	start: { lat: 0.0, lon: 0.0 },
+  	end: { lat: 10.0, lon: 20.0 },
+  }}
   onMarkerPress={this.handleMarkerPress}
   style={styles.container}
 />
