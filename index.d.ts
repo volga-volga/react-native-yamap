@@ -13,7 +13,7 @@ export interface Marker {
 interface Props extends ViewProps {
   onMarkerPress?: (id: string) => void,
   markers: Marker[],
-  center: { lon: number, lat: number },
+  center: { lon: number, lat: number, zoom: number },
 }
 
 declare class YaMap extends React.Component<Props> {
