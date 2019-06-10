@@ -10,10 +10,21 @@ export interface Marker {
   selected: boolean,
 }
 
+export interface Location {
+  lat: number,
+  lon: number,
+}
+
+export interface Route {
+  start: Location,
+  end: Location,
+}
+
 interface Props extends ViewProps {
   onMarkerPress?: (id: string) => void,
   markers: Marker[],
   center: { lon: number, lat: number, zoom: number },
+  route?: Route
 }
 
 declare class YaMap extends React.Component<Props> {
