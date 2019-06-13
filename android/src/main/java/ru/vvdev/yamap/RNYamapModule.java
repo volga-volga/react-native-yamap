@@ -1,7 +1,6 @@
 package ru.vvdev.yamap;
 
 import android.support.annotation.Nullable;
-import android.util.Log;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -46,14 +45,13 @@ public class RNYamapModule extends ReactContextBaseJavaModule {
             public void run() {
                 MapKitFactory.setApiKey(apiKey);
                 MapKitFactory.initialize(reactContext);
-                MapKitFactory.getInstance().onStart();
                 TransportFactory.initialize(reactContext);
+                MapKitFactory.getInstance().onStart();
             }
         }));
     }
 
     private static void emitDeviceEvent(String eventName, @Nullable WritableMap eventData) {
-        Log.e("YUI", eventName);
         reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, eventData);
     }
 }

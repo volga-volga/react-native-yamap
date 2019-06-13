@@ -12,11 +12,12 @@ react-native link react-native-yamap
 ```
     import com.yandex.runtime.image.ImageProvider;
     ...
-    ImageProvider location = ImageProvider.fromResource(getApplication(), R.mipmap.base_location);
-    ImageProvider selected = ImageProvider.fromResource(getApplicationContext(), R.mipmap.selected);
-    ImageProvider marker = ImageProvider.fromResource(getApplicationContext(), R.mipmap.normal);
+    ImageProvider userLocationPinIcon = ImageProvider.fromResource(getApplication(), R.mipmap.location_pin);
+    ImageProvider userLocationArrowIcon = ImageProvider.fromResource(getApplication(), R.mipmap.location_arrow);
+    ImageProvider selectedMarkerIcon = ImageProvider.fromResource(getApplicationContext(), R.mipmap.selected);
+    ImageProvider markerIcon = ImageProvider.fromResource(getApplicationContext(), R.mipmap.normal);
     ...
-    new RNYamapPackage(location, selected, marker),
+    new RNYamapPackage(userLocationPinIcon, userLocationArrowIcon, selectedMarkerIcon, markerIcon)
 ```
 
 ## Использование
@@ -39,13 +40,25 @@ YaMap.init('API_KEY');
 ```
 
 ### Использование компонента
-```jsx harmony
+```javascript
+import YaMap from 'react-native-yamap';
+
+// ...
+
+onRouteFound(event) {
+  this.setState({ routes: event.nativeEvent.routes });
+}
+// ...
+
 <YaMap
-  center={{ lat: 0.0, lon: 0.0, zoom: 10.0 }}
+  vehicles={["bus", "walk"]} // bus, railway, tramway, suburban, underground, walk
+  onRouteFound={this.onRouteFound}
+  routeColors={{bus: '#fff', walk: '#f00'}}
+  center={{ lat: double, lon: double, zoom: double }}
   markers={markers}
   route={{
-  	start: { lat: 0.0, lon: 0.0 },
-  	end: { lat: 10.0, lon: 20.0 },
+    start: { lat: double, lon: double },
+    end: { lat: double, lon: double },
   }}
   onMarkerPress={this.handleMarkerPress}
   style={styles.container}

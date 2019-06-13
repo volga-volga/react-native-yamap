@@ -2,7 +2,6 @@ package ru.vvdev.yamap;
 
 import android.graphics.Color;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.View;
 
 import com.facebook.react.bridge.ReadableArray;
@@ -19,15 +18,12 @@ import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.layers.ObjectEvent;
 import com.yandex.mapkit.map.IconStyle;
 import com.yandex.mapkit.map.PlacemarkMapObject;
-import com.yandex.mapkit.transport.masstransit.MasstransitOptions;
-import com.yandex.mapkit.transport.masstransit.Session;
 import com.yandex.mapkit.user_location.UserLocationLayer;
 import com.yandex.mapkit.user_location.UserLocationObjectListener;
 import com.yandex.mapkit.user_location.UserLocationView;
 import com.yandex.runtime.image.ImageProvider;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
@@ -40,12 +36,15 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
 
     private ThemedReactContext reactContext;
 
-    private ImageProvider userLocation;
+    private ImageProvider userLocationPin;
+    private ImageProvider userLocationArrow;
     private ImageProvider selectedMarker;
     private ImageProvider marker;
 
-    public RNYamapManager(@Nullable ImageProvider userLocation, @Nullable ImageProvider selectedMarker, @Nullable ImageProvider marker) {
-        this.userLocation = userLocation;
+    RNYamapManager(@Nullable ImageProvider userLocationPin, @Nullable ImageProvider userLocationArrow, @Nullable ImageProvider selectedMarker,
+                   @Nullable ImageProvider marker) {
+        this.userLocationPin = userLocationPin;
+        this.userLocationArrow = userLocationArrow;
         this.selectedMarker = selectedMarker;
         this.marker = marker;
     }
@@ -73,12 +72,33 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
         userLocationLayer.setEnabled(true);
         userLocationLayer.setHeadingEnabled(true);
         userLocationLayer.setObjectListener(this);
+
         return view;
     }
 
     @ReactProp(name = "center")
     public void setCenter(View _view, ReadableMap center) {
         view.setCenter(new Point(center.getDouble("lat"), center.getDouble("lon")), (float) center.getDouble("zoom"));
+    }
+
+    @ReactProp(name = "routeColors")
+    public void setRouteColors(View _view, ReadableMap colors) {
+        view.setRouteColors(colors);
+    }
+
+    @ReactProp(name = "vehicles")
+    public void requestRouteWithSpecificVehicles(View _view, ReadableArray vehicles) {
+        if (vehicles == null) {
+            throw new IllegalArgumentException("Prop \"vehicles\" cannot be empty, null or undefined. It Should bu Array<String>");
+        }
+
+        ArrayList<String> parsed = new ArrayList<>();
+
+        for (int i = 0; i < vehicles.size(); ++i) {
+            parsed.add(vehicles.getString(i));
+        }
+
+        view.setAcceptVehicleTypes(parsed);
     }
 
     @ReactProp(name = "route")
@@ -126,14 +146,23 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
 
     @Override
     public void onObjectAdded(@NonNull UserLocationView userLocationView) {
-        YaMapView mapView = view;
         PlacemarkMapObject pin = userLocationView.getPin();
-        if (userLocation != null) {
-            pin.setIcon(userLocation);
+        PlacemarkMapObject arrow = userLocationView.getArrow();
+        if (userLocationPin != null) {
+            pin.setIcon(userLocationPin);
+        }
+        if (userLocationArrow != null) {
+            arrow.setIcon(userLocationArrow);
         }
         pin.setIconStyle(new IconStyle().setScale(0.3f));
-        userLocationView.getAccuracyCircle().setFillColor(Color.TRANSPARENT);
+        userLocationView.getAccuracyCircle().setFillColor(Color.RED);
 
+    }
+
+    public Map getExportedCustomBubblingEventTypeConstants() {
+        return MapBuilder.builder()
+                .put("routes", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onRouteFound")))
+                .build();
     }
 
     @Override
