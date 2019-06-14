@@ -22,9 +22,16 @@ export interface Route {
 
 interface Props extends ViewProps {
   onMarkerPress?: (id: string) => void,
+  onRouteFound?: (event: Event) => void,
   markers: Marker[],
   center: { lon: number, lat: number, zoom: number },
   route?: Route
+  vehicles?: Array<string>
+
+  /** supported vehicle types
+   *  bus, railway, tramway, suburban, underground, walk
+   */
+  routeColors?: { [key: string]: string }
 }
 
 declare class YaMap extends React.Component<Props> {
