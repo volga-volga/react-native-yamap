@@ -29,6 +29,8 @@ RCT_EXPORT_VIEW_PROPERTY(onMarkerPress, RCTBubblingEventBlock)
     [view.pin setIconWithImage:[UIImage imageNamed:@"base_location"]];
     YMKIconStyle *selectedStyle = [[YMKIconStyle alloc] init];
     selectedStyle.scale = [[NSNumber alloc] initWithDouble:0.5];
+    view.accuracyCircle.fillColor = [UIColor colorWithWhite:1
+                                                      alpha:0];
     [view.pin setIconStyleWithStyle:selectedStyle];
 }
 - (void)onObjectRemovedWithView:(nonnull YMKUserLocationView *)view {}
