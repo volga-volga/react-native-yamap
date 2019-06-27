@@ -10,14 +10,14 @@ export interface Marker {
   selected: boolean,
 }
 
-export interface Location {
+export interface Point {
   lat: number,
   lon: number,
 }
 
 export interface Route {
-  start: Location,
-  end: Location,
+  start: Point,
+  end: Point,
 }
 
 interface Props extends ViewProps {

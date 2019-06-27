@@ -56,21 +56,30 @@ onRouteFound(event) {
   routeColors={{bus: '#fff', walk: '#f00'}}
   center={{ lat: double, lon: double, zoom: double }}
   markers={markers}
-  route={{
-    start: { lat: double, lon: double },
-    end: { lat: double, lon: double },
-  }}
+  route={Route}
   onMarkerPress={this.handleMarkerPress}
   style={styles.container}
 />
 ```
 
-Тип маркер:
 ```typescript
 export interface Marker {
-  id: number,
-  lon: number,
-  lat: number,
-  selected: boolean,
+  id: number
+  lon: number
+  lat: number
+  selected: boolean
 }
+```
+```typescript
+interface Route {
+  start: Point
+  end: Point
+}
+```
+```typescript
+interface Point {
+ lat: double 
+ lon: double
+}  
+
 ```
