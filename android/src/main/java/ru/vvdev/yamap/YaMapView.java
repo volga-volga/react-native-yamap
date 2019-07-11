@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.facebook.jni.MapIteratorHelper;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableMap;
@@ -60,6 +61,7 @@ public class YaMapView extends MapView implements Session.RouteListener {
         put("tramway", "#C86DD7");
         put("suburban", "#3023AE");
         put("underground", "#BDCCDC");
+        put("trolleybus", "#55CfDC");
         put("walk", "#333333");
     }};
 
@@ -98,8 +100,10 @@ public class YaMapView extends MapView implements Session.RouteListener {
         while (iterator.hasNextKey()) {
             String key = iterator.nextKey();
 
-            if (!Arrays.asList("bus", "railway", "tramway", "suburban", "underground", "walk").contains(key)) {
-                throw new IllegalArgumentException("Only 'bus' | 'railway' | 'tramway' | 'suburban' | 'underground' | 'walk' vehicle types are supported");
+            if (!Arrays.asList("bus", "railway", "trolleybus", "tramway", "suburban",
+                    "underground", "walk").contains(key)) {
+                throw new IllegalArgumentException("Only 'bus' | 'railway' | 'tramway' | " +
+                        "'suburban' | 'underground' | 'walk' | trolleybus vehicle types are supported");
             }
 
             ReadableType type = colors.getType(key);
@@ -236,6 +240,8 @@ public class YaMapView extends MapView implements Session.RouteListener {
         WritableMap routeWeightData = Arguments.createMap();
         WritableMap sectionWeightData = Arguments.createMap();
 
+        Map<String, ArrayList<String>> transports = new HashMap<>();
+
         routeWeightData.putString("time", routeWeight.getTime().getText());
         routeWeightData.putInt("transferCount", routeWeight.getTransfersCount());
         routeWeightData.putDouble("walkingDistance", routeWeight.getWalkingDistance().getValue());
@@ -258,15 +264,27 @@ public class YaMapView extends MapView implements Session.RouteListener {
 
         if (data.getTransports() != null) {
             for (Transport transport : data.getTransports()) {
-
-                routeMetadata.putString("name", transport.getLine().getName());
-                routeMetadata.putString("id", transport.getLine().getId());
+                Log.e("transport", transport.getLine().getName());
 
                 for (String type : transport.getLine().getVehicleTypes()) {
+
+                    if (type.equals("suburban")) continue;
+
+                    if (transports.get(type) != null) {
+                        ArrayList<String> list = transports.get(type);
+                        if (list != null) {
+                            list.add(transport.getLine().getName());
+                            transports.put(type, list);
+                        }
+                    } else {
+                        ArrayList<String> list = new ArrayList<>();
+                        list.add(transport.getLine().getName());
+                        transports.put(type, list);
+                    }
+
                     routeMetadata.putString("type", type);
 
                     int color;
-
                     if (transportHasStyle(transport)) {
                         color = transport.getLine().getStyle().getColor() | 0xFF000000;
                     } else {
@@ -292,6 +310,12 @@ public class YaMapView extends MapView implements Session.RouteListener {
             }
         }
 
+        WritableMap wTransports = Arguments.createMap();
+        for (Map.Entry<String, ArrayList<String>> entry : transports.entrySet()) {
+            wTransports.putArray(entry.getKey(), Arguments.fromList(entry.getValue()));
+        }
+
+        routeMetadata.putMap("transports", wTransports);
         currentRouteInfo.pushMap(routeMetadata);
     }
 

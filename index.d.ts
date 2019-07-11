@@ -29,7 +29,7 @@ interface Props extends ViewProps {
   vehicles?: Array<string>
 
   /** supported vehicle types
-   *  bus, railway, tramway, suburban, underground, walk
+   *  bus, railway, tramway, suburban, trolleybus, underground, walk
    */
   routeColors?: { [key: string]: string }
 }

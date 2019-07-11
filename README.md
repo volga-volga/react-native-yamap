@@ -51,7 +51,7 @@ onRouteFound(event) {
 // ...
 
 <YaMap
-  vehicles={["bus", "walk"]} // bus, railway, tramway, suburban, underground, walk
+  vehicles={["bus", "walk"]} // bus, railway, trolleybus, tramway, suburban, underground, walk
   onRouteFound={this.onRouteFound}
   routeColors={{bus: '#fff', walk: '#f00'}}
   center={{ lat: double, lon: double, zoom: double }}
