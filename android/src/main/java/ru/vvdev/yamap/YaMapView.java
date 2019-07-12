@@ -100,10 +100,10 @@ public class YaMapView extends MapView implements Session.RouteListener {
         while (iterator.hasNextKey()) {
             String key = iterator.nextKey();
 
-            if (!Arrays.asList("bus", "railway", "trolleybus", "tramway", "suburban",
-                    "underground", "walk", "minibus").contains(key)) {
-                throw new IllegalArgumentException("Only 'bus' | 'railway' | 'trolleybus' 'tramway' | 'suburban' | 'underground' | 'walk' | trolleybus vehicle types are supported");
-            }
+//            if (!Arrays.asList("bus", "railway", "trolleybus", "tramway", "suburban",
+//                    "underground", "walk", "minibus").contains(key)) {
+//                throw new IllegalArgumentException("Only 'bus' | 'railway' | 'trolleybus' 'tramway' | 'suburban' | 'underground' | 'walk' | trolleybus vehicle types are supported");
+//            }
 
             ReadableType type = colors.getType(key);
             if (type != ReadableType.String) {
