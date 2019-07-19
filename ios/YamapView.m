@@ -43,21 +43,11 @@
 }
 
 @synthesize map;
-@synthesize markersDict;
-@synthesize markers;
 
 RCT_EXPORT_MODULE()
 
 - (NSArray<NSString *> *)supportedEvents {
     return @[@"onMarkerPress", @"onRouteFound"];
-}
-
-RCT_EXPORT_VIEW_PROPERTY(onMarkerPress, RCTBubblingEventBlock)
-
-RCT_EXPORT_VIEW_PROPERTY(onRouteFound, RCTBubblingEventBlock)
-
-RCT_CUSTOM_VIEW_PROPERTY (markers, NSArray<YMKPoint>, YMKMapView) {
-    [self setMarkers: [RCTConvert Markers:json]];
 }
 
 - (instancetype)init {
@@ -143,13 +133,11 @@ RCT_CUSTOM_VIEW_PROPERTY (markers, NSArray<YMKPoint>, YMKMapView) {
 }
 
 - (UIView *_Nullable)view {
-    self.markers = nil;
-    self.markersDict = nil;
-    self.map = [[RNYMView alloc] init];
-    YMKUserLocationLayer *userLayer = self.map.mapWindow.map.userLocationLayer;
+    map = [[RNYMView alloc] init];
+    YMKUserLocationLayer *userLayer = map.mapWindow.map.userLocationLayer;
     [userLayer setEnabled:YES];
     [userLayer setObjectListenerWithObjectListener: self];
-    return self.map;
+    return map;
 }
 
 -(void)setMarkers:(NSMutableArray<RNMarker *> *)markerList {
@@ -267,15 +255,25 @@ RCT_CUSTOM_VIEW_PROPERTY (markers, NSArray<YMKPoint>, YMKMapView) {
     if (map.onRouteFound) map.onRouteFound(@{@"routes": routes});
 }
 
-RCT_CUSTOM_VIEW_PROPERTY(route, NSDictionary, YMKMapView) {
-    if (json != nil) {
-        NSDictionary *routeDict = [RCTConvert RouteDict:json];
+-(void)removeAllSections {
+    [map.mapWindow.map.mapObjects clear];
+    if (lastKnownMarkers != nil) [self setMarkers:lastKnownMarkers];
+}
 
+RCT_EXPORT_VIEW_PROPERTY(onMarkerPress, RCTBubblingEventBlock)
+
+RCT_EXPORT_VIEW_PROPERTY(onRouteFound, RCTBubblingEventBlock)
+
+RCT_CUSTOM_VIEW_PROPERTY (markers, NSArray<YMKPoint>, YMKMapView) {
+    [self setMarkers: [RCTConvert Markers:json]];
+}
+
+RCT_CUSTOM_VIEW_PROPERTY(route, NSDictionary, YMKMapView) {
+    if (json) {
+        NSDictionary *routeDict = [RCTConvert RouteDict:json];
         YMKRequestPoint * start = [YMKRequestPoint requestPointWithPoint:[routeDict objectForKey:@"start"] type: YMKRequestPointTypeWaypoint pointContext:nil];
         YMKRequestPoint * end = [YMKRequestPoint requestPointWithPoint:[routeDict objectForKey:@"end"] type: YMKRequestPointTypeWaypoint pointContext:nil];
-        NSMutableArray *points = [NSMutableArray arrayWithObjects:start, end, nil];
-
-        [self requestRoute:points];
+        [self requestRoute:[NSMutableArray arrayWithObjects:start, end, nil]];
     }
 }
 
@@ -305,7 +303,6 @@ RCT_CUSTOM_VIEW_PROPERTY(center, YMKPoint, YMKMapView) {
 
 RCT_CUSTOM_VIEW_PROPERTY(routeColors, YMKPoint, YMKMapView) {
     if (json == nil) return;
-
     NSDictionary *parsed = [RCTConvert RouteColors:json];
     for(NSString *key in parsed) {
         [vehicleColors setValue:[parsed valueForKey:key] forKey:key];
@@ -339,11 +336,6 @@ RCT_CUSTOM_VIEW_PROPERTY(vehicles, YMKPoint, YMKMapView) {
             }
         }
     }
-}
-
--(void)removeAllSections {
-    [map.mapWindow.map.mapObjects clear];
-    if (lastKnownMarkers != nil) [self setMarkers:lastKnownMarkers];
 }
 
 +(UIColor *)colorFromHexString:(NSString *)hexString {
