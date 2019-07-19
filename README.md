@@ -24,7 +24,7 @@ react-native link react-native-yamap
 
 ### Инициализировать карты
 
-- андроид (для ios используется заглушка, поэтому можно использовать без Platform)
+- андроид
 ```
 // js
 import YaMap from 'react-native-yamap';
@@ -36,30 +36,38 @@ YaMap.init('API_KEY');
 // AppDelegate.m
 #import <YandexMapKit/YMKMapKitFactory.h>
 ...
-[YMKMapKit setApiKey: @"API_LEY"];
+yamap *map = [[yamap alloc] init];
+[map initWithKey: @"API_KEY"];
+[yamap setPinIcon:@"ICON_ASSET_NAME"];
+[yamap setArrowIcon:@"ICON_ASSET_NAME"];
+[yamap setMarkerIcon:@"ICON_ASSET_NAME"];
+[yamap setSelectedMarkerIcon:@"ICON_ASSET_NAME"];
 ```
 
 ### Использование компонента
-```javascript
+```typescript
 import YaMap from 'react-native-yamap';
 
 // ...
 
-onRouteFound(event) {
+handleOnRouteFound(event) {
   this.setState({ routes: event.nativeEvent.routes });
+}
+
+handleOnMarkerPress(id: number) {
+  console.log(`Marker with id ${id} pressed!`);
 }
 // ...
 
 <YaMap
   vehicles={["bus", "walk"]} // bus, railway, trolleybus, tramway, suburban, underground, walk
-  onRouteFound={this.onRouteFound}
+  onRouteFound={this.handleOnRouteFound}
   routeColors={{bus: '#fff', walk: '#f00'}}
-  center={{ lat: double, lon: double, zoom: double }}
+  center={{lat: double, lon: double, zoom: double}}
   markers={markers}
   route={Route}
-  onMarkerPress={this.handleMarkerPress}
-  style={styles.container}
-/>
+  onMarkerPress={this.handleOnMarkerPress}
+  style={styles.container}/>
 ```
 
 ```typescript
