@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3CA9027E22E1E52D00C144AA /* YamapView.h in Headers */ = {isa = PBXBuildFile; fileRef = 3CA9027D22E1E52D00C144AA /* YamapView.h */; };
 		B3E7B58A1CC2AC0600A0062D /* RNYamap.m in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* RNYamap.m */; };
 		D615FE4C222D655B0044E3FA /* RNYamap.h in Headers */ = {isa = PBXBuildFile; fileRef = B3E7B5881CC2AC0600A0062D /* RNYamap.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D6ABBD14223667300060C368 /* YamapView.m in Sources */ = {isa = PBXBuildFile; fileRef = D6ABBD13223667300060C368 /* YamapView.m */; };
@@ -19,6 +20,7 @@
 
 /* Begin PBXFileReference section */
 		134814201AA4EA6300B7C361 /* libRNYamap.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRNYamap.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		3CA9027D22E1E52D00C144AA /* YamapView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YamapView.h; sourceTree = "<group>"; };
 		B3E7B5881CC2AC0600A0062D /* RNYamap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNYamap.h; sourceTree = "<group>"; };
 		B3E7B5891CC2AC0600A0062D /* RNYamap.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNYamap.m; sourceTree = "<group>"; };
 		D6ABBD13223667300060C368 /* YamapView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YamapView.m; sourceTree = "<group>"; };
@@ -55,6 +57,7 @@
 				D6ABBD592236A9600060C368 /* RNYMView.h */,
 				D6ABBD5A2236A9600060C368 /* RNYMView.m */,
 				B3E7B5881CC2AC0600A0062D /* RNYamap.h */,
+				3CA9027D22E1E52D00C144AA /* YamapView.h */,
 				B3E7B5891CC2AC0600A0062D /* RNYamap.m */,
 				D6D0D4D2222E7E4900838171 /* RCTConvert+Yamap.m */,
 				D6D0D4FD222EA5E900838171 /* RNMarker.h */,
@@ -70,6 +73,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3CA9027E22E1E52D00C144AA /* YamapView.h in Headers */,
 				D6D0D4FF222EA5E900838171 /* RNMarker.h in Headers */,
 				D6ABBD5B2236A9600060C368 /* RNYMView.h in Headers */,
 				D615FE4C222D655B0044E3FA /* RNYamap.h in Headers */,
@@ -116,6 +120,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 58B511D21A9E6C8500147676;

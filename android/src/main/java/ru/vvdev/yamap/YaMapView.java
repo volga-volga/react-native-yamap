@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.facebook.jni.MapIteratorHelper;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableMap;
@@ -46,7 +45,6 @@ import com.yandex.runtime.Error;
 import com.yandex.runtime.image.ImageProvider;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,11 +97,6 @@ public class YaMapView extends MapView implements Session.RouteListener {
         ReadableMapKeySetIterator iterator = colors.keySetIterator();
         while (iterator.hasNextKey()) {
             String key = iterator.nextKey();
-
-//            if (!Arrays.asList("bus", "railway", "trolleybus", "tramway", "suburban",
-//                    "underground", "walk", "minibus").contains(key)) {
-//                throw new IllegalArgumentException("Only 'bus' | 'railway' | 'trolleybus' 'tramway' | 'suburban' | 'underground' | 'walk' | trolleybus vehicle types are supported");
-//            }
 
             ReadableType type = colors.getType(key);
             if (type != ReadableType.String) {

@@ -2,34 +2,132 @@
 #import <YandexMapKit/YMKMapKitFactory.h>
 #import <YandexMapKit/YMKMapView.h>
 #import <YandexMapKit/YMKCameraPosition.h>
+#import <YandexMapKit/YMKPolyline.h>
+#import <YandexMapKit/YMKPolylineMapObject.h>
 #import <YandexMapKit/YMKMap.h>
 #import <YandexMapKit/YMKMapObjectCollection.h>
+#import <YandexMapKit/YMKSubpolylineHelper.h>
 #import <YandexMapKit/YMKPlacemarkMapObject.h>
+#import <YandexMapKitTransport/YMKMasstransitSession.h>
+#import <YandexMapKitTransport/YMKMasstransitRouter.h>
+#import <YandexMapKitTransport/YMKPedestrianRouter.h>
+#import <YandexMapKitTransport/YMKMasstransitRouteStop.h>
+#import <YandexMapKitTransport/YMKMasstransitOptions.h>
+#import <YandexMapKitTransport/YMKMasstransitSection.h>
+#import <YandexMapKitTransport/YMKMasstransitSectionMetadata.h>
+#import <YandexMapKitTransport/YMKMasstransitTransport.h>
+#import <YandexMapKitTransport/YMKMasstransitWeight.h>
+#import <YandexMapKitTransport/YMKTimeOptions.h>
 #import "RCTConvert+Yamap.m"
 #import "RNMarker.h"
+#import "YamapView.h"
+#import "RNYamap.h"
 #import "RNYMView.h"
 
-@interface YamapView : RCTViewManager<YMKMapObjectTapListener, YMKUserLocationObjectListener>
-@property RNYMView *map;
-@property (nonatomic) NSMutableArray<RNMarker*> *markers;
-@property (nonatomic) NSMutableDictionary<NSString*, YMKPlacemarkMapObject*> *markers_dict;
-@end
+#define ANDROID_COLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 green:((c>>8)&0xFF)/255.0 blue:((c)&0xFF)/255.0  alpha:((c>>24)&0xFF)/255.0]
 
-@implementation YamapView
+@implementation YamapView {
+    YMKMasstransitSession *masstransitSession;
+    YMKMasstransitSession *walkSession;
+    YMKMasstransitRouter *masstransitRouter;
+    YMKPedestrianRouter *pedestrianRouter;
+    YMKMasstransitOptions *masstransitOptions;
+    void (^routeHandler)(NSArray<YMKMasstransitRoute *>*, NSError *);
+
+    NSMutableArray *routes;
+    NSMutableArray *currentRouteInfo;
+    NSMutableArray<YMKRequestPoint *> *lastKnownRoutePoints;
+    NSMutableArray<RNMarker *> *lastKnownMarkers;
+    NSMutableDictionary *vehicleColors;
+    NSArray *acceptVehicleTypes;
+}
+
+@synthesize map;
+@synthesize markersDict;
+@synthesize markers;
+
 RCT_EXPORT_MODULE()
 
-
-- (NSArray<NSString *> *)supportedEvents
-{
-    return @[@"onMarkerPress"];
+- (NSArray<NSString *> *)supportedEvents {
+    return @[@"onMarkerPress", @"onRouteFound"];
 }
 
 RCT_EXPORT_VIEW_PROPERTY(onMarkerPress, RCTBubblingEventBlock)
+
+RCT_EXPORT_VIEW_PROPERTY(onRouteFound, RCTBubblingEventBlock)
+
+RCT_CUSTOM_VIEW_PROPERTY (markers, NSArray<YMKPoint>, YMKMapView) {
+    [self setMarkers: [RCTConvert Markers:json]];
+}
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        masstransitRouter = [[YMKTransport sharedInstance] createMasstransitRouter];
+        pedestrianRouter = [[YMKTransport sharedInstance] createPedestrianRouter];
+        masstransitOptions = [YMKMasstransitOptions masstransitOptionsWithAvoidTypes:[[NSArray alloc] init] acceptTypes:[[NSArray alloc] init] timeOptions:[[YMKTimeOptions alloc] init]];
+
+        acceptVehicleTypes = [[NSMutableArray<NSString *> alloc] init];
+        routes = [[NSMutableArray alloc] init];
+        currentRouteInfo = [[NSMutableArray alloc] init];
+        lastKnownRoutePoints = [[NSMutableArray alloc] init];
+
+        vehicleColors = [[NSMutableDictionary alloc] init];
+        [vehicleColors setObject:@"#59ACFF" forKey:@"bus"];
+        [vehicleColors setObject:@"#F8634F" forKey:@"railway"];
+        [vehicleColors setObject:@"#C86DD7" forKey:@"tramway"];
+        [vehicleColors setObject:@"#3023AE" forKey:@"suburban"];
+        [vehicleColors setObject:@"#BDCCDC" forKey:@"underground"];
+        [vehicleColors setObject:@"#55CfDC" forKey:@"trolleybus"];
+        [vehicleColors setObject:@"#2d9da8" forKey:@"walk"];
+
+        __weak YamapView *weakSelf = self;
+
+        routeHandler = ^(NSArray<YMKMasstransitRoute *> *routes, NSError *error) {
+            if (error != nil) return;
+            YamapView *strongSelf = weakSelf;
+            if ([routes count] > 0) {
+                for (int i = 0; i < [routes count]; i++) {
+                    BOOL isRouteBelongToAcceptedVehicleList = false;
+                    BOOL isWalkRoute = true;
+                    for (YMKMasstransitSection *section in routes[i].sections) {
+                        if (section.metadata.data.transports != nil) {
+                            isWalkRoute = false;
+                            for (YMKMasstransitTransport *transport in section.metadata.data.transports) {
+                                for (NSString *type in transport.line.vehicleTypes) {
+                                    if ([strongSelf->acceptVehicleTypes containsObject:type]) {
+                                        isRouteBelongToAcceptedVehicleList = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (isRouteBelongToAcceptedVehicleList || isWalkRoute) {
+                        for (YMKMasstransitSection *section in routes[i].sections) {
+                            [strongSelf drawSection:section withGeometry:YMKMakeSubpolyline(routes[i].geometry, section.geometry) withWeight:routes[i].metadata.weight withIndex:i];
+                        }
+                        [strongSelf->routes addObject:strongSelf->currentRouteInfo];
+                        strongSelf->currentRouteInfo = [[NSMutableArray alloc] init];
+                    }
+                }
+                [strongSelf onReceiveNativeEvent:strongSelf->routes];
+                strongSelf->routes = [[NSMutableArray alloc] init];
+            }
+        };
+    }
+    return self;
+}
+
 - (void)onObjectAddedWithView:(nonnull YMKUserLocationView *)view {
-    [view.pin setIconWithImage:[UIImage imageNamed:@"base_location"]];
-    YMKIconStyle *selectedStyle = [[YMKIconStyle alloc] init];
-    selectedStyle.scale = [[NSNumber alloc] initWithDouble:0.5];
-    [view.pin setIconStyleWithStyle:selectedStyle];
+    [view.pin setIconWithImage:[UIImage imageNamed:yamap.pinIcon]];
+    [view.arrow setIconWithImage:[UIImage imageNamed:yamap.arrowIcon]];
+    YMKIconStyle *arrowStyle = [[YMKIconStyle alloc] init];
+    YMKIconStyle *pinStyle = [[YMKIconStyle alloc] init];
+    arrowStyle.scale = [[NSNumber alloc] initWithDouble:2];
+    pinStyle.scale = [[NSNumber alloc] initWithDouble:0.5];
+    [view.pin setIconStyleWithStyle:pinStyle];
+    [view.arrow setIconStyleWithStyle:arrowStyle];
 }
 - (void)onObjectRemovedWithView:(nonnull YMKUserLocationView *)view {}
 - (void)onObjectUpdatedWithView:(nonnull YMKUserLocationView *)view
@@ -54,9 +152,9 @@ RCT_EXPORT_VIEW_PROPERTY(onMarkerPress, RCTBubblingEventBlock)
     return YES;
 }
 
-- (UIView *)view {
+- (UIView *_Nullable)view {
     self.markers = nil;
-    self.markers_dict = nil;
+    self.markersDict = nil;
     self.map = [[RNYMView alloc] init];
     YMKUserLocationLayer *userLayer = self.map.mapWindow.map.userLocationLayer;
     [userLayer setEnabled:YES];
@@ -64,49 +162,133 @@ RCT_EXPORT_VIEW_PROPERTY(onMarkerPress, RCTBubblingEventBlock)
     return self.map;
 }
 
-RCT_CUSTOM_VIEW_PROPERTY (markers, NSArray<YMKPoint>, YMKMapView) {
-    unsigned long count = [json count];
+-(void)setMarkers:(NSMutableArray<RNMarker *> *)markerList {
     YMKMapObjectCollection *objects = self.map.mapWindow.map.mapObjects;
-    NSMutableArray<RNMarker*> *arr = [[NSMutableArray<RNMarker*> alloc] initWithCapacity:count];
-    UIImage *selected = [UIImage imageNamed:@"selected"];
-    UIImage *normal = [UIImage imageNamed:@"normal"];
-    YMKIconStyle *selectedStyle = [[YMKIconStyle alloc] init];
-    selectedStyle.scale = [[NSNumber alloc] initWithDouble:0.5];
-    if (!self.markers_dict) {
-        self.markers_dict = [[NSMutableDictionary alloc] init];
+    lastKnownMarkers = markerList;
+    [objects clear];
+
+    for (RNMarker *marker in markerList) {
+        YMKPlacemarkMapObject *placemark = [objects addPlacemarkWithPoint:[YMKPoint pointWithLatitude:marker.lat longitude:marker.lon]];
+        UIImage *icon = [UIImage imageNamed:marker.isSelected ? yamap.selectedMarkerIcon : yamap.markerIcon];
+        [placemark setIconWithImage:icon];
+        YMKIconStyle *style = [[YMKIconStyle alloc] init];
+        style.scale = [[NSNumber alloc] initWithDouble:0.5];
+        [placemark setIconStyleWithStyle:style];
+        [placemark addTapListenerWithTapListener:self];
     }
-    for (unsigned long i = 0; i < count; ++i) {
-        RNMarker *marker = [[RNMarker alloc] initWithJson:json[i]];
-        YMKPlacemarkMapObject *foo = [self.markers_dict valueForKey:marker._id];
-        if (!foo) {
-            YMKPoint *point = [YMKPoint pointWithLatitude:marker.lat longitude:marker.lon];
-            foo = [objects addPlacemarkWithPoint:point];
-            [self.markers_dict setValue:foo forKey:marker._id];
-        }
-        YMKPlacemarkMapObject *a = foo; //[objects addPlacemarkWithPoint:point];
-        arr[i] = marker;
-        if (selected && normal) {
-            [a setIconWithImage:marker.isSelected ? selected : normal];
-            [a setIconStyleWithStyle:selectedStyle];
-        }
-        [a addTapListenerWithTapListener:self];
+}
+
+-(void)drawSection:(YMKMasstransitSection *) section withGeometry:(YMKPolyline *) geometry withWeight:(YMKMasstransitWeight *) routeWeight withIndex:(int) routeIndex {
+    if ([acceptVehicleTypes count] == 0) {
+        [self removeAllSections];
+        return;
     }
-    self.markers = arr;
-    NSArray<NSString*> *a = [self.markers_dict allKeys];
-    for (int i = 0; i < [a count]; ++i) {
-        NSString *key = a[i];
-        Boolean exist = NO;
-        for (unsigned long i = 0; i < count; ++i) {
-            if (self.markers[i]._id == key) {
-                exist = YES;
-                break;
+
+    YMKMapObjectCollection *objects = self.map.mapWindow.map.mapObjects;
+    YMKMasstransitSectionMetadataSectionData *data = section.metadata.data;
+    YMKPolylineMapObject *polylineMapObject = [[objects addCollection] addPolylineWithPolyline:geometry];
+
+    NSMutableDictionary *routeMetadata = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary *routeWeightData = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary *sectionWeightData = [[NSMutableDictionary alloc] init];
+
+    NSMutableDictionary *transports = [[NSMutableDictionary alloc] init];
+    NSMutableArray *stops = [[NSMutableArray alloc] init];
+
+    [routeWeightData setObject:routeWeight.time.text forKey:@"time"];
+    [routeWeightData setObject:@(routeWeight.transfersCount) forKey:@"transferCount"];
+    [routeWeightData setObject:@(routeWeight.walkingDistance.value) forKey:@"walkingDistance"];
+
+    [sectionWeightData setObject:section.metadata.weight.time.text forKey:@"time"];
+    [sectionWeightData setObject:@(section.metadata.weight.transfersCount) forKey:@"transferCount"];
+    [sectionWeightData setObject:@(section.metadata.weight.walkingDistance.value) forKey:@"walkingDistance"];
+
+    [routeMetadata setObject:sectionWeightData forKey:@"sectionInfo"];
+    [routeMetadata setObject:routeWeightData forKey:@"routeInfo"];
+    [routeMetadata setObject:@(routeIndex) forKey:@"routeIndex"];
+
+    for (YMKMasstransitRouteStop *stop in section.stops) {
+        [stops addObject:stop.stop.name];
+    }
+    [routeMetadata setObject:stops forKey:@"stops"];
+
+    if (data.transports != nil) {
+        for (YMKMasstransitTransport *transport in data.transports) {
+            for (NSString *type in transport.line.vehicleTypes) {
+
+                if ([type isEqual: @"suburban"]) continue;
+                if (transports[type] != nil) {
+                    NSMutableArray *list = transports[type];
+                    if (list != nil) {
+                        [list addObject:transport.line.name];
+                        [transports setObject:list forKey:type];
+                    }
+                } else {
+                    NSMutableArray *list = [[NSMutableArray alloc] init];
+                    [list addObject:transport.line.name];
+                    [transports setObject:list forKey:type];
+                }
+                [routeMetadata setObject:type forKey:@"type"];
+
+                UIColor *color;
+                if (transport.line.style != nil) {
+                    color = ANDROID_COLOR([transport.line.style.color integerValue] | 0xFF000000);
+                } else {
+                    if ([vehicleColors valueForKey:type] != nil) {
+                        color = [YamapView colorFromHexString:vehicleColors[type]];
+                    } else {
+                        color = UIColor.blackColor;
+                    }
+                }
+
+                NSLog(@"%@", color);
+
+                [routeMetadata setObject:[YamapView hexStringFromColor:color] forKey:@"sectionColor"];
+                [polylineMapObject setStrokeColor:color];
             }
         }
-        if (!exist) {
-            YMKPlacemarkMapObject *a = [self.markers_dict valueForKey:key];
-            [self.markers_dict removeObjectForKey:key];
-            [objects removeWithMapObject:a];
+    } else {
+        [self setDashPolyline:polylineMapObject];
+        [routeMetadata setObject:UIColor.darkGrayColor forKey:@"sectionColor"];
+
+        if (section.metadata.weight.walkingDistance.value == 0) {
+             [routeMetadata setObject:@"waiting" forKey:@"type"];
+        } else {
+            [routeMetadata setObject:@"walk" forKey:@"type"];
         }
+    }
+
+    NSMutableDictionary *wTransports = [[NSMutableDictionary alloc] init];
+    for (NSString *key in transports) {
+        [wTransports setObject:[transports valueForKey:key] forKey:key];
+    }
+
+    [routeMetadata setObject:wTransports forKey:@"transports"];
+    [self->currentRouteInfo addObject:routeMetadata];
+}
+
+-(void) setDashPolyline:(YMKPolylineMapObject *)polylineMapObject {
+    [polylineMapObject setDashLength:8.0];
+    [polylineMapObject setGapLength:11.0];
+    [polylineMapObject setStrokeWidth:2.0];
+    [polylineMapObject setStrokeColor:[YamapView colorFromHexString:[vehicleColors valueForKey:@"walk"]]];
+}
+
+-(void)onReceiveNativeEvent:(NSMutableArray *)routes {
+    if (self.map.onRouteFound) {
+        self.map.onRouteFound(@{@"routes": routes});
+    }
+}
+
+RCT_CUSTOM_VIEW_PROPERTY(route, NSDictionary, YMKMapView) {
+    if (json != nil) {
+        NSDictionary *routeDict = [RCTConvert RouteDict:json];
+
+        YMKRequestPoint * start = [YMKRequestPoint requestPointWithPoint:[routeDict objectForKey:@"start"] type: YMKRequestPointTypeWaypoint pointContext:nil];
+        YMKRequestPoint * end = [YMKRequestPoint requestPointWithPoint:[routeDict objectForKey:@"end"] type: YMKRequestPointTypeWaypoint pointContext:nil];
+        NSMutableArray *points = [NSMutableArray arrayWithObjects:start, end, nil];
+
+        [self requestRoute:points];
     }
 }
 
@@ -114,11 +296,87 @@ RCT_CUSTOM_VIEW_PROPERTY(center, YMKPoint, YMKMapView) {
     if (json) {
         YMKPoint *center = [RCTConvert YMKPoint:json];
         float zoom = [RCTConvert Zoom:json];
-        [self.map.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center
-                                                                                    zoom:zoom
-                                                                                           azimuth:0
-                                                                                              tilt:0]];
+        [self.map.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:zoom azimuth:0 tilt:0]];
+
+        if ([lastKnownRoutePoints count] > 0) {
+            [self removeAllSections];
+            [self requestRoute:lastKnownRoutePoints];
+        }
     }
+}
+
+-(void) requestRoute:(NSMutableArray<YMKRequestPoint *> *) points {
+    if (points != nil) {
+        lastKnownRoutePoints = points;
+        if ([acceptVehicleTypes containsObject:@"walk"]) {
+            walkSession = [pedestrianRouter requestRoutesWithPoints:points timeOptions:[[YMKTimeOptions alloc] init] routeHandler:routeHandler];
+            return;
+        }
+        masstransitSession = [masstransitRouter requestRoutesWithPoints:points masstransitOptions:masstransitOptions routeHandler:routeHandler];
+    }
+}
+
+RCT_CUSTOM_VIEW_PROPERTY(routeColors, YMKPoint, YMKMapView) {
+    if (json == nil) return;
+
+    NSDictionary *parsed = [RCTConvert RouteColors:json];
+    for(NSString *key in parsed) {
+        [vehicleColors setValue:[parsed valueForKey:key] forKey:key];
+    }
+}
+
+RCT_CUSTOM_VIEW_PROPERTY(vehicles, YMKPoint, YMKMapView) {
+    if (json) {
+        NSArray *parsed = [RCTConvert Vehicles:json];
+
+        NSLog(@"%@", parsed);
+        acceptVehicleTypes = parsed;
+        [self setMarkers:lastKnownMarkers];
+
+        if ([acceptVehicleTypes count] == 0) {
+            [self onReceiveNativeEvent:[[NSMutableArray alloc] init]];
+            return;
+        }
+
+        if ([lastKnownRoutePoints count] > 0) {
+            if ([acceptVehicleTypes containsObject:@"walk"]) {
+                if (walkSession != nil) {
+                     [walkSession retryWithRouteHandler:routeHandler];
+                } else {
+                    walkSession = [pedestrianRouter requestRoutesWithPoints:lastKnownRoutePoints timeOptions:[[YMKTimeOptions alloc] init] routeHandler:routeHandler];
+                }
+            } else {
+                if (masstransitSession != nil) {
+                    [masstransitSession retryWithRouteHandler:routeHandler];
+                } else {
+                    masstransitSession = [masstransitRouter requestRoutesWithPoints:lastKnownRoutePoints masstransitOptions:masstransitOptions routeHandler:routeHandler];
+                }
+            }
+        }
+    }
+}
+
+-(void)removeAllSections {
+    [map.mapWindow.map.mapObjects clear];
+    if (lastKnownMarkers != nil) [self setMarkers:lastKnownMarkers];
+}
+
++(UIColor *)colorFromHexString:(NSString *)hexString {
+    unsigned rgbValue = 0;
+    NSScanner *scanner = [NSScanner scannerWithString:hexString];
+    [scanner setScanLocation:1];
+    [scanner scanHexInt:&rgbValue];
+    return [UIColor colorWithRed:((rgbValue & 0xFF0000) >> 16)/255.0 green:((rgbValue & 0xFF00) >> 8)/255.0 blue:(rgbValue & 0xFF)/255.0 alpha:1.0];
+}
+
++(NSString *)hexStringFromColor:(UIColor *)color {
+    const CGFloat *components = CGColorGetComponents(color.CGColor);
+
+    CGFloat r = components[0];
+    CGFloat g = components[1];
+    CGFloat b = components[2];
+
+    return [NSString stringWithFormat:@"#%02lX%02lX%02lX", lroundf(r * 255), lroundf(g * 255), lroundf(b * 255)];
 }
 
 @end
