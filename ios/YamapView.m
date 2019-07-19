@@ -129,26 +129,16 @@ RCT_CUSTOM_VIEW_PROPERTY (markers, NSArray<YMKPoint>, YMKMapView) {
     [view.pin setIconStyleWithStyle:pinStyle];
     [view.arrow setIconStyleWithStyle:arrowStyle];
 }
-- (void)onObjectRemovedWithView:(nonnull YMKUserLocationView *)view {}
-- (void)onObjectUpdatedWithView:(nonnull YMKUserLocationView *)view
-                          event:(nonnull YMKObjectEvent *)event {}
-- (BOOL)onMapObjectTapWithMapObject:(nonnull YMKMapObject *)mapObject
-                              point:(nonnull YMKPoint *)point {
-    // очень тупой способ определения на какой маркер ткнули - просто нахожу ближайший
-    double minDistance = 10000;
-    int minDistanceIndex = -1;
-    for (int i = 0; i < self.markers.count; ++i) {
-        double dist = (self.markers[i].lat - point.latitude)*(self.markers[i].lat - point.latitude) + (self.markers[i].lon - point.longitude)*(self.markers[i].lon - point.longitude);
-        if (dist < minDistance) {
-            minDistance = dist;
-            minDistanceIndex = i;
-        }
-    }
-    if (self.map.onMarkerPress) {
-        self.map.onMarkerPress(@{
-          @"id": self.markers[minDistanceIndex]._id
-        });
-    }
+- (void)onObjectRemovedWithView:(nonnull YMKUserLocationView *)view {
+
+}
+
+- (void)onObjectUpdatedWithView:(nonnull YMKUserLocationView *)view event:(nonnull YMKObjectEvent *)event {
+
+}
+
+- (BOOL)onMapObjectTapWithMapObject:(nonnull YMKMapObject *)mapObject point:(nonnull YMKPoint *)point {
+    if (map.onMarkerPress) map.onMarkerPress(@{@"id": [mapObject.userData valueForKey:@"id"]});
     return YES;
 }
 
@@ -171,6 +161,7 @@ RCT_CUSTOM_VIEW_PROPERTY (markers, NSArray<YMKPoint>, YMKMapView) {
         YMKPlacemarkMapObject *placemark = [objects addPlacemarkWithPoint:[YMKPoint pointWithLatitude:marker.lat longitude:marker.lon]];
         UIImage *icon = [UIImage imageNamed:marker.isSelected ? yamap.selectedMarkerIcon : yamap.markerIcon];
         [placemark setIconWithImage:icon];
+        [placemark setUserData:@{@"id": marker._id}];
         YMKIconStyle *style = [[YMKIconStyle alloc] init];
         style.scale = [[NSNumber alloc] initWithDouble:0.5];
         [placemark setIconStyleWithStyle:style];
@@ -241,8 +232,6 @@ RCT_CUSTOM_VIEW_PROPERTY (markers, NSArray<YMKPoint>, YMKMapView) {
                     }
                 }
 
-                NSLog(@"%@", color);
-
                 [routeMetadata setObject:[YamapView hexStringFromColor:color] forKey:@"sectionColor"];
                 [polylineMapObject setStrokeColor:color];
             }
@@ -275,9 +264,7 @@ RCT_CUSTOM_VIEW_PROPERTY (markers, NSArray<YMKPoint>, YMKMapView) {
 }
 
 -(void)onReceiveNativeEvent:(NSMutableArray *)routes {
-    if (self.map.onRouteFound) {
-        self.map.onRouteFound(@{@"routes": routes});
-    }
+    if (map.onRouteFound) map.onRouteFound(@{@"routes": routes});
 }
 
 RCT_CUSTOM_VIEW_PROPERTY(route, NSDictionary, YMKMapView) {
@@ -328,8 +315,6 @@ RCT_CUSTOM_VIEW_PROPERTY(routeColors, YMKPoint, YMKMapView) {
 RCT_CUSTOM_VIEW_PROPERTY(vehicles, YMKPoint, YMKMapView) {
     if (json) {
         NSArray *parsed = [RCTConvert Vehicles:json];
-
-        NSLog(@"%@", parsed);
         acceptVehicleTypes = parsed;
         [self setMarkers:lastKnownMarkers];
 
