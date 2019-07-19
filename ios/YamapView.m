@@ -110,8 +110,9 @@ RCT_EXPORT_MODULE()
 }
 
 - (void)onObjectAddedWithView:(nonnull YMKUserLocationView *)view {
-    [view.pin setIconWithImage:[UIImage imageNamed:yamap.pinIcon]];
-    [view.arrow setIconWithImage:[UIImage imageNamed:yamap.arrowIcon]];
+    if (yamap.pinIcon != nil) [view.pin setIconWithImage:[UIImage imageNamed:yamap.pinIcon]];
+    if (yamap.arrowIcon != nil) [view.arrow setIconWithImage:[UIImage imageNamed:yamap.arrowIcon]];
+
     YMKIconStyle *arrowStyle = [[YMKIconStyle alloc] init];
     YMKIconStyle *pinStyle = [[YMKIconStyle alloc] init];
     arrowStyle.scale = [[NSNumber alloc] initWithDouble:2];
@@ -148,7 +149,9 @@ RCT_EXPORT_MODULE()
     for (RNMarker *marker in markerList) {
         YMKPlacemarkMapObject *placemark = [objects addPlacemarkWithPoint:[YMKPoint pointWithLatitude:marker.lat longitude:marker.lon]];
         UIImage *icon = [UIImage imageNamed:marker.isSelected ? yamap.selectedMarkerIcon : yamap.markerIcon];
-        [placemark setIconWithImage:icon];
+        if (icon != nil) {
+            [placemark setIconWithImage:icon];
+        }
         [placemark setUserData:@{@"id": marker._id}];
         YMKIconStyle *style = [[YMKIconStyle alloc] init];
         style.scale = [[NSNumber alloc] initWithDouble:0.5];
