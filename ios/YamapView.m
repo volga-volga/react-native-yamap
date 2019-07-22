@@ -1,11 +1,16 @@
 #import <React/RCTViewManager.h>
+#import <MapKit/MapKit.h>
+#import <math.h>
 #import <YandexMapKit/YMKMapKitFactory.h>
 #import <YandexMapKit/YMKMapView.h>
+#import <YandexMapKit/YMKBoundingBox.h>
 #import <YandexMapKit/YMKCameraPosition.h>
+#import <YandexMapKit/YMKCircle.h>
 #import <YandexMapKit/YMKPolyline.h>
 #import <YandexMapKit/YMKPolylineMapObject.h>
 #import <YandexMapKit/YMKMap.h>
 #import <YandexMapKit/YMKMapObjectCollection.h>
+#import <YandexMapKit/YMKGeoObjectCollection.h>
 #import <YandexMapKit/YMKSubpolylineHelper.h>
 #import <YandexMapKit/YMKPlacemarkMapObject.h>
 #import <YandexMapKitTransport/YMKMasstransitSession.h>
@@ -23,6 +28,10 @@
 #import "YamapView.h"
 #import "RNYamap.h"
 #import "RNYMView.h"
+
+#ifndef MAX
+#import <NSObjCRuntime.h>
+#endif
 
 #define ANDROID_COLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 green:((c>>8)&0xFF)/255.0 blue:((c)&0xFF)/255.0  alpha:((c>>24)&0xFF)/255.0]
 
@@ -158,6 +167,7 @@ RCT_EXPORT_MODULE()
         [placemark setIconStyleWithStyle:style];
         [placemark addTapListenerWithTapListener:self];
     }
+    [self fitAllMarkers];
 }
 
 -(void)drawSection:(YMKMasstransitSection *) section withGeometry:(YMKPolyline *) geometry withWeight:(YMKMasstransitWeight *) routeWeight withIndex:(int) routeIndex {
@@ -263,6 +273,53 @@ RCT_EXPORT_MODULE()
     if (lastKnownMarkers != nil) [self setMarkers:lastKnownMarkers];
 }
 
+-(void)fitAllMarkers {
+    if ([lastKnownMarkers count] == 1) {
+        YMKPoint *center = [YMKPoint pointWithLatitude:lastKnownMarkers[0].lat longitude:lastKnownMarkers[0].lon];
+        [self.map.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:15 azimuth:0 tilt:0]];
+        return;
+    }
+
+    double minLon = lastKnownMarkers[0].lon;
+    double maxLon = lastKnownMarkers[0].lon;
+    double minLat = lastKnownMarkers[0].lat;
+    double maxLat = lastKnownMarkers[0].lat;
+    for (int i = 0; i < [lastKnownMarkers count]; i++) {
+        if (lastKnownMarkers[i].lon > maxLon) {
+            maxLon = lastKnownMarkers[i].lon;
+        }
+        if (lastKnownMarkers[i].lon < minLon) {
+            minLon = lastKnownMarkers[i].lon;
+        }
+        if (lastKnownMarkers[i].lat > maxLat) {
+            maxLat = lastKnownMarkers[i].lat;
+        }
+        if (lastKnownMarkers[i].lat < minLat) {
+            minLat = lastKnownMarkers[i].lat;
+        }
+    }
+
+    YMKPoint *southWest = [YMKPoint pointWithLatitude:minLat longitude:minLon];
+    YMKPoint *northEast = [YMKPoint pointWithLatitude:maxLat longitude:maxLon];
+
+    YMKPoint *rectCenter = [YMKPoint pointWithLatitude:(minLat + maxLat) / 2 longitude:(minLon + maxLon) / 2];
+
+    CLLocation *centerP = [[CLLocation alloc] initWithLatitude:northEast.latitude longitude:northEast.longitude];
+    CLLocation *edgeP = [[CLLocation alloc] initWithLatitude:rectCenter.latitude longitude:rectCenter.longitude];
+    CLLocationDistance distance = [centerP distanceFromLocation:edgeP];
+
+    double scale = (distance/2)/140;
+    int zoom = (int) (16 - log(scale) / log(2));
+
+    YMKBoundingBox *boundingBox = [YMKBoundingBox boundingBoxWithSouthWest:southWest northEast:northEast];
+//    YMKCircle *circle = [YMKCircle circleWithCenter:rectCenter radius:distance];
+//    [map.mapWindow.map.mapObjects addCircleWithCircle:circle strokeColor:UIColor.redColor strokeWidth:5 fillColor:UIColor.clearColor];
+
+    YMKCameraPosition *cameraPosition = [map.mapWindow.map cameraPositionWithBoundingBox:boundingBox];
+    cameraPosition = [YMKCameraPosition cameraPositionWithTarget:cameraPosition.target zoom:zoom azimuth:cameraPosition.azimuth tilt:cameraPosition.tilt];
+    [self.map.mapWindow.map moveWithCameraPosition:cameraPosition animationType:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:0.5] cameraCallback:^(BOOL completed){}];
+}
+
 RCT_EXPORT_VIEW_PROPERTY(onMarkerPress, RCTBubblingEventBlock)
 
 RCT_EXPORT_VIEW_PROPERTY(onRouteFound, RCTBubblingEventBlock)
@@ -321,11 +378,7 @@ RCT_CUSTOM_VIEW_PROPERTY(vehicles, YMKPoint, YMKMapView) {
 
         if ([lastKnownRoutePoints count] > 0) {
             if ([acceptVehicleTypes containsObject:@"walk"]) {
-                if (walkSession != nil) {
-                     [walkSession retryWithRouteHandler:routeHandler];
-                } else {
-                    walkSession = [pedestrianRouter requestRoutesWithPoints:lastKnownRoutePoints timeOptions:[[YMKTimeOptions alloc] init] routeHandler:routeHandler];
-                }
+                walkSession = [pedestrianRouter requestRoutesWithPoints:lastKnownRoutePoints timeOptions:[[YMKTimeOptions alloc] init] routeHandler:routeHandler];
             } else {
                 if (masstransitSession != nil) {
                     [masstransitSession retryWithRouteHandler:routeHandler];
