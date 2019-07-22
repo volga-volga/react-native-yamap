@@ -288,7 +288,6 @@ RCT_CUSTOM_VIEW_PROPERTY(center, YMKPoint, YMKMapView) {
 
         if ([lastKnownRoutePoints count] > 0) {
             [self removeAllSections];
-            [self requestRoute:lastKnownRoutePoints];
         }
     }
 }
@@ -318,10 +317,7 @@ RCT_CUSTOM_VIEW_PROPERTY(vehicles, YMKPoint, YMKMapView) {
         acceptVehicleTypes = parsed;
         [self setMarkers:lastKnownMarkers];
 
-        if ([acceptVehicleTypes count] == 0) {
-            [self onReceiveNativeEvent:[[NSMutableArray alloc] init]];
-            return;
-        }
+        if ([acceptVehicleTypes count] == 0) return;
 
         if ([lastKnownRoutePoints count] > 0) {
             if ([acceptVehicleTypes containsObject:@"walk"]) {
