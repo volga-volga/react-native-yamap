@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
@@ -45,7 +44,7 @@ import com.yandex.mapkit.user_location.UserLocationLayer;
 import com.yandex.runtime.Error;
 import com.yandex.runtime.image.ImageProvider;
 
-import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -53,7 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class YaMapView extends MapView implements Session.RouteListener {
+public class YaMapView extends MapView implements Session.RouteListener, MapObjectTapListener {
 
     // default colors for known vehicles
     // "underground" actually get color considering with his own branch"s color
@@ -162,22 +161,16 @@ public class YaMapView extends MapView implements Session.RouteListener {
         objects.clear();
         for (final RNMarker marker : markers) {
             PlacemarkMapObject placemark = objects.addPlacemark(new Point(marker.lat, marker.lon));
-            if (selectedMarkerIcon != null && this.markerIcon != null) {
-                placemark.setIcon(marker.isSelected ? selectedMarkerIcon : this.markerIcon);
+            if (selectedMarkerIcon != null && markerIcon != null) {
+                placemark.setIcon(marker.isSelected ? selectedMarkerIcon : markerIcon);
             }
             placemark.setIconStyle(new IconStyle().setScale(0.3f));
-            placemark.addTapListener(new MapObjectTapListener() {
-                @Override
-                public boolean onMapObjectTap(@NonNull MapObject mapObject, @NonNull Point point) {
-                    final Context context = getContext();
-                    if (context instanceof ReactContext) {
-                        WritableMap e = Arguments.createMap();
-                        e.putString("id", marker.id);
-                        ((ReactContext) context).getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onMarkerPress", e);
-                    }
-                    return true;
-                }
-            });
+            try {
+                placemark.setUserData(new JSONObject().put("id", marker.id));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            placemark.addTapListener(this);
         }
 
         fitAllMarkers();
@@ -263,10 +256,7 @@ public class YaMapView extends MapView implements Session.RouteListener {
 
         if (data.getTransports() != null) {
             for (Transport transport : data.getTransports()) {
-                Log.e("transport", transport.getLine().getName());
-
                 for (String type : transport.getLine().getVehicleTypes()) {
-
                     if (type.equals("suburban")) continue;
 
                     if (transports.get(type) != null) {
@@ -378,5 +368,23 @@ public class YaMapView extends MapView implements Session.RouteListener {
 
     private String formatColor(int color) {
         return String.format("#%06X", (0xFFFFFF & color));
+    }
+
+    @Override
+    public boolean onMapObjectTap(@NonNull MapObject mapObject, @NonNull Point point) {
+        final Context context = getContext();
+        if (context instanceof ReactContext) {
+            WritableMap e = Arguments.createMap();
+            JSONObject userData = (JSONObject) mapObject.getUserData();
+            if (userData != null) {
+                try {
+                    e.putString("id", userData.get("id").toString());
+                } catch (JSONException e1) {
+                    e1.printStackTrace();
+                }
+            }
+            ((ReactContext) context).getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onMarkerPress", e);
+        }
+        return false;
     }
 }

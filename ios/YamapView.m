@@ -355,11 +355,13 @@ RCT_CUSTOM_VIEW_PROPERTY(center, YMKPoint, YMKMapView) {
 -(void) requestRoute:(NSMutableArray<YMKRequestPoint *> *) points {
     if (points != nil) {
         lastKnownRoutePoints = points;
-        if ([acceptVehicleTypes containsObject:@"walk"]) {
-            walkSession = [pedestrianRouter requestRoutesWithPoints:points timeOptions:[[YMKTimeOptions alloc] init] routeHandler:routeHandler];
-            return;
+        if ([acceptVehicleTypes count] > 0) {
+            if ([acceptVehicleTypes containsObject:@"walk"]) {
+                walkSession = [pedestrianRouter requestRoutesWithPoints:points timeOptions:[[YMKTimeOptions alloc] init] routeHandler:routeHandler];
+                return;
+            }
+            masstransitSession = [masstransitRouter requestRoutesWithPoints:points masstransitOptions:masstransitOptions routeHandler:routeHandler];
         }
-        masstransitSession = [masstransitRouter requestRoutesWithPoints:points masstransitOptions:masstransitOptions routeHandler:routeHandler];
     }
 }
 
