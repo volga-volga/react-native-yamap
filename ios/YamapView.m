@@ -35,6 +35,8 @@
 
 #define ANDROID_COLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 green:((c>>8)&0xFF)/255.0 blue:((c)&0xFF)/255.0  alpha:((c>>24)&0xFF)/255.0]
 
+#define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
+
 @implementation YamapView {
     YMKMasstransitSession *masstransitSession;
     YMKMasstransitSession *walkSession;
@@ -73,6 +75,7 @@ RCT_EXPORT_MODULE()
 
         vehicleColors = [[NSMutableDictionary alloc] init];
         [vehicleColors setObject:@"#59ACFF" forKey:@"bus"];
+        [vehicleColors setObject:@"#7D60BD" forKey:@"minibus"];
         [vehicleColors setObject:@"#F8634F" forKey:@"railway"];
         [vehicleColors setObject:@"#C86DD7" forKey:@"tramway"];
         [vehicleColors setObject:@"#3023AE" forKey:@"suburban"];
@@ -224,7 +227,7 @@ RCT_EXPORT_MODULE()
 
                 UIColor *color;
                 if (transport.line.style != nil) {
-                    color = ANDROID_COLOR([transport.line.style.color integerValue] | 0xFF000000);
+                    color = UIColorFromRGB([transport.line.style.color integerValue]);
                 } else {
                     if ([vehicleColors valueForKey:type] != nil) {
                         color = [YamapView colorFromHexString:vehicleColors[type]];
@@ -317,7 +320,7 @@ RCT_EXPORT_MODULE()
 
     YMKCameraPosition *cameraPosition = [map.mapWindow.map cameraPositionWithBoundingBox:boundingBox];
     cameraPosition = [YMKCameraPosition cameraPositionWithTarget:cameraPosition.target zoom:zoom azimuth:cameraPosition.azimuth tilt:cameraPosition.tilt];
-    [self.map.mapWindow.map moveWithCameraPosition:cameraPosition animationType:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:0.5] cameraCallback:^(BOOL completed){}];
+    [self.map.mapWindow.map moveWithCameraPosition:cameraPosition animationType:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:1.0] cameraCallback:^(BOOL completed){}];
 }
 
 RCT_EXPORT_VIEW_PROPERTY(onMarkerPress, RCTBubblingEventBlock)

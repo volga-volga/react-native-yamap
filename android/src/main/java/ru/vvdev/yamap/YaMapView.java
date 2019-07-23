@@ -17,6 +17,7 @@ import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.yandex.mapkit.Animation;
 import com.yandex.mapkit.RequestPoint;
+import com.yandex.mapkit.geometry.BoundingBox;
 import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.geometry.Polyline;
 import com.yandex.mapkit.geometry.SubpolylineHelper;
@@ -43,6 +44,9 @@ import com.yandex.mapkit.transport.masstransit.Weight;
 import com.yandex.mapkit.user_location.UserLocationLayer;
 import com.yandex.runtime.Error;
 import com.yandex.runtime.image.ImageProvider;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -134,20 +138,22 @@ public class YaMapView extends MapView implements Session.RouteListener {
     }
 
     public void setCenter(Point location, float zoom) {
-        getMap().move(new CameraPosition(location, zoom, 0.0F, 0.0F), new Animation(Animation.Type.SMOOTH, 0.8F), null);
+        getMap().move(new CameraPosition(location, zoom, 0.0F, 0.0F),
+                new Animation(Animation.Type.SMOOTH, 1.8F), null);
         if (!lastKnownRoutePoints.isEmpty()) {
             removeAllSections();
-            requestRoute(lastKnownRoutePoints);
         }
     }
 
     public void requestRoute(@NonNull ArrayList<RequestPoint> points) {
         lastKnownRoutePoints = points;
-        if (acceptVehicleTypes.contains("walk")) {
-            walkSession = pedestrianRouter.requestRoutes(points, new TimeOptions(), this);
-            return;
+        if (acceptVehicleTypes.size() > 0) {
+            if (acceptVehicleTypes.contains("walk")) {
+                walkSession = pedestrianRouter.requestRoutes(points, new TimeOptions(), this);
+                return;
+            }
+            transportSession = masstransitRouter.requestRoutes(points, masstransitOptions.setAcceptTypes(acceptVehicleTypes), this);
         }
-        transportSession = masstransitRouter.requestRoutes(points, masstransitOptions.setAcceptTypes(acceptVehicleTypes), this);
     }
 
     public void setMarkers(ArrayList<RNMarker> markers) {
@@ -173,6 +179,8 @@ public class YaMapView extends MapView implements Session.RouteListener {
                 }
             });
         }
+
+        fitAllMarkers();
     }
 
     @Override
@@ -209,7 +217,6 @@ public class YaMapView extends MapView implements Session.RouteListener {
             onReceiveNativeEvent(this.routes);
             this.routes = Arguments.createArray();
         }
-
     }
 
     @Override
@@ -309,6 +316,41 @@ public class YaMapView extends MapView implements Session.RouteListener {
 
         routeMetadata.putMap("transports", wTransports);
         currentRouteInfo.pushMap(routeMetadata);
+    }
+
+    private void fitAllMarkers() {
+        if (lastKnownMarkers.size() == 1) {
+            Point center = new Point(lastKnownMarkers.get(0).lat, lastKnownMarkers.get(0).lon);
+            getMap().move(new CameraPosition(center, 15, 0, 0));
+            return;
+        }
+
+        double minLon = lastKnownMarkers.get(0).lon;
+        double maxLon = lastKnownMarkers.get(0).lon;
+        double minLat = lastKnownMarkers.get(0).lat;
+        double maxLat = lastKnownMarkers.get(0).lat;
+        for (int i = 0; i < lastKnownMarkers.size(); i++) {
+            if (lastKnownMarkers.get(i).lon > maxLon) {
+                maxLon = lastKnownMarkers.get(i).lon;
+            }
+            if (lastKnownMarkers.get(i).lon < minLon) {
+                minLon = lastKnownMarkers.get(i).lon;
+            }
+            if (lastKnownMarkers.get(i).lat > maxLat) {
+                maxLat = lastKnownMarkers.get(i).lat;
+            }
+            if (lastKnownMarkers.get(i).lat < minLat) {
+                minLat = lastKnownMarkers.get(i).lat;
+            }
+        }
+
+        Point southWest = new Point(minLat, minLon);
+        Point northEast = new Point(maxLat, maxLon);
+
+        BoundingBox boundingBox = new BoundingBox(southWest, northEast);
+        CameraPosition cameraPosition = getMap().cameraPosition(boundingBox);
+        cameraPosition = new CameraPosition(cameraPosition.getTarget(), cameraPosition.getZoom() - 0.8f, cameraPosition.getAzimuth(), cameraPosition.getTilt());
+        getMap().move(cameraPosition, new Animation(Animation.Type.SMOOTH, 0f), null);
     }
 
     private void removeAllSections() {
