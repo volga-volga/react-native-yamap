@@ -340,7 +340,7 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
         BoundingBox boundingBox = new BoundingBox(southWest, northEast);
         CameraPosition cameraPosition = getMap().cameraPosition(boundingBox);
         cameraPosition = new CameraPosition(cameraPosition.getTarget(), cameraPosition.getZoom() - 0.8f, cameraPosition.getAzimuth(), cameraPosition.getTilt());
-        getMap().move(cameraPosition, new Animation(Animation.Type.SMOOTH, 0f), null);
+        getMap().move(cameraPosition, new Animation(Animation.Type.SMOOTH, 0.7f), null);
     }
 
     private void removeAllSections() {
