@@ -131,7 +131,9 @@ RCT_EXPORT_MODULE()
     pinStyle.scale = [[NSNumber alloc] initWithDouble:0.5];
     [view.pin setIconStyleWithStyle:pinStyle];
     [view.arrow setIconStyleWithStyle:arrowStyle];
+    [view.accuracyCircle setFillColor:UIColor.clearColor];
 }
+
 - (void)onObjectRemovedWithView:(nonnull YMKUserLocationView *)view {
 
 }
@@ -283,28 +285,17 @@ RCT_EXPORT_MODULE()
         return;
     }
 
-    double minLon = lastKnownMarkers[0].lon;
-    double maxLon = lastKnownMarkers[0].lon;
-    double minLat = lastKnownMarkers[0].lat;
-    double maxLat = lastKnownMarkers[0].lat;
+    double minLon = lastKnownMarkers[0].lon, maxLon = lastKnownMarkers[0].lon;
+    double minLat  = lastKnownMarkers[0].lat, maxLat = lastKnownMarkers[0].lat;
     for (int i = 0; i < [lastKnownMarkers count]; i++) {
-        if (lastKnownMarkers[i].lon > maxLon) {
-            maxLon = lastKnownMarkers[i].lon;
-        }
-        if (lastKnownMarkers[i].lon < minLon) {
-            minLon = lastKnownMarkers[i].lon;
-        }
-        if (lastKnownMarkers[i].lat > maxLat) {
-            maxLat = lastKnownMarkers[i].lat;
-        }
-        if (lastKnownMarkers[i].lat < minLat) {
-            minLat = lastKnownMarkers[i].lat;
-        }
+        if (lastKnownMarkers[i].lon > maxLon) maxLon = lastKnownMarkers[i].lon;
+        if (lastKnownMarkers[i].lon < minLon) minLon = lastKnownMarkers[i].lon;
+        if (lastKnownMarkers[i].lat > maxLat) maxLat = lastKnownMarkers[i].lat;
+        if (lastKnownMarkers[i].lat < minLat) minLat = lastKnownMarkers[i].lat;
     }
 
     YMKPoint *southWest = [YMKPoint pointWithLatitude:minLat longitude:minLon];
     YMKPoint *northEast = [YMKPoint pointWithLatitude:maxLat longitude:maxLon];
-
     YMKPoint *rectCenter = [YMKPoint pointWithLatitude:(minLat + maxLat) / 2 longitude:(minLon + maxLon) / 2];
 
     CLLocation *centerP = [[CLLocation alloc] initWithLatitude:northEast.latitude longitude:northEast.longitude];
