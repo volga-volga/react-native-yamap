@@ -385,11 +385,7 @@ RCT_CUSTOM_VIEW_PROPERTY(vehicles, YMKPoint, YMKMapView) {
             if ([acceptVehicleTypes containsObject:@"walk"]) {
                 walkSession = [pedestrianRouter requestRoutesWithPoints:lastKnownRoutePoints timeOptions:[[YMKTimeOptions alloc] init] routeHandler:routeHandler];
             } else {
-                if (masstransitSession != nil) {
-                    [masstransitSession retryWithRouteHandler:routeHandler];
-                } else {
-                    masstransitSession = [masstransitRouter requestRoutesWithPoints:lastKnownRoutePoints masstransitOptions:masstransitOptions routeHandler:routeHandler];
-                }
+                masstransitSession = [masstransitRouter requestRoutesWithPoints:lastKnownRoutePoints masstransitOptions:masstransitOptions routeHandler:routeHandler];
             }
         }
     }
