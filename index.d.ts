@@ -23,8 +23,8 @@ export interface Route {
 interface Props extends ViewProps {
   onMarkerPress?: (id: string) => void,
   onRouteFound?: (event: Event) => void,
-  markers: Marker[],
-  center: { lon: number, lat: number, zoom: number },
+  markers?: Marker[],
+  center?: { lon: number, lat: number, zoom: number },
   route?: Route
   vehicles?: Array<string>
 
