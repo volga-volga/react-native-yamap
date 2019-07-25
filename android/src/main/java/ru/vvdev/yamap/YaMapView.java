@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
@@ -55,7 +56,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class YaMapView extends MapView implements Session.RouteListener, MapObjectTapListener, UserLocationObjectListener {
+public class YaMapView extends MapView implements Session.RouteListener, MapObjectTapListener {
 
     // default colors for known vehicles
     // "underground" actually get color considering with his own branch"s color
@@ -89,16 +90,11 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
         super(context);
         this.selectedMarkerIcon = selectedMarkerIcon;
         this.markerIcon = markerIcon;
-        UserLocationLayer userLocationLayer = this.getMap().getUserLocationLayer();
-        userLocationLayer.setEnabled(true);
-        userLocationLayer.setHeadingEnabled(true);
     }
 
     public void setRouteColors(ReadableMap colors) {
 
-        if (colors == null) {
-            return;
-        }
+        if (colors == null) return;
 
         ReadableMapKeySetIterator iterator = colors.keySetIterator();
         while (iterator.hasNextKey()) {
@@ -389,20 +385,5 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
             ((ReactContext) context).getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onMarkerPress", e);
         }
         return false;
-    }
-
-    @Override
-    public void onObjectAdded(@NonNull UserLocationView userLocationView) {
-        userLocationView.getAccuracyCircle().setStrokeColor(Color.TRANSPARENT);
-    }
-
-    @Override
-    public void onObjectRemoved(@NonNull UserLocationView userLocationView) {
-
-    }
-
-    @Override
-    public void onObjectUpdated(@NonNull UserLocationView userLocationView, @NonNull ObjectEvent objectEvent) {
-
     }
 }

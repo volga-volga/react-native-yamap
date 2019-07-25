@@ -2,6 +2,7 @@ package ru.vvdev.yamap;
 
 import android.graphics.Color;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.View;
 
 import com.facebook.react.bridge.ReadableArray;
@@ -154,8 +155,9 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
         if (userLocationArrow != null) {
             arrow.setIcon(userLocationArrow);
         }
-        pin.setIconStyle(new IconStyle().setScale(0.3f));
-        userLocationView.getAccuracyCircle().setFillColor(Color.RED);
+        pin.setIconStyle(new IconStyle().setScale(0.0f));
+        arrow.setIconStyle(new IconStyle().setScale(0.9f));
+        userLocationView.getAccuracyCircle().setFillColor(Color.TRANSPARENT);
 
     }
 
