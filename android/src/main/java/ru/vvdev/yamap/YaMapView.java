@@ -178,36 +178,46 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
     @Override
     public void onMasstransitRoutes(@NonNull List<Route> routes) {
         if (routes.size() > 0) {
-            // You need to check the routes and draw this route only if
-            // there is at least one transport belonging to the acceptVehicleTypes list
-            for (int i = 0; i < routes.size(); i++) {
-                boolean isRouteBelongToAcceptedVehicleList = false;
-                boolean isWalkRoute = true;
-                for (Section section : routes.get(i).getSections()) {
-                    if (section.getMetadata().getData().getTransports() != null) {
-                        isWalkRoute = false;
-                        for (Transport transport : section.getMetadata().getData().getTransports()) {
-                            for (String type : transport.getLine().getVehicleTypes()) {
-                                if (acceptVehicleTypes.contains(type)) {
-                                    isRouteBelongToAcceptedVehicleList = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (isRouteBelongToAcceptedVehicleList || isWalkRoute) {
-                    for (Section section : routes.get(i).getSections()) {
-                        drawSection(section, SubpolylineHelper.subpolyline(routes.get(i).getGeometry(), section.getGeometry()), routes.get(i).getMetadata().getWeight(), i);
-                    }
-
-                    this.routes.pushArray(currentRouteInfo);
-                    currentRouteInfo = Arguments.createArray();
+            if (acceptVehicleTypes.contains("walk")) {
+                processRoute(routes.get(0), 0);
+            } else {
+                for (int i = 0; i < routes.size(); i++) {
+                    processRoute(routes.get(i), i);
                 }
             }
             onReceiveNativeEvent(this.routes);
             this.routes = Arguments.createArray();
+        }
+    }
+
+    private void processRoute(Route route, int index) {
+        // You need to check the routes and draw this route only if
+        // there is at least one transport belonging to the acceptVehicleTypes list
+        boolean isRouteBelongToAcceptedVehicleList = false;
+        boolean isWalkRoute = true;
+
+        for (Section section : route.getSections()) {
+            if (section.getMetadata().getData().getTransports() != null) {
+                isWalkRoute = false;
+                for (Transport transport : section.getMetadata().getData().getTransports()) {
+                    for (String type : transport.getLine().getVehicleTypes()) {
+                        if (acceptVehicleTypes.contains(type)) {
+                            isRouteBelongToAcceptedVehicleList = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (isRouteBelongToAcceptedVehicleList || isWalkRoute) {
+            for (Section section : route.getSections()) {
+                drawSection(section, SubpolylineHelper.subpolyline(route.getGeometry(),
+                        section.getGeometry()), route.getMetadata().getWeight(), index);
+            }
+
+            this.routes.pushArray(currentRouteInfo);
+            currentRouteInfo = Arguments.createArray();
         }
     }
 

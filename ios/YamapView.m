@@ -87,38 +87,49 @@ RCT_EXPORT_MODULE()
 
         routeHandler = ^(NSArray<YMKMasstransitRoute *> *routes, NSError *error) {
             if (error != nil) return;
+
             YamapView *strongSelf = weakSelf;
+
             if ([routes count] > 0) {
-                for (int i = 0; i < [routes count]; i++) {
-                    BOOL isRouteBelongToAcceptedVehicleList = false;
-                    BOOL isWalkRoute = true;
-                    for (YMKMasstransitSection *section in routes[i].sections) {
-                        if (section.metadata.data.transports != nil) {
-                            isWalkRoute = false;
-                            for (YMKMasstransitTransport *transport in section.metadata.data.transports) {
-                                for (NSString *type in transport.line.vehicleTypes) {
-                                    if ([strongSelf->acceptVehicleTypes containsObject:type]) {
-                                        isRouteBelongToAcceptedVehicleList = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if (isRouteBelongToAcceptedVehicleList || isWalkRoute) {
-                        for (YMKMasstransitSection *section in routes[i].sections) {
-                            [strongSelf drawSection:section withGeometry:YMKMakeSubpolyline(routes[i].geometry, section.geometry) withWeight:routes[i].metadata.weight withIndex:i];
-                        }
-                        [strongSelf->routes addObject:strongSelf->currentRouteInfo];
-                        strongSelf->currentRouteInfo = [[NSMutableArray alloc] init];
+                if ([strongSelf->acceptVehicleTypes containsObject:@"walk"]) {
+                    [strongSelf processRouteWithRoute:routes[0] index:0];
+                } else {
+                    for (int i = 0; i < [routes count]; i++) {
+                        [strongSelf processRouteWithRoute:routes[i] index:i];
                     }
                 }
+
                 [strongSelf onReceiveNativeEvent:strongSelf->routes];
                 strongSelf->routes = [[NSMutableArray alloc] init];
             }
         };
     }
     return self;
+}
+
+-(void)processRouteWithRoute:(YMKMasstransitRoute *)route index:(int) index {
+    BOOL isRouteBelongToAcceptedVehicleList = false;
+    BOOL isWalkRoute = true;
+    for (YMKMasstransitSection *section in route.sections) {
+        if (section.metadata.data.transports != nil) {
+            isWalkRoute = false;
+            for (YMKMasstransitTransport *transport in section.metadata.data.transports) {
+                for (NSString *type in transport.line.vehicleTypes) {
+                    if ([self->acceptVehicleTypes containsObject:type]) {
+                        isRouteBelongToAcceptedVehicleList = true;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    if (isRouteBelongToAcceptedVehicleList || isWalkRoute) {
+        for (YMKMasstransitSection *section in route.sections) {
+            [self drawSection:section withGeometry:YMKMakeSubpolyline(route.geometry, section.geometry) withWeight:route.metadata.weight withIndex:index];
+        }
+        [self->routes addObject:self->currentRouteInfo];
+        self->currentRouteInfo = [[NSMutableArray alloc] init];
+    }
 }
 
 - (void)onObjectAddedWithView:(nonnull YMKUserLocationView *)view {
