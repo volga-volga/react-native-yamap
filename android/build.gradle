@@ -32,5 +32,6 @@ repositories {
 
 dependencies {
     compile 'com.yandex.android:mapkit:3.3.1'
+    compile 'com.yandex.android:transport:3.3.1'
     compile 'com.facebook.react:react-native:+'
 }

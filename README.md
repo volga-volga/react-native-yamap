@@ -12,18 +12,19 @@ react-native link react-native-yamap
 ```
     import com.yandex.runtime.image.ImageProvider;
     ...
-    ImageProvider location = ImageProvider.fromResource(getApplication(), R.mipmap.base_location);
-    ImageProvider selected = ImageProvider.fromResource(getApplicationContext(), R.mipmap.selected);
-    ImageProvider marker = ImageProvider.fromResource(getApplicationContext(), R.mipmap.normal);
+    ImageProvider userLocationPinIcon = ImageProvider.fromResource(getApplication(), R.mipmap.location_pin);
+    ImageProvider userLocationArrowIcon = ImageProvider.fromResource(getApplication(), R.mipmap.location_arrow);
+    ImageProvider selectedMarkerIcon = ImageProvider.fromResource(getApplicationContext(), R.mipmap.selected);
+    ImageProvider markerIcon = ImageProvider.fromResource(getApplicationContext(), R.mipmap.normal);
     ...
-    new RNYamapPackage(location, selected, marker),
+    new RNYamapPackage(userLocationPinIcon, userLocationArrowIcon, selectedMarkerIcon, markerIcon)
 ```
 
 ## Использование
 
 ### Инициализировать карты
 
-- андроид (для ios используется заглушка, поэтому можно использовать без Platform)
+- андроид
 ```
 // js
 import YaMap from 'react-native-yamap';
@@ -35,25 +36,58 @@ YaMap.init('API_KEY');
 // AppDelegate.m
 #import <YandexMapKit/YMKMapKitFactory.h>
 ...
-[YMKMapKit setApiKey: @"API_LEY"];
+yamap *map = [[yamap alloc] init];
+[map initWithKey: @"API_KEY"];
+[yamap setPinIcon:@"ICON_ASSET_NAME"];
+[yamap setArrowIcon:@"ICON_ASSET_NAME"];
+[yamap setMarkerIcon:@"ICON_ASSET_NAME"];
+[yamap setSelectedMarkerIcon:@"ICON_ASSET_NAME"];
 ```
 
 ### Использование компонента
-```jsx harmony
+```typescript
+import YaMap from 'react-native-yamap';
+
+// ...
+
+handleOnRouteFound(event) {
+  this.setState({ routes: event.nativeEvent.routes });
+}
+
+handleOnMarkerPress(id: number) {
+  console.log(`Marker with id ${id} pressed!`);
+}
+// ...
+
 <YaMap
-  center={{ lat: selectedShop.lat, lon: selectedShop.lon }}
+  vehicles={["bus", "walk"]} // bus, railway, trolleybus, tramway, suburban, underground, walk
+  onRouteFound={this.handleOnRouteFound}
+  routeColors={{bus: '#fff', walk: '#f00'}}
+  center={{lat: double, lon: double, zoom: double}}
   markers={markers}
-  onMarkerPress={this.handleMarkerPress}
-  style={styles.container}
-/>
+  route={Route}
+  onMarkerPress={this.handleOnMarkerPress}
+  style={styles.container}/>
 ```
 
-Тип маркер:
 ```typescript
 export interface Marker {
-  id: number,
-  lon: number,
-  lat: number,
-  selected: boolean,
+  id: number
+  lon: number
+  lat: number
+  selected: boolean
 }
+```
+```typescript
+interface Route {
+  start: Point
+  end: Point
+}
+```
+```typescript
+interface Point {
+ lat: double 
+ lon: double
+}  
+
 ```
