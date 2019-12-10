@@ -2,9 +2,6 @@ package ru.vvdev.yamap;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
@@ -55,6 +52,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class YaMapView extends MapView implements Session.RouteListener, MapObjectTapListener {
 
@@ -143,7 +143,7 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
         }
     }
 
-    public void requestRoute(@NonNull ArrayList<RequestPoint> points) {
+    public void requestRoute(@Nonnull ArrayList<RequestPoint> points) {
         lastKnownRoutePoints = points;
         if (acceptVehicleTypes.size() > 0) {
             if (acceptVehicleTypes.contains("walk")) {
@@ -176,7 +176,7 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
     }
 
     @Override
-    public void onMasstransitRoutes(@NonNull List<Route> routes) {
+    public void onMasstransitRoutes(@Nonnull List<Route> routes) {
         if (routes.size() > 0) {
             if (acceptVehicleTypes.contains("walk")) {
                 processRoute(routes.get(0), 0);
@@ -222,7 +222,7 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
     }
 
     @Override
-    public void onMasstransitRoutesError(@NonNull Error error) {
+    public void onMasstransitRoutesError(@Nonnull Error error) {
         // todo: implement error handling
         // f.e: emit error event to js
     }
@@ -380,7 +380,7 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
     }
 
     @Override
-    public boolean onMapObjectTap(@NonNull MapObject mapObject, @NonNull Point point) {
+    public boolean onMapObjectTap(@Nonnull MapObject mapObject, @Nonnull Point point) {
         final Context context = getContext();
         if (context instanceof ReactContext) {
             WritableMap e = Arguments.createMap();

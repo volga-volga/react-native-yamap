@@ -1,8 +1,6 @@
 package ru.vvdev.yamap;
 
 import android.graphics.Color;
-import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.View;
 
 import com.facebook.react.bridge.ReadableArray;
@@ -69,10 +67,10 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
         view = new YaMapView(context, selectedMarker, marker);
         MapKitFactory.getInstance().onStart();
         view.onStart();
-        UserLocationLayer userLocationLayer = view.getMap().getUserLocationLayer();
-        userLocationLayer.setEnabled(true);
-        userLocationLayer.setHeadingEnabled(true);
-        userLocationLayer.setObjectListener(this);
+//        UserLocationLayer userLocationLayer = view.getMap().getUserLocationLayer();
+//        userLocationLayer.setEnabled(true);
+//        userLocationLayer.setHeadingEnabled(true);
+//        userLocationLayer.setObjectListener(this);
 
         return view;
     }
@@ -146,7 +144,7 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
     }
 
     @Override
-    public void onObjectAdded(@NonNull UserLocationView userLocationView) {
+    public void onObjectAdded(@Nonnull UserLocationView userLocationView) {
         PlacemarkMapObject pin = userLocationView.getPin();
         PlacemarkMapObject arrow = userLocationView.getArrow();
         if (userLocationPin != null) {
@@ -168,10 +166,10 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
     }
 
     @Override
-    public void onObjectRemoved(@NonNull UserLocationView userLocationView) {
+    public void onObjectRemoved(@Nonnull UserLocationView userLocationView) {
     }
 
     @Override
-    public void onObjectUpdated(@NonNull UserLocationView userLocationView, @NonNull ObjectEvent objectEvent) {
+    public void onObjectUpdated(@Nonnull UserLocationView userLocationView, @Nonnull ObjectEvent objectEvent) {
     }
 }
