@@ -163,7 +163,7 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
             if (selectedMarkerIcon != null && markerIcon != null) {
                 placemark.setIcon(marker.isSelected ? selectedMarkerIcon : markerIcon);
             }
-            placemark.setIconStyle(new IconStyle().setScale(0.3f));
+//             placemark.setIconStyle(new IconStyle().setScale(0.3f));
             try {
                 placemark.setUserData(new JSONObject().put("id", marker.id));
             } catch (JSONException e) {

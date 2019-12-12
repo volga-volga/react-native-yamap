@@ -67,10 +67,10 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
         view = new YaMapView(context, selectedMarker, marker);
         MapKitFactory.getInstance().onStart();
         view.onStart();
-//        UserLocationLayer userLocationLayer = view.getMap().getUserLocationLayer();
-//        userLocationLayer.setEnabled(true);
-//        userLocationLayer.setHeadingEnabled(true);
-//        userLocationLayer.setObjectListener(this);
+        UserLocationLayer userLocationLayer = view.getMap().getUserLocationLayer();
+        userLocationLayer.setEnabled(true);
+        userLocationLayer.setHeadingEnabled(true);
+        userLocationLayer.setObjectListener(this);
 
         return view;
     }
@@ -120,8 +120,8 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
             if (startLat != null && startLon != null && endLat != null && endLon != null) {
                 ArrayList<RequestPoint> routePoints = new ArrayList<>();
 
-                routePoints.add(new RequestPoint(new Point(startLat, startLon), RequestPointType.WAYPOINT, null));
-                routePoints.add(new RequestPoint(new Point(endLat, endLon), RequestPointType.WAYPOINT, null));
+//                routePoints.add(new RequestPoint(new Point(startLat, startLon), RequestPointType.WAYPOINT, null));
+//                routePoints.add(new RequestPoint(new Point(endLat, endLon), RequestPointType.WAYPOINT, null));
 
                 view.requestRoute(routePoints);
             }
