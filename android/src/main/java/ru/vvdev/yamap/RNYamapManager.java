@@ -1,8 +1,6 @@
 package ru.vvdev.yamap;
 
 import android.graphics.Color;
-import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.View;
 
 import com.facebook.react.bridge.ReadableArray;
@@ -122,8 +120,8 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
             if (startLat != null && startLon != null && endLat != null && endLon != null) {
                 ArrayList<RequestPoint> routePoints = new ArrayList<>();
 
-                routePoints.add(new RequestPoint(new Point(startLat, startLon), RequestPointType.WAYPOINT, null));
-                routePoints.add(new RequestPoint(new Point(endLat, endLon), RequestPointType.WAYPOINT, null));
+//                routePoints.add(new RequestPoint(new Point(startLat, startLon), RequestPointType.WAYPOINT, null));
+//                routePoints.add(new RequestPoint(new Point(endLat, endLon), RequestPointType.WAYPOINT, null));
 
                 view.requestRoute(routePoints);
             }
@@ -146,7 +144,7 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
     }
 
     @Override
-    public void onObjectAdded(@NonNull UserLocationView userLocationView) {
+    public void onObjectAdded(@Nonnull UserLocationView userLocationView) {
         PlacemarkMapObject pin = userLocationView.getPin();
         PlacemarkMapObject arrow = userLocationView.getArrow();
         if (userLocationPin != null) {
@@ -168,10 +166,10 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
     }
 
     @Override
-    public void onObjectRemoved(@NonNull UserLocationView userLocationView) {
+    public void onObjectRemoved(@Nonnull UserLocationView userLocationView) {
     }
 
     @Override
-    public void onObjectUpdated(@NonNull UserLocationView userLocationView, @NonNull ObjectEvent objectEvent) {
+    public void onObjectUpdated(@Nonnull UserLocationView userLocationView, @Nonnull ObjectEvent objectEvent) {
     }
 }

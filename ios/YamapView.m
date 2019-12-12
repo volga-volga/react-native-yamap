@@ -162,8 +162,9 @@ RCT_EXPORT_MODULE()
 
 - (UIView *_Nullable)view {
     map = [[RNYMView alloc] init];
-    YMKUserLocationLayer *userLayer = map.mapWindow.map.userLocationLayer;
-    [userLayer setEnabled:YES];
+    YMKMapKit* inst = [YMKMapKit sharedInstance];
+    YMKUserLocationLayer *userLayer = [inst createUserLocationLayerWithMapWindow: map.mapWindow];
+    [userLayer setVisibleWithOn:YES];
     [userLayer setObjectListenerWithObjectListener: self];
     return map;
 }
@@ -181,7 +182,7 @@ RCT_EXPORT_MODULE()
         }
         [placemark setUserData:@{@"id": marker._id}];
         YMKIconStyle *style = [[YMKIconStyle alloc] init];
-        style.scale = [[NSNumber alloc] initWithDouble:0.5];
+//        style.scale = [[NSNumber alloc] initWithDouble:0.5];
         [placemark setIconStyleWithStyle:style];
         [placemark addTapListenerWithTapListener:self];
     }

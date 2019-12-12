@@ -24,20 +24,18 @@ react-native link react-native-yamap
 
 ### Инициализировать карты
 
-- андроид
 ```
 // js
 import YaMap from 'react-native-yamap';
 
 YaMap.init('API_KEY');
 ```
-- ios
+- ios (необязательно)
 ```
 // AppDelegate.m
 #import <YandexMapKit/YMKMapKitFactory.h>
 ...
 yamap *map = [[yamap alloc] init];
-[map initWithKey: @"API_KEY"];
 [yamap setPinIcon:@"ICON_ASSET_NAME"];
 [yamap setArrowIcon:@"ICON_ASSET_NAME"];
 [yamap setMarkerIcon:@"ICON_ASSET_NAME"];

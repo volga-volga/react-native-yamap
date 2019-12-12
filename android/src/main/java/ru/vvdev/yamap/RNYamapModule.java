@@ -1,6 +1,5 @@
 package ru.vvdev.yamap;
 
-import android.support.annotation.Nullable;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -11,6 +10,9 @@ import com.yandex.mapkit.transport.TransportFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import static com.facebook.react.bridge.UiThreadUtil.runOnUiThread;
 

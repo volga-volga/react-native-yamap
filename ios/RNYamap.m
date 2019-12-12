@@ -60,7 +60,8 @@ static NSString * _selectedMarkerIcon;
 }
 
 RCT_EXPORT_METHOD(init: (NSString *) apiKey) {
-    // Пусто потому что: инициализировать надо в AppDelegate.m и дважды инициализировать нельзя, но метод нужен (вызывается в js)
+    yamap *map = [[yamap alloc] init];
+    [map initWithKey: apiKey];
 }
 
 RCT_EXPORT_MODULE()
