@@ -2,13 +2,28 @@
 
 ```
 yarn add https://github.com/volga-volga/react-native-yamap.git
+```
+Для react-native версии меньше 60
+```
 react-native link react-native-yamap
 ``` 
 
-## Добавление ресурсов
+## Добавление ресурсов (необязательно)
 
-- **ios** - добавить в `Images.xcassets` изображения с именем `selected`, `normal`, `base_location`
-- **android** - при создании `RNYamapPackage` необходимо передать экземпляры `ImageProvider` для всех изображений. Ниже пример кода, когда изображения помещены в `android/app/src/main/res/mipmap` с именами `selected`, `normal`, `base_location`:
+- **ios** - добавить в `Images.xcassets` изображения: иконка позиции пользователя, стрелка иконки позиции (для компаса), обычный маркер, выделенный маркер
+```
+// AppDelegate.m
+#import <YandexMapKit/YMKMapKitFactory.h>
+...
+yamap *map = [[yamap alloc] init];
+[yamap setPinIcon:@"ICON_ASSET_NAME"];
+[yamap setArrowIcon:@"ICON_ASSET_NAME"];
+[yamap setMarkerIcon:@"ICON_ASSET_NAME"];
+[yamap setSelectedMarkerIcon:@"ICON_ASSET_NAME"];
+```
+
+- **android** - для использования необходимо отключить автолинкинг (для react-native 60+) 
+  при создании `RNYamapPackage` необходимо передать экземпляры `ImageProvider` для всех изображений (иконка позиции пользователя, стрелка иконки позиции (для компаса), обычный маркер, выделенный маркер). Ниже пример кода, когда изображения помещены в `android/app/src/main/res/mipmap` с именами `selected`, `normal`, `base_location`, `location_arrow`:
 ```
     import com.yandex.runtime.image.ImageProvider;
     ...
@@ -29,17 +44,6 @@ react-native link react-native-yamap
 import YaMap from 'react-native-yamap';
 
 YaMap.init('API_KEY');
-```
-- ios (необязательно)
-```
-// AppDelegate.m
-#import <YandexMapKit/YMKMapKitFactory.h>
-...
-yamap *map = [[yamap alloc] init];
-[yamap setPinIcon:@"ICON_ASSET_NAME"];
-[yamap setArrowIcon:@"ICON_ASSET_NAME"];
-[yamap setMarkerIcon:@"ICON_ASSET_NAME"];
-[yamap setSelectedMarkerIcon:@"ICON_ASSET_NAME"];
 ```
 
 ### Использование компонента

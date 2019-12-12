@@ -25,7 +25,7 @@ export default class YaMap extends React.Component {
         id: String(marker.id),
         lon: marker.lon,
         lat: marker.lat,
-        selected: marker.selected,
+        selected: Boolean(marker.selected),
       }));
     }
     return undefined;
