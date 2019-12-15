@@ -360,7 +360,7 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
         currentRouteInfo.pushMap(routeMetadata);
     }
 
-    private void fitAllMarkers() {
+    public void fitAllMarkers() {
         if (lastKnownMarkers.size() == 0) {
             return;
         }

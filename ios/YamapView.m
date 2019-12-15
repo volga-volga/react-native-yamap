@@ -348,6 +348,17 @@ RCT_CUSTOM_VIEW_PROPERTY (markers, NSArray<YMKPoint>, YMKMapView) {
     [self setMarkers: [RCTConvert Markers:json]];
 }
 
+
+RCT_CUSTOM_VIEW_PROPERTY (fitAllMarkers, NSString, YMKMapView) {
+    [self fitAllMarkers];
+}
+
+RCT_CUSTOM_VIEW_PROPERTY (center, NSDictionary*, YMKMapView) {
+    YMKPoint *center = [RCTConvert YMKPoint:json];
+    float zoom = [RCTConvert Zoom:json];
+    [self setCenter: center withZoom:zoom];
+}
+
 RCT_CUSTOM_VIEW_PROPERTY(route, NSDictionary, YMKMapView) {
     if (json) {
         NSDictionary *routeDict = [RCTConvert RouteDict:json];
@@ -357,16 +368,8 @@ RCT_CUSTOM_VIEW_PROPERTY(route, NSDictionary, YMKMapView) {
     }
 }
 
-RCT_CUSTOM_VIEW_PROPERTY(center, YMKPoint, YMKMapView) {
-    if (json) {
-        YMKPoint *center = [RCTConvert YMKPoint:json];
-        float zoom = [RCTConvert Zoom:json];
-        [self.map.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:zoom azimuth:0 tilt:0]];
-
-        if ([lastKnownRoutePoints count] > 0) {
-            [self removeAllSections];
-        }
-    }
+-(void)setCenter: (YMKPoint*) center withZoom:(float) zoom {
+    [self.map.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:zoom azimuth:0 tilt:0]];
 }
 
 -(void) requestRoute:(NSMutableArray<YMKRequestPoint *> *) points {

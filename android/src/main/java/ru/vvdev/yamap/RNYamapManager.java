@@ -80,6 +80,11 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
         view.setCenter(new Point(center.getDouble("lat"), center.getDouble("lon")), (float) center.getDouble("zoom"));
     }
 
+    @ReactProp(name = "fitAllMarkers")
+    public void fitAllMarkers(View _view, String ignore) {
+        view.fitAllMarkers();
+    }
+
     @ReactProp(name = "routeColors")
     public void setRouteColors(View _view, ReadableMap colors) {
         view.setRouteColors(colors);
