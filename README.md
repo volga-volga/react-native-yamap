@@ -8,33 +8,6 @@ yarn add https://github.com/volga-volga/react-native-yamap.git
 react-native link react-native-yamap
 ``` 
 
-## Добавление ресурсов (необязательно)
-
-- **ios** - добавить в `Images.xcassets` изображения: иконка позиции пользователя, стрелка иконки позиции (для компаса), обычный маркер, выделенный маркер
-```
-// AppDelegate.m
-#import <YandexMapKit/YMKMapKitFactory.h>
-...
-yamap *map = [[yamap alloc] init];
-[yamap setPinIcon:@"ICON_ASSET_NAME"];
-[yamap setArrowIcon:@"ICON_ASSET_NAME"];
-[yamap setMarkerIcon:@"ICON_ASSET_NAME"];
-[yamap setSelectedMarkerIcon:@"ICON_ASSET_NAME"];
-```
-
-- **android** - для использования необходимо отключить автолинкинг (для react-native 60+) 
-  при создании `RNYamapPackage` необходимо передать экземпляры `ImageProvider` для всех изображений (иконка позиции пользователя, стрелка иконки позиции (для компаса), обычный маркер, выделенный маркер). Ниже пример кода, когда изображения помещены в `android/app/src/main/res/mipmap` с именами `selected`, `normal`, `base_location`, `location_arrow`:
-```
-    import com.yandex.runtime.image.ImageProvider;
-    ...
-    ImageProvider userLocationPinIcon = ImageProvider.fromResource(getApplication(), R.mipmap.location_pin);
-    ImageProvider userLocationArrowIcon = ImageProvider.fromResource(getApplication(), R.mipmap.location_arrow);
-    ImageProvider selectedMarkerIcon = ImageProvider.fromResource(getApplicationContext(), R.mipmap.selected);
-    ImageProvider markerIcon = ImageProvider.fromResource(getApplicationContext(), R.mipmap.normal);
-    ...
-    new RNYamapPackage(userLocationPinIcon, userLocationArrowIcon, selectedMarkerIcon, markerIcon)
-```
-
 ## Использование
 
 ### Инициализировать карты
@@ -74,10 +47,11 @@ handleOnMarkerPress(id: number) {
 
 ```typescript
 export interface Marker {
-  id: number
-  lon: number
-  lat: number
-  selected: boolean
+  lon: number,
+  lat: number,
+  id?: number,
+  zIndex?: number,
+  source?: ImageSource,
 }
 ```
 ```typescript
@@ -93,3 +67,21 @@ interface Point {
 }  
 
 ```
+
+
+- Компонент карт стилизуется, как и View из react-native. Если карта не отображается, после инициализации с валидным ключем АПИ, вероятно необходимо прописать стиль, который опишет размеры компонента (height+width или flex)
+
+- Для отображения маркеров, используется props markers, с минимальными параметрами lon и lat.
+
+- Для отображения маркера поверх других, у объекта marker используется параметр zIndex.
+
+- Для обработки нажатия на маркер, используется onMarkerPress. В метод приходит id выбранного маркера. Если для маркеров не передается id, то вместо него будет использоваться индекс в массиве маркеров. Не рекомендуется передавать id только для части маркеров - необходимо либо передавать во все маркеры, либо не передавать нигде.
+
+**todo: переделать на ref метод**
+- Для центрирования карты, используется параметр center: lon, lat и zoom. Этот параметр не блокирует положение камеры, а только разово выполняет зум к указанной точке. Если параметр не передан, то карта подстроится чтобы вместить все маркеры (стандартное поведение MapKit)
+
+
+- Для кастомизации изображения маркера, маркеру можно передать парамерт source, как и у Image из react-native.
+
+###**Замечание**
+При использовании изображений из js (через require('./img.png')) в дебаге и релизе на андроиде могут быть разные размеры маркера. В текущей версии рекомендуется проверять рендер в релизной сборке. Будет исправлено в следующих релизах
