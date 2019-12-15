@@ -1,5 +1,6 @@
 import React from 'react';
 import { requireNativeComponent, NativeModules, PermissionsAndroid, InteractionManager } from 'react-native';
+import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource.js';
 
 const { yamap } = NativeModules;
 
@@ -21,11 +22,12 @@ export default class YaMap extends React.Component {
 
   prepareMarkers = () => {
     if (this.props.markers) {
-      return this.props.markers.map(marker => ({
-        id: String(marker.id),
+      return this.props.markers.map((marker, index) => ({
+        id: String(marker.id || index),
+        zIndex: typeof marker.zIndex === 'number' ? marker.zIndex : 1,
         lon: marker.lon,
         lat: marker.lat,
-        selected: Boolean(marker.selected),
+        source: marker.source ? resolveAssetSource(marker.source).uri : '',
       }));
     }
     return undefined;
@@ -38,9 +40,10 @@ export default class YaMap extends React.Component {
   };
 
   render() {
+    const { showSelectedOnTop, ...props} = this.props;
     return (
       <YaMapNative
-        {...this.props}
+        {...props}
         markers={this.prepareMarkers()}
         onMarkerPress={this.onMarkerPress}
       />

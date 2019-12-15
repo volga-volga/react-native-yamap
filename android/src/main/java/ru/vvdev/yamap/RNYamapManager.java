@@ -136,8 +136,9 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
             double lon = markerMap.getDouble("lon");
             double lat = markerMap.getDouble("lat");
             String id = markerMap.getString("id");
-            boolean isSelected = markerMap.getBoolean("selected");
-            RNMarker marker = new RNMarker(lon, lat, id, isSelected);
+            String uri = markerMap.getString("source");
+            Integer zIndex = markerMap.getInt("zIndex");
+            RNMarker marker = new RNMarker(lon, lat, id, zIndex, uri);
             parsed.add(marker);
         }
         view.setMarkers(parsed);

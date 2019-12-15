@@ -172,17 +172,29 @@ RCT_EXPORT_MODULE()
 -(void)setMarkers:(NSMutableArray<RNMarker *> *)markerList {
     YMKMapObjectCollection *objects = self.map.mapWindow.map.mapObjects;
     lastKnownMarkers = markerList;
+    // todo: реализовать поведение как на андроиде - без очистки всех объектов
     [objects clear];
-
     for (RNMarker *marker in markerList) {
         YMKPlacemarkMapObject *placemark = [objects addPlacemarkWithPoint:[YMKPoint pointWithLatitude:marker.lat longitude:marker.lon]];
-        UIImage *icon = [UIImage imageNamed:marker.isSelected ? yamap.selectedMarkerIcon : yamap.markerIcon];
-        if (icon != nil) {
-            [placemark setIconWithImage:icon];
+        if (![marker.uri isEqualToString:@""]) {
+            UIImage *icon;
+            if ([marker.uri rangeOfString:@"http://"].location == NSNotFound && [marker.uri rangeOfString:@"https://"].location == NSNotFound) {
+                if ([marker.uri rangeOfString:@"file://"].location != NSNotFound){
+                    NSString *file = [marker.uri substringFromIndex:8];
+                    icon = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL fileURLWithPath:file]]];
+                } else {
+                    icon = [UIImage imageNamed:marker.uri];
+                }
+            } else {
+                    icon = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:marker.uri]]];
+            }
+            if (icon != nil) {
+                [placemark setIconWithImage:icon];
+            }
         }
         [placemark setUserData:@{@"id": marker._id}];
         YMKIconStyle *style = [[YMKIconStyle alloc] init];
-//        style.scale = [[NSNumber alloc] initWithDouble:0.5];
+        style.zIndex = [NSNumber numberWithInt:marker.zIndex];
         [placemark setIconStyleWithStyle:style];
         [placemark addTapListenerWithTapListener:self];
     }

@@ -1,13 +1,14 @@
 import * as React from 'react';
-import { ViewProps } from 'react-native';
+import { ViewProps, ImageSource } from 'react-native';
 
 declare module 'react-native-yamap';
 
 export interface Marker {
-  id: number,
   lon: number,
   lat: number,
-  selected: boolean,
+  id?: number,
+  zIndex?: number,
+  source?: ImageSource,
 }
 
 export interface Point {
@@ -20,13 +21,16 @@ export interface Route {
   end: Point,
 }
 
+
+export type Vehiles =  'bus' | 'railway' | 'tramway' | 'suburban' | 'trolleybus' | 'underground' | 'walk';
+
 interface Props extends ViewProps {
   onMarkerPress?: (id: string) => void,
   onRouteFound?: (event: Event) => void,
   markers?: Marker[],
   center?: { lon: number, lat: number, zoom: number },
   route?: Route
-  vehicles?: Array<string>
+  vehicles?: Array<Vehiles>
 
   /** supported vehicle types
    *  bus, railway, tramway, suburban, trolleybus, underground, walk

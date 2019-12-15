@@ -1,6 +1,7 @@
 package ru.vvdev.yamap;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 
 import com.facebook.react.bridge.Arguments;
@@ -18,7 +19,6 @@ import com.yandex.mapkit.geometry.BoundingBox;
 import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.geometry.Polyline;
 import com.yandex.mapkit.geometry.SubpolylineHelper;
-import com.yandex.mapkit.layers.ObjectEvent;
 import com.yandex.mapkit.map.CameraPosition;
 import com.yandex.mapkit.map.IconStyle;
 import com.yandex.mapkit.map.MapObject;
@@ -39,9 +39,6 @@ import com.yandex.mapkit.transport.masstransit.Session;
 import com.yandex.mapkit.transport.masstransit.TimeOptions;
 import com.yandex.mapkit.transport.masstransit.Transport;
 import com.yandex.mapkit.transport.masstransit.Weight;
-import com.yandex.mapkit.user_location.UserLocationLayer;
-import com.yandex.mapkit.user_location.UserLocationObjectListener;
-import com.yandex.mapkit.user_location.UserLocationView;
 import com.yandex.runtime.Error;
 import com.yandex.runtime.image.ImageProvider;
 
@@ -70,15 +67,13 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
         put("walk", "#333333");
     }};
 
-    private ImageProvider selectedMarkerIcon;
-    private ImageProvider markerIcon;
-
     private ArrayList<String> acceptVehicleTypes = new ArrayList<>();
     private ArrayList<RequestPoint> lastKnownRoutePoints = new ArrayList<>();
     private ArrayList<RNMarker> lastKnownMarkers = new ArrayList<>();
     private MasstransitOptions masstransitOptions = new MasstransitOptions(new ArrayList<String>(), acceptVehicleTypes, new TimeOptions());
     private Session walkSession;
     private Session transportSession;
+    private ArrayList<PlacemarkMapObject> placemarkObjects = new ArrayList<>();
 
     WritableArray currentRouteInfo = Arguments.createArray();
     WritableArray routes = Arguments.createArray();
@@ -86,10 +81,11 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
     private MasstransitRouter masstransitRouter = TransportFactory.getInstance().createMasstransitRouter();
     private PedestrianRouter pedestrianRouter = TransportFactory.getInstance().createPedestrianRouter();
 
+    private Context context;
+
     public YaMapView(Context context, @Nullable ImageProvider selectedMarkerIcon, @Nullable ImageProvider markerIcon) {
         super(context);
-        this.selectedMarkerIcon = selectedMarkerIcon;
-        this.markerIcon = markerIcon;
+        this.context = context;
     }
 
     public void setRouteColors(ReadableMap colors) {
@@ -154,24 +150,71 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
         }
     }
 
+    private void actualizePlacemark(final PlacemarkMapObject placemark, RNMarker marker) {
+        placemark.setGeometry(new Point(marker.lat, marker.lon));
+        IconStyle style = new IconStyle();
+        style.setZIndex((float) marker.zIndex);
+        placemark.setIconStyle(style);
+        if (!marker.uri.equals("")) {
+            ImageLoader.DownloadImageBitmap(context, marker.uri, new Callback<Bitmap>() {
+                @Override
+                public void invoke(Bitmap bitmap) {
+                    placemark.setIcon(ImageProvider.fromBitmap(bitmap));
+                }
+            });
+        }
+    }
+
     public void setMarkers(ArrayList<RNMarker> markers) {
         lastKnownMarkers = markers;
         MapObjectCollection objects = getMap().getMapObjects();
-        objects.clear();
-        for (final RNMarker marker : markers) {
-            PlacemarkMapObject placemark = objects.addPlacemark(new Point(marker.lat, marker.lon));
-            if (selectedMarkerIcon != null && markerIcon != null) {
-                placemark.setIcon(marker.isSelected ? selectedMarkerIcon : markerIcon);
+        ArrayList<Boolean> statuses = new ArrayList<>();
+        try {
+            for (int i = 0; i < markers.size(); ++i) {
+                statuses.add(i, false);
             }
-//             placemark.setIconStyle(new IconStyle().setScale(0.3f));
-            try {
-                placemark.setUserData(new JSONObject().put("id", marker.id));
-            } catch (JSONException e) {
-                e.printStackTrace();
+            for (int i = 0; i < placemarkObjects.size(); ++i) {
+                PlacemarkMapObject obj = placemarkObjects.get(i);
+                try {
+                    JSONObject json = (JSONObject) obj.getUserData();
+                    if (json != null) {
+                        String id = json.getString("id");
+                        boolean removed = true;
+                        for (int j = 0; j < markers.size(); ++j) {
+                            RNMarker marker = markers.get(j);
+                            if (marker.id.equals(id)) {
+                                removed = false;
+                                statuses.set(j, true);
+                                actualizePlacemark(obj, marker);
+                                break;
+                            }
+                        }
+                        if (removed) {
+                            objects.remove(obj);
+                            placemarkObjects.remove(obj);
+                            --i;
+                        }
+                    }
+                } catch (Exception ignored) {
+                }
             }
-            placemark.addTapListener(this);
+            for (int j = 0; j < markers.size(); ++j) {
+                if (!statuses.get(j)) {
+                    RNMarker marker = markers.get(j);
+                    PlacemarkMapObject placemark = objects.addPlacemark(new Point(marker.lat, marker.lon));
+                    placemarkObjects.add(placemark);
+                    try {
+                        placemark.setUserData(new JSONObject().put("id", marker.id));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    placemark.addTapListener(this);
+                    actualizePlacemark(placemark, marker);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
         fitAllMarkers();
     }
 
@@ -318,6 +361,9 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
     }
 
     private void fitAllMarkers() {
+        if (lastKnownMarkers.size() == 0) {
+            return;
+        }
         if (lastKnownMarkers.size() == 1) {
             Point center = new Point(lastKnownMarkers.get(0).lat, lastKnownMarkers.get(0).lon);
             getMap().move(new CameraPosition(center, 15, 0, 0));
@@ -353,7 +399,10 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
     }
 
     private void removeAllSections() {
+        // todo: удалять только секции
+        // todo: вынести clear в отдельный метод, чтобы чистить одновременно
         getMap().getMapObjects().clear();
+        placemarkObjects.clear();
         setMarkers(lastKnownMarkers);
     }
 

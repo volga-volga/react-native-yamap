@@ -5,7 +5,8 @@
 @property NSString *_id;
 @property double lon;
 @property double lat;
-@property Boolean isSelected;
+@property int zIndex;
+@property NSString* uri;
 - (id) initWithJson: (NSDictionary*) json;
 @end
 
