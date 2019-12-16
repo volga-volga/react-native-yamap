@@ -42,6 +42,10 @@ export default class YaMap extends React.Component {
     }
   }
 
+  resolveImageUri(img) {
+    return img ? resolveAssetSource(img).uri : '';
+  }
+
   prepareMarkers = () => {
     if (this.props.markers) {
       return this.props.markers.map((marker, index) => ({
@@ -49,7 +53,7 @@ export default class YaMap extends React.Component {
         zIndex: typeof marker.zIndex === 'number' ? marker.zIndex : 1,
         lon: marker.lon,
         lat: marker.lat,
-        source: marker.source ? resolveAssetSource(marker.source).uri : '',
+        source: this.resolveImageUri(marker.source),
       }));
     }
     return undefined;
@@ -68,6 +72,7 @@ export default class YaMap extends React.Component {
         {...props}
         ref={this.map}
         markers={this.prepareMarkers()}
+        userLocationIcon={this.resolveImageUri(this.props.userLocationIcon)}
         onMarkerPress={this.onMarkerPress}
       />
     );

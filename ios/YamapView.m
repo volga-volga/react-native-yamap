@@ -49,7 +49,9 @@
     NSMutableArray *currentRouteInfo;
     NSMutableArray<YMKRequestPoint *> *lastKnownRoutePoints;
     NSMutableArray<RNMarker *> *lastKnownMarkers;
+    YMKUserLocationView* userLocationView;
     NSMutableDictionary *vehicleColors;
+    UIImage* userLocationImage;
     NSArray *acceptVehicleTypes;
 }
 
@@ -133,18 +135,20 @@ RCT_EXPORT_MODULE()
 }
 
 - (void)onObjectAddedWithView:(nonnull YMKUserLocationView *)view {
-    if (yamap.pinIcon != nil) [view.pin setIconWithImage:[UIImage imageNamed:yamap.pinIcon]];
-    if (yamap.arrowIcon != nil) [view.arrow setIconWithImage:[UIImage imageNamed:yamap.arrowIcon]];
-
-    YMKIconStyle *arrowStyle = [[YMKIconStyle alloc] init];
-    YMKIconStyle *pinStyle = [[YMKIconStyle alloc] init];
-    arrowStyle.scale = [[NSNumber alloc] initWithDouble:2];
-    pinStyle.scale = [[NSNumber alloc] initWithDouble:0.5];
-    view.accuracyCircle.fillColor = [UIColor colorWithWhite:1
-                                                      alpha:0];
-    [view.pin setIconStyleWithStyle:pinStyle];
-    [view.arrow setIconStyleWithStyle:arrowStyle];
-    [view.accuracyCircle setFillColor:UIColor.clearColor];
+    userLocationView = view;
+    [self updateUserIcon];
+//    if (yamap.pinIcon != nil) [view.pin setIconWithImage: userLocationImage];
+//    if (yamap.arrowIcon != nil) [view.arrow setIconWithImage:[UIImage imageNamed:yamap.arrowIcon]];
+//
+//    YMKIconStyle *arrowStyle = [[YMKIconStyle alloc] init];
+//    YMKIconStyle *pinStyle = [[YMKIconStyle alloc] init];
+//    arrowStyle.scale = [[NSNumber alloc] initWithDouble:2];
+//    pinStyle.scale = [[NSNumber alloc] initWithDouble:0.5];
+//    view.accuracyCircle.fillColor = [UIColor colorWithWhite:1
+//                                                      alpha:0];
+//    [view.pin setIconStyleWithStyle:pinStyle];
+//    [view.arrow setIconStyleWithStyle:arrowStyle];
+//    [view.accuracyCircle setFillColor:UIColor.clearColor];
 }
 
 - (void)onObjectRemovedWithView:(nonnull YMKUserLocationView *)view {
@@ -169,6 +173,21 @@ RCT_EXPORT_MODULE()
     return map;
 }
 
+-(UIImage*) resolveUIImage:(NSString*) uri {
+    UIImage *icon;
+    if ([uri rangeOfString:@"http://"].location == NSNotFound && [uri rangeOfString:@"https://"].location == NSNotFound) {
+        if ([uri rangeOfString:@"file://"].location != NSNotFound){
+            NSString *file = [uri substringFromIndex:8];
+            icon = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL fileURLWithPath:file]]];
+        } else {
+            icon = [UIImage imageNamed:uri];
+        }
+    } else {
+        icon = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:uri]]];
+    }
+    return icon;
+}
+
 -(void)setMarkers:(NSMutableArray<RNMarker *> *)markerList {
     YMKMapObjectCollection *objects = self.map.mapWindow.map.mapObjects;
     lastKnownMarkers = markerList;
@@ -177,17 +196,7 @@ RCT_EXPORT_MODULE()
     for (RNMarker *marker in markerList) {
         YMKPlacemarkMapObject *placemark = [objects addPlacemarkWithPoint:[YMKPoint pointWithLatitude:marker.lat longitude:marker.lon]];
         if (![marker.uri isEqualToString:@""]) {
-            UIImage *icon;
-            if ([marker.uri rangeOfString:@"http://"].location == NSNotFound && [marker.uri rangeOfString:@"https://"].location == NSNotFound) {
-                if ([marker.uri rangeOfString:@"file://"].location != NSNotFound){
-                    NSString *file = [marker.uri substringFromIndex:8];
-                    icon = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL fileURLWithPath:file]]];
-                } else {
-                    icon = [UIImage imageNamed:marker.uri];
-                }
-            } else {
-                    icon = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:marker.uri]]];
-            }
+            UIImage *icon = [self resolveUIImage: marker.uri];
             if (icon != nil) {
                 [placemark setIconWithImage:icon];
             }
@@ -198,7 +207,6 @@ RCT_EXPORT_MODULE()
         [placemark setIconStyleWithStyle:style];
         [placemark addTapListenerWithTapListener:self];
     }
-    [self fitAllMarkers];
 }
 
 -(void)drawSection:(YMKMasstransitSection *) section withGeometry:(YMKPolyline *) geometry withWeight:(YMKMasstransitWeight *) routeWeight withIndex:(int) routeIndex {
@@ -238,7 +246,6 @@ RCT_EXPORT_MODULE()
     if (data.transports != nil) {
         for (YMKMasstransitTransport *transport in data.transports) {
             for (NSString *type in transport.line.vehicleTypes) {
-
                 if ([type isEqual: @"suburban"]) continue;
                 if (transports[type] != nil) {
                     NSMutableArray *list = transports[type];
@@ -252,7 +259,6 @@ RCT_EXPORT_MODULE()
                     [transports setObject:list forKey:type];
                 }
                 [routeMetadata setObject:type forKey:@"type"];
-
                 UIColor *color;
                 if (transport.line.style != nil) {
                     color = UIColorFromRGB([transport.line.style.color integerValue]);
@@ -263,7 +269,6 @@ RCT_EXPORT_MODULE()
                         color = UIColor.blackColor;
                     }
                 }
-
                 [routeMetadata setObject:[YamapView hexStringFromColor:color] forKey:@"sectionColor"];
                 [polylineMapObject setStrokeColor:color];
             }
@@ -271,19 +276,16 @@ RCT_EXPORT_MODULE()
     } else {
         [self setDashPolyline:polylineMapObject];
         [routeMetadata setObject:UIColor.darkGrayColor forKey:@"sectionColor"];
-
         if (section.metadata.weight.walkingDistance.value == 0) {
              [routeMetadata setObject:@"waiting" forKey:@"type"];
         } else {
             [routeMetadata setObject:@"walk" forKey:@"type"];
         }
     }
-
     NSMutableDictionary *wTransports = [[NSMutableDictionary alloc] init];
     for (NSString *key in transports) {
         [wTransports setObject:[transports valueForKey:key] forKey:key];
     }
-
     [routeMetadata setObject:wTransports forKey:@"transports"];
     [self->currentRouteInfo addObject:routeMetadata];
 }
@@ -348,7 +350,6 @@ RCT_CUSTOM_VIEW_PROPERTY (markers, NSArray<YMKPoint>, YMKMapView) {
     [self setMarkers: [RCTConvert Markers:json]];
 }
 
-
 RCT_CUSTOM_VIEW_PROPERTY (fitAllMarkers, NSString, YMKMapView) {
     [self fitAllMarkers];
 }
@@ -365,6 +366,20 @@ RCT_CUSTOM_VIEW_PROPERTY(route, NSDictionary, YMKMapView) {
         YMKRequestPoint * start = [YMKRequestPoint requestPointWithPoint:[routeDict objectForKey:@"start"] type: YMKRequestPointTypeWaypoint pointContext:nil];
         YMKRequestPoint * end = [YMKRequestPoint requestPointWithPoint:[routeDict objectForKey:@"end"] type: YMKRequestPointTypeWaypoint pointContext:nil];
         [self requestRoute:[NSMutableArray arrayWithObjects:start, end, nil]];
+    }
+}
+
+-(void) updateUserIcon {
+    if (userLocationView != nil && userLocationImage) {
+        [userLocationView.pin setIconWithImage: userLocationImage];
+        [userLocationView.arrow setIconWithImage: userLocationImage];
+    }
+}
+
+RCT_CUSTOM_VIEW_PROPERTY(userLocationIcon, NSString, YMKMapView) {
+    if (json) {
+        userLocationImage = [self resolveUIImage: json];
+        [self updateUserIcon];
     }
 }
 

@@ -19,38 +19,6 @@ static NSString * _selectedMarkerIcon;
     return self;
 }
 
-+ (NSString *)pinIcon {
-    return _pinIcon;
-}
-
-+ (void)setPinIcon:(NSString *) icon {
-    _pinIcon = icon;
-}
-
-+ (NSString *)arrowIcon {
-    return _arrowIcon;
-}
-
-+ (void)setArrowIcon:(NSString *) icon {
-    _arrowIcon = icon;
-}
-
-+ (NSString *)markerIcon {
-    return _markerIcon;
-}
-
-+ (void)setMarkerIcon:(NSString *) icon {
-    _markerIcon = icon;
-}
-
-+ (NSString *)selectedMarkerIcon {
-    return _selectedMarkerIcon;
-}
-
-+ (void)setSelectedMarkerIcon:(NSString *) icon {
-    _selectedMarkerIcon = icon;
-}
-
 - (void)initWithKey:(NSString *) apiKey {
     [YMKMapKit setApiKey: apiKey];
 }

@@ -10,18 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class RNYamapPackage implements ReactPackage {
-    private ImageProvider userLocationPinIcon;
-    private ImageProvider userLocationArrowIcon;
-    private ImageProvider selectedMarker;
-    private ImageProvider marker;
-
-    public RNYamapPackage(ImageProvider userLocationPinIcon, ImageProvider userLocationArrowIcon, ImageProvider selectedMarker, ImageProvider marker) {
-        this.userLocationPinIcon = userLocationPinIcon;
-        this.userLocationArrowIcon = userLocationArrowIcon;
-        this.selectedMarker = selectedMarker;
-        this.marker = marker;
-    }
-
     public RNYamapPackage() {
     }
 
@@ -32,7 +20,7 @@ public class RNYamapPackage implements ReactPackage {
 
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
         return Arrays.<ViewManager>asList(
-                new RNYamapManager(userLocationPinIcon, userLocationArrowIcon, selectedMarker, marker)
+                new RNYamapManager()
         );
     }
 }

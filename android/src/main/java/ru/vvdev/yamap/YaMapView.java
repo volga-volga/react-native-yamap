@@ -83,7 +83,7 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
 
     private Context context;
 
-    public YaMapView(Context context, @Nullable ImageProvider selectedMarkerIcon, @Nullable ImageProvider markerIcon) {
+    public YaMapView(Context context) {
         super(context);
         this.context = context;
     }

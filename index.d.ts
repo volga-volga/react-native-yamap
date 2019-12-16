@@ -21,15 +21,14 @@ export interface Route {
   end: Point,
 }
 
-
 export type Vehiles =  'bus' | 'railway' | 'tramway' | 'suburban' | 'trolleybus' | 'underground' | 'walk';
 
 interface Props extends ViewProps {
+  userLocationIcon: ImageSource,
   onMarkerPress?: (id: string) => void,
   onRouteFound?: (event: Event) => void,
   markers?: Marker[],
-  center?: { lon: number, lat: number, zoom: number },
-  route?: Route
+  route?: Route,
   vehicles?: Array<Vehiles>
 
   /** supported vehicle types
@@ -40,6 +39,8 @@ interface Props extends ViewProps {
 
 declare class YaMap extends React.Component<Props> {
   static init(apiKey: string): void;
+  fitAllMarkers(): void;
+  setCenter(center: { lon: number, lat: number, zoom: number }): void;
 }
 
 export default YaMap;
