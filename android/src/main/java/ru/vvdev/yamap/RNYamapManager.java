@@ -1,6 +1,7 @@
 package ru.vvdev.yamap;
 
-import android.graphics.Color;
+import android.graphics.Bitmap;
+import android.util.Log;
 import android.view.View;
 
 import com.facebook.react.bridge.ReadableArray;
@@ -12,10 +13,8 @@ import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.annotations.ReactProp;
 import com.yandex.mapkit.MapKitFactory;
 import com.yandex.mapkit.RequestPoint;
-import com.yandex.mapkit.RequestPointType;
 import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.layers.ObjectEvent;
-import com.yandex.mapkit.map.IconStyle;
 import com.yandex.mapkit.map.PlacemarkMapObject;
 import com.yandex.mapkit.user_location.UserLocationLayer;
 import com.yandex.mapkit.user_location.UserLocationObjectListener;
@@ -26,27 +25,19 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class RNYamapManager extends SimpleViewManager<View> implements UserLocationObjectListener {
     public static final String REACT_CLASS = "YamapView";
 
     private YaMapView view;
 
+    private Bitmap userLocationIcon = null;
+
+    private UserLocationView userLocationView = null;
+
     private ThemedReactContext reactContext;
 
-    private ImageProvider userLocationPin;
-    private ImageProvider userLocationArrow;
-    private ImageProvider selectedMarker;
-    private ImageProvider marker;
-
-    RNYamapManager(@Nullable ImageProvider userLocationPin, @Nullable ImageProvider userLocationArrow, @Nullable ImageProvider selectedMarker,
-                   @Nullable ImageProvider marker) {
-        this.userLocationPin = userLocationPin;
-        this.userLocationArrow = userLocationArrow;
-        this.selectedMarker = selectedMarker;
-        this.marker = marker;
-    }
+    RNYamapManager() { }
 
     @Override
     public String getName() {
@@ -64,20 +55,35 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
     @Override
     public View createViewInstance(@Nonnull ThemedReactContext context) {
         reactContext = context;
-        view = new YaMapView(context, selectedMarker, marker);
+        view = new YaMapView(context);
         MapKitFactory.getInstance().onStart();
         view.onStart();
         UserLocationLayer userLocationLayer = view.getMap().getUserLocationLayer();
+        userLocationLayer.setObjectListener(this);
         userLocationLayer.setEnabled(true);
         userLocationLayer.setHeadingEnabled(true);
-        userLocationLayer.setObjectListener(this);
-
         return view;
+    }
+
+    @ReactProp(name = "userLocationIcon")
+    public void setUserLocationIcon(View _view, String icon) {
+        ImageLoader.DownloadImageBitmap(reactContext, icon, new Callback<Bitmap>() {
+            @Override
+            public void invoke(Bitmap bitmap) {
+                userLocationIcon = bitmap;
+                updateUserLocationIcon();
+            }
+        });
     }
 
     @ReactProp(name = "center")
     public void setCenter(View _view, ReadableMap center) {
         view.setCenter(new Point(center.getDouble("lat"), center.getDouble("lon")), (float) center.getDouble("zoom"));
+    }
+
+    @ReactProp(name = "fitAllMarkers")
+    public void fitAllMarkers(View _view, String ignore) {
+        view.fitAllMarkers();
     }
 
     @ReactProp(name = "routeColors")
@@ -136,27 +142,29 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
             double lon = markerMap.getDouble("lon");
             double lat = markerMap.getDouble("lat");
             String id = markerMap.getString("id");
-            boolean isSelected = markerMap.getBoolean("selected");
-            RNMarker marker = new RNMarker(lon, lat, id, isSelected);
+            String uri = markerMap.getString("source");
+            Integer zIndex = markerMap.getInt("zIndex");
+            RNMarker marker = new RNMarker(lon, lat, id, zIndex, uri);
             parsed.add(marker);
         }
         view.setMarkers(parsed);
     }
 
     @Override
-    public void onObjectAdded(@Nonnull UserLocationView userLocationView) {
-        PlacemarkMapObject pin = userLocationView.getPin();
-        PlacemarkMapObject arrow = userLocationView.getArrow();
-        if (userLocationPin != null) {
-            pin.setIcon(userLocationPin);
-        }
-        if (userLocationArrow != null) {
-            arrow.setIcon(userLocationArrow);
-        }
-        pin.setIconStyle(new IconStyle().setScale(0.0f));
-        arrow.setIconStyle(new IconStyle().setScale(0.9f));
-        userLocationView.getAccuracyCircle().setFillColor(Color.TRANSPARENT);
+    public void onObjectAdded(@Nonnull UserLocationView _userLocationView) {
+        userLocationView = _userLocationView;
+        updateUserLocationIcon();
+    }
 
+    private void updateUserLocationIcon() {
+        if (userLocationView != null && userLocationIcon != null) {
+            PlacemarkMapObject pin = userLocationView.getPin();
+            PlacemarkMapObject arrow = userLocationView.getArrow();
+            if (userLocationIcon != null) {
+                pin.setIcon(ImageProvider.fromBitmap(userLocationIcon));
+                arrow.setIcon(ImageProvider.fromBitmap(userLocationIcon));
+            }
+        }
     }
 
     public Map getExportedCustomBubblingEventTypeConstants() {
@@ -170,6 +178,8 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
     }
 
     @Override
-    public void onObjectUpdated(@Nonnull UserLocationView userLocationView, @Nonnull ObjectEvent objectEvent) {
+    public void onObjectUpdated(@Nonnull UserLocationView _userLocationView, @Nonnull ObjectEvent objectEvent) {
+        userLocationView = _userLocationView;
+        updateUserLocationIcon();
     }
 }
