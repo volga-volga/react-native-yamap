@@ -166,6 +166,8 @@ RCT_EXPORT_MODULE()
 
 - (UIView *_Nullable)view {
     map = [[RNYMView alloc] init];
+    userLocationView = nil;
+    userLocationImage = nil;
     YMKMapKit* inst = [YMKMapKit sharedInstance];
     YMKUserLocationLayer *userLayer = [inst createUserLocationLayerWithMapWindow: map.mapWindow];
     [userLayer setVisibleWithOn:YES];
