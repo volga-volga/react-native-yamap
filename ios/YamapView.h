@@ -1,4 +1,5 @@
 #import <React/RCTViewManager.h>
+#import <React/RCTUIManager.h>
 #import "RNYMView.h"
 #import "RNMarker.h"
 

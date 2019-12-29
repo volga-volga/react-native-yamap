@@ -1,15 +1,14 @@
 package ru.vvdev.yamap;
 
 import android.graphics.Bitmap;
-import android.util.Log;
 import android.view.View;
 
+import com.facebook.infer.annotation.Assertions;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.common.MapBuilder;
-import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
-
+import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
 import com.yandex.mapkit.MapKitFactory;
 import com.yandex.mapkit.RequestPoint;
@@ -23,11 +22,15 @@ import com.yandex.runtime.image.ImageProvider;
 
 import java.util.ArrayList;
 import java.util.Map;
-
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-public class RNYamapManager extends SimpleViewManager<View> implements UserLocationObjectListener {
+public class RNYamapManager extends ViewGroupManager<YaMapView> implements UserLocationObjectListener {
     public static final String REACT_CLASS = "YamapView";
+
+    private static final int SET_CENTER = 1;
+    private static final int FIT_ALL_MARKERS = 2;
+    private static final int TRY_BUILD_ROUTES = 3;
 
     private YaMapView view;
 
@@ -53,7 +56,7 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
 
     @Nonnull
     @Override
-    public View createViewInstance(@Nonnull ThemedReactContext context) {
+    public YaMapView createViewInstance(@Nonnull ThemedReactContext context) {
         reactContext = context;
         view = new YaMapView(context);
         MapKitFactory.getInstance().onStart();
@@ -76,13 +79,11 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
         });
     }
 
-    @ReactProp(name = "center")
-    public void setCenter(View _view, ReadableMap center) {
+    private void setCenter(View _view, ReadableMap center) {
         view.setCenter(new Point(center.getDouble("lat"), center.getDouble("lon")), (float) center.getDouble("zoom"));
     }
 
-    @ReactProp(name = "fitAllMarkers")
-    public void fitAllMarkers(View _view, String ignore) {
+    private void fitAllMarkers(View _view) {
         view.fitAllMarkers();
     }
 
@@ -181,5 +182,38 @@ public class RNYamapManager extends SimpleViewManager<View> implements UserLocat
     public void onObjectUpdated(@Nonnull UserLocationView _userLocationView, @Nonnull ObjectEvent objectEvent) {
         userLocationView = _userLocationView;
         updateUserLocationIcon();
+    }
+
+    @Override
+    public Map<String,Integer> getCommandsMap() {
+        return MapBuilder.of(
+                "setCenter",
+                SET_CENTER,
+                "fitAllMarkers",
+                FIT_ALL_MARKERS,
+                "tryBuildRoutes",
+                TRY_BUILD_ROUTES);
+    }
+
+    @Override
+    public void receiveCommand(
+            YaMapView view,
+            int commandType,
+            @Nullable ReadableArray args) {
+        Assertions.assertNotNull(view);
+        Assertions.assertNotNull(args);
+        switch (commandType) {
+            case SET_CENTER:
+                setCenter(view, args.getMap(0));
+                return;
+            case FIT_ALL_MARKERS:
+                fitAllMarkers(view);
+                return;
+            default:
+                throw new IllegalArgumentException(String.format(
+                        "Unsupported command %d received by %s.",
+                        commandType,
+                        getClass().getSimpleName()));
+        }
     }
 }

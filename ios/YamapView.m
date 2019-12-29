@@ -308,10 +308,10 @@ RCT_EXPORT_MODULE()
     if (lastKnownMarkers != nil) [self setMarkers:lastKnownMarkers];
 }
 
--(void)fitAllMarkers {
+-(void)_fitAllMarkers: (RNYMView*) _map {
     if ([lastKnownMarkers count] == 1) {
         YMKPoint *center = [YMKPoint pointWithLatitude:lastKnownMarkers[0].lat longitude:lastKnownMarkers[0].lon];
-        [self.map.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:15 azimuth:0 tilt:0]];
+        [_map.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:15 azimuth:0 tilt:0]];
         return;
     }
 
@@ -339,9 +339,9 @@ RCT_EXPORT_MODULE()
 //    YMKCircle *circle = [YMKCircle circleWithCenter:rectCenter radius:distance];
 //    [map.mapWindow.map.mapObjects addCircleWithCircle:circle strokeColor:UIColor.redColor strokeWidth:5 fillColor:UIColor.clearColor];
 
-    YMKCameraPosition *cameraPosition = [map.mapWindow.map cameraPositionWithBoundingBox:boundingBox];
+    YMKCameraPosition *cameraPosition = [_map.mapWindow.map cameraPositionWithBoundingBox:boundingBox];
     cameraPosition = [YMKCameraPosition cameraPositionWithTarget:cameraPosition.target zoom:zoom azimuth:cameraPosition.azimuth tilt:cameraPosition.tilt];
-    [self.map.mapWindow.map moveWithCameraPosition:cameraPosition animationType:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:1.0] cameraCallback:^(BOOL completed){}];
+    [_map.mapWindow.map moveWithCameraPosition:cameraPosition animationType:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:1.0] cameraCallback:^(BOOL completed){}];
 }
 
 RCT_EXPORT_VIEW_PROPERTY(onMarkerPress, RCTBubblingEventBlock)
@@ -352,13 +352,9 @@ RCT_CUSTOM_VIEW_PROPERTY (markers, NSArray<YMKPoint>, YMKMapView) {
     [self setMarkers: [RCTConvert Markers:json]];
 }
 
-RCT_CUSTOM_VIEW_PROPERTY (fitAllMarkers, NSString, YMKMapView) {
-    [self fitAllMarkers];
-}
-
-RCT_CUSTOM_VIEW_PROPERTY (center, NSDictionary*, YMKMapView) {
-    YMKPoint *center = [RCTConvert YMKPoint:json];
-    float zoom = [RCTConvert Zoom:json];
+-(void)_setCenter: (YMKMapView*) map center:(NSDictionary*) _center {
+    YMKPoint *center = [RCTConvert YMKPoint:_center];
+    float zoom = [RCTConvert Zoom:_center];
     [self setCenter: center withZoom:zoom];
 }
 
@@ -446,4 +442,25 @@ RCT_CUSTOM_VIEW_PROPERTY(vehicles, YMKPoint, YMKMapView) {
     return [NSString stringWithFormat:@"#%02lX%02lX%02lX", lroundf(r * 255), lroundf(g * 255), lroundf(b * 255)];
 }
 
+RCT_EXPORT_METHOD(fitAllMarkers:(nonnull NSNumber*) reactTag) {
+    [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
+        RNYMView *view = viewRegistry[reactTag];
+        if (!view || ![view isKindOfClass:[RNYMView class]]) {
+            RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
+            return;
+        }
+        [self _fitAllMarkers: view];
+    }];
+}
+
+RCT_EXPORT_METHOD(setCenter:(nonnull NSNumber*) reactTag json:(NSDictionary*) json) {
+    [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
+        RNYMView *view = viewRegistry[reactTag];
+        if (!view || ![view isKindOfClass:[RNYMView class]]) {
+            RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
+            return;
+        }
+        [self _setCenter: view center:json];
+    }];
+}
 @end
