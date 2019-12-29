@@ -41,6 +41,14 @@ export default class YaMap extends React.Component {
     }
   }
 
+  drawRoute(route) {
+    this.map.current.setNativeProps({route: route});
+  }
+
+  clearRoute() {
+    this.drawRoute(null);
+  }
+
   fitAllMarkers() {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),

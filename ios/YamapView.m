@@ -191,7 +191,7 @@ RCT_EXPORT_MODULE()
 }
 
 -(void)setMarkers:(NSMutableArray<RNMarker *> *)markerList {
-    YMKMapObjectCollection *objects = self.map.mapWindow.map.mapObjects;
+    YMKMapObjectCollection *objects = map.mapWindow.map.mapObjects;
     lastKnownMarkers = markerList;
     // todo: реализовать поведение как на андроиде - без очистки всех объектов
     [objects clear];
@@ -217,7 +217,7 @@ RCT_EXPORT_MODULE()
         return;
     }
 
-    YMKMapObjectCollection *objects = self.map.mapWindow.map.mapObjects;
+    YMKMapObjectCollection *objects = map.mapWindow.map.mapObjects;
     YMKMasstransitSectionMetadataSectionData *data = section.metadata.data;
     YMKPolylineMapObject *polylineMapObject = [[objects addCollection] addPolylineWithPolyline:geometry];
 
@@ -365,6 +365,7 @@ RCT_CUSTOM_VIEW_PROPERTY(route, NSDictionary, YMKMapView) {
         YMKRequestPoint * end = [YMKRequestPoint requestPointWithPoint:[routeDict objectForKey:@"end"] type: YMKRequestPointTypeWaypoint pointContext:nil];
         [self requestRoute:[NSMutableArray arrayWithObjects:start, end, nil]];
     } else {
+        lastKnownRoutePoints = nil;
         [self removeAllSections];
     }
 }
@@ -384,7 +385,7 @@ RCT_CUSTOM_VIEW_PROPERTY(userLocationIcon, NSString, YMKMapView) {
 }
 
 -(void)setCenter: (YMKPoint*) center withZoom:(float) zoom {
-    [self.map.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:zoom azimuth:0 tilt:0]];
+    [map.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:zoom azimuth:0 tilt:0]];
 }
 
 -(void) requestRoute:(NSMutableArray<YMKRequestPoint *> *) points {
