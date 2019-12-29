@@ -12,6 +12,7 @@ import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
 import com.yandex.mapkit.MapKitFactory;
 import com.yandex.mapkit.RequestPoint;
+import com.yandex.mapkit.RequestPointType;
 import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.layers.ObjectEvent;
 import com.yandex.mapkit.map.PlacemarkMapObject;
@@ -21,6 +22,7 @@ import com.yandex.mapkit.user_location.UserLocationView;
 import com.yandex.runtime.image.ImageProvider;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -111,7 +113,9 @@ public class RNYamapManager extends ViewGroupManager<YaMapView> implements UserL
     public void requestRoute(View _view, ReadableMap points) {
 
         if (points == null) {
-            throw new IllegalArgumentException("Prop \"route\" cannot be empty, null or undefined");
+            view.removeAllSections();
+            return;
+//            throw new IllegalArgumentException("Prop \"route\" cannot be empty, null or undefined");
         }
 
         ReadableMap start = points.getMap("start");
@@ -127,8 +131,9 @@ public class RNYamapManager extends ViewGroupManager<YaMapView> implements UserL
             if (startLat != null && startLon != null && endLat != null && endLon != null) {
                 ArrayList<RequestPoint> routePoints = new ArrayList<>();
 
-//                routePoints.add(new RequestPoint(new Point(startLat, startLon), RequestPointType.WAYPOINT, null));
-//                routePoints.add(new RequestPoint(new Point(endLat, endLon), RequestPointType.WAYPOINT, null));
+                List<Point> arrival = new ArrayList<>();
+                routePoints.add(new RequestPoint(new Point(startLat, startLon), new ArrayList<Point>(), RequestPointType.WAYPOINT));
+                routePoints.add(new RequestPoint(new Point(endLat, endLon), new ArrayList<Point>(), RequestPointType.WAYPOINT));
 
                 view.requestRoute(routePoints);
             }

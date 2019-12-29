@@ -40,6 +40,7 @@ export default class YaMap extends React.Component {
       return UIManager.YamapView.Commands[cmd];
     }
   }
+
   fitAllMarkers() {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),

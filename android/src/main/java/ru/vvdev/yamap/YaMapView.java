@@ -134,9 +134,9 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
     public void setCenter(Point location, float zoom) {
         getMap().move(new CameraPosition(location, zoom, 0.0F, 0.0F),
                 new Animation(Animation.Type.SMOOTH, 1.8F), null);
-        if (!lastKnownRoutePoints.isEmpty()) {
-            removeAllSections();
-        }
+//        if (!lastKnownRoutePoints.isEmpty()) {
+//            removeAllSections();
+//        }
     }
 
     public void requestRoute(@Nonnull ArrayList<RequestPoint> points) {
@@ -215,7 +215,6 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
         } catch (Exception e) {
             e.printStackTrace();
         }
-        fitAllMarkers();
     }
 
     @Override
@@ -398,7 +397,7 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
         getMap().move(cameraPosition, new Animation(Animation.Type.SMOOTH, 0.7f), null);
     }
 
-    private void removeAllSections() {
+    public void removeAllSections() {
         // todo: удалять только секции
         // todo: вынести clear в отдельный метод, чтобы чистить одновременно
         getMap().getMapObjects().clear();

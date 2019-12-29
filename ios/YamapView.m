@@ -364,6 +364,8 @@ RCT_CUSTOM_VIEW_PROPERTY(route, NSDictionary, YMKMapView) {
         YMKRequestPoint * start = [YMKRequestPoint requestPointWithPoint:[routeDict objectForKey:@"start"] type: YMKRequestPointTypeWaypoint pointContext:nil];
         YMKRequestPoint * end = [YMKRequestPoint requestPointWithPoint:[routeDict objectForKey:@"end"] type: YMKRequestPointTypeWaypoint pointContext:nil];
         [self requestRoute:[NSMutableArray arrayWithObjects:start, end, nil]];
+    } else {
+        [self removeAllSections];
     }
 }
 
