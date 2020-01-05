@@ -27,6 +27,11 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import ru.vvdev.yamap.models.RNMarker;
+import ru.vvdev.yamap.utils.Callback;
+import ru.vvdev.yamap.utils.ImageLoader;
+import ru.vvdev.yamap.view.YaMapView;
+
 public class RNYamapManager extends ViewGroupManager<YaMapView> implements UserLocationObjectListener {
     public static final String REACT_CLASS = "YamapView";
 

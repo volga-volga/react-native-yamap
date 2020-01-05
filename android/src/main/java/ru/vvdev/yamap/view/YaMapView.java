@@ -1,4 +1,4 @@
-package ru.vvdev.yamap;
+package ru.vvdev.yamap.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -51,7 +51,10 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+
+import ru.vvdev.yamap.utils.Callback;
+import ru.vvdev.yamap.models.RNMarker;
+import ru.vvdev.yamap.utils.ImageLoader;
 
 public class YaMapView extends MapView implements Session.RouteListener, MapObjectTapListener {
 

@@ -23,11 +23,11 @@
 #import <YandexMapKitTransport/YMKMasstransitTransport.h>
 #import <YandexMapKitTransport/YMKMasstransitWeight.h>
 #import <YandexMapKitTransport/YMKTimeOptions.h>
-#import "RCTConvert+Yamap.m"
-#import "RNMarker.h"
+#import "Converter/RCTConvert+Yamap.m"
+#import "Models/RNMarker.h"
 #import "YamapView.h"
 #import "RNYamap.h"
-#import "RNYMView.h"
+#import "View/RNYMView.h"
 
 #ifndef MAX
 #import <NSObjCRuntime.h>
