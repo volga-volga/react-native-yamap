@@ -1,4 +1,4 @@
-package ru.vvdev.yamap;
+package ru.vvdev.yamap.models;
 
 public class RNMarker {
     public double lon;

@@ -53,17 +53,41 @@
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
+				D6F326A923C26911000C7D4A /* View */,
+				D6F326AA23C26923000C7D4A /* Models */,
+				D6F326A823C268CB000C7D4A /* Converter */,
 				D6ABBD13223667300060C368 /* YamapView.m */,
-				D6ABBD592236A9600060C368 /* RNYMView.h */,
-				D6ABBD5A2236A9600060C368 /* RNYMView.m */,
-				B3E7B5881CC2AC0600A0062D /* RNYamap.h */,
 				3CA9027D22E1E52D00C144AA /* YamapView.h */,
+				B3E7B5881CC2AC0600A0062D /* RNYamap.h */,
 				B3E7B5891CC2AC0600A0062D /* RNYamap.m */,
-				D6D0D4D2222E7E4900838171 /* RCTConvert+Yamap.m */,
-				D6D0D4FD222EA5E900838171 /* RNMarker.h */,
-				D6D0D4FC222EA5E900838171 /* RNMarker.m */,
 				134814211AA4EA7D00B7C361 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		D6F326A823C268CB000C7D4A /* Converter */ = {
+			isa = PBXGroup;
+			children = (
+				D6D0D4D2222E7E4900838171 /* RCTConvert+Yamap.m */,
+			);
+			path = Converter;
+			sourceTree = "<group>";
+		};
+		D6F326A923C26911000C7D4A /* View */ = {
+			isa = PBXGroup;
+			children = (
+				D6ABBD592236A9600060C368 /* RNYMView.h */,
+				D6ABBD5A2236A9600060C368 /* RNYMView.m */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		D6F326AA23C26923000C7D4A /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				D6D0D4FD222EA5E900838171 /* RNMarker.h */,
+				D6D0D4FC222EA5E900838171 /* RNMarker.m */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
