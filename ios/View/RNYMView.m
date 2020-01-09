@@ -45,8 +45,9 @@
 
     NSMutableArray *routes;
     NSMutableArray *currentRouteInfo;
-    NSMutableArray<YMKRequestPoint *> *lastKnownRoutePoints;
-    NSMutableArray<RNMarker *> *lastKnownMarkers;
+    NSMutableArray<YMKRequestPoint *>* lastKnownRoutePoints;
+    NSMutableArray<RNMarker *>* lastKnownMarkers;
+    NSMutableArray<YMKPlacemarkMapObject*>* placemarkObjects;
     YMKUserLocationView* userLocationView;
     NSMutableDictionary *vehicleColors;
     UIImage* userLocationImage;
@@ -62,6 +63,7 @@
     routes = [[NSMutableArray alloc] init];
     currentRouteInfo = [[NSMutableArray alloc] init];
     lastKnownRoutePoints = [[NSMutableArray alloc] init];
+    placemarkObjects = [[NSMutableArray alloc] init];
     vehicleColors = [[NSMutableDictionary alloc] init];
     [vehicleColors setObject:@"#59ACFF" forKey:@"bus"];
     [vehicleColors setObject:@"#7D60BD" forKey:@"minibus"];
@@ -223,6 +225,7 @@
 
 -(void) removeAllSections {
     [self.mapWindow.map.mapObjects clear];
+    [placemarkObjects removeAllObjects];
     if (lastKnownMarkers != nil) [self setMarkers:lastKnownMarkers];
 }
 
@@ -261,25 +264,60 @@
     [self.mapWindow.map moveWithCameraPosition:cameraPosition animationType:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:1.0] cameraCallback:^(BOOL completed){}];
 }
 
+-(void) actualizePlacemark:(YMKPlacemarkMapObject*) placemark withMarker:(RNMarker*) marker {
+    [placemark setGeometry:[YMKPoint pointWithLatitude:marker.lat longitude:marker.lon]];
+    if (![marker.uri isEqualToString:@""]) {
+        UIImage *icon = [self resolveUIImage: marker.uri];
+        if (icon != nil) {
+            [placemark setIconWithImage:icon];
+        }
+    }
+    YMKIconStyle *style = [[YMKIconStyle alloc] init];
+    style.zIndex = [NSNumber numberWithInt:marker.zIndex];
+    [placemark setIconStyleWithStyle:style];
+}
+
 // props
 -(void) setMarkers:(NSMutableArray<RNMarker *> *) markerList {
     YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
     lastKnownMarkers = markerList;
-    // todo: реализовать поведение как на андроиде - без очистки всех объектов
-    [objects clear];
-    for (RNMarker *marker in markerList) {
-        YMKPlacemarkMapObject *placemark = [objects addPlacemarkWithPoint:[YMKPoint pointWithLatitude:marker.lat longitude:marker.lon]];
-        if (![marker.uri isEqualToString:@""]) {
-            UIImage *icon = [self resolveUIImage: marker.uri];
-            if (icon != nil) {
-                [placemark setIconWithImage:icon];
+    NSMutableArray<NSNumber*>* statuses = [[NSMutableArray alloc] init];
+    NSNumber* _false = [[NSNumber alloc] initWithInt:0];
+    NSNumber* _true = [[NSNumber alloc] initWithInt:1];
+    for (int i = 0; i < markerList.count; ++i) {
+        [statuses insertObject:_false atIndex:i];
+    }
+    for (int i = 0; i < placemarkObjects.count; ++i) {
+        YMKPlacemarkMapObject* obj = [placemarkObjects objectAtIndex:i];
+        if (obj != nil) {
+            NSDictionary* json = obj.userData;
+            NSString* _id =  [json valueForKey:@"id"];
+            bool removed = true;
+            for (int j = 0; j < markerList.count; ++j) {
+                RNMarker* marker = [markerList objectAtIndex:j];
+                if ([marker._id isEqual:_id]) {
+                    removed = false;
+                    [statuses replaceObjectAtIndex:j withObject:_true];
+                    [self actualizePlacemark:obj withMarker:marker];
+                }
+            }
+            if (removed) {
+                [objects removeWithMapObject:obj];
+                [placemarkObjects removeObject:obj];
+                --i;
             }
         }
-        [placemark setUserData:@{@"id": marker._id}];
-        YMKIconStyle *style = [[YMKIconStyle alloc] init];
-        style.zIndex = [NSNumber numberWithInt:marker.zIndex];
-        [placemark setIconStyleWithStyle:style];
-        [placemark addTapListenerWithTapListener:self];
+    }
+    for (int i = 0; i < markerList.count; ++i) {
+        NSNumber* status = [statuses objectAtIndex:i];
+        if ([status isEqual:_false]) {
+            RNMarker* marker = [markerList objectAtIndex:i];
+            YMKPlacemarkMapObject *placemark = [objects addPlacemarkWithPoint:[YMKPoint pointWithLatitude:marker.lat longitude:marker.lon]];
+            [placemarkObjects addObject:placemark];
+            [placemark setUserData:@{@"id": marker._id}];
+            [placemark addTapListenerWithTapListener:self];
+            [self actualizePlacemark:placemark withMarker:marker];
+        }
     }
 }
 
