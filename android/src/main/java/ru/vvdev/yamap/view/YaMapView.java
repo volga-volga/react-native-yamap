@@ -1,4 +1,4 @@
-package ru.vvdev.yamap;
+package ru.vvdev.yamap.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -19,6 +19,7 @@ import com.yandex.mapkit.geometry.BoundingBox;
 import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.geometry.Polyline;
 import com.yandex.mapkit.geometry.SubpolylineHelper;
+import com.yandex.mapkit.layers.ObjectEvent;
 import com.yandex.mapkit.map.CameraPosition;
 import com.yandex.mapkit.map.IconStyle;
 import com.yandex.mapkit.map.MapObject;
@@ -39,6 +40,9 @@ import com.yandex.mapkit.transport.masstransit.Session;
 import com.yandex.mapkit.transport.masstransit.TimeOptions;
 import com.yandex.mapkit.transport.masstransit.Transport;
 import com.yandex.mapkit.transport.masstransit.Weight;
+import com.yandex.mapkit.user_location.UserLocationLayer;
+import com.yandex.mapkit.user_location.UserLocationObjectListener;
+import com.yandex.mapkit.user_location.UserLocationView;
 import com.yandex.runtime.Error;
 import com.yandex.runtime.image.ImageProvider;
 
@@ -51,13 +55,17 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
-public class YaMapView extends MapView implements Session.RouteListener, MapObjectTapListener {
+import ru.vvdev.yamap.models.PropsStore;
+import ru.vvdev.yamap.utils.Callback;
+import ru.vvdev.yamap.models.RNMarker;
+import ru.vvdev.yamap.utils.ImageLoader;
+
+public class YaMapView extends MapView implements Session.RouteListener, MapObjectTapListener, UserLocationObjectListener {
 
     // default colors for known vehicles
     // "underground" actually get color considering with his own branch"s color
-    private Map<String, String> vehicleColors = new HashMap<String, String>() {{
+    private final static Map<String, String> DEFAULT_VEHICLE_COLORS = new HashMap<String, String>() {{
         put("bus", "#59ACFF");
         put("railway", "#F8634F");
         put("tramway", "#C86DD7");
@@ -66,6 +74,10 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
         put("trolleybus", "#55CfDC");
         put("walk", "#333333");
     }};
+    private Map<String, String> vehicleColors = DEFAULT_VEHICLE_COLORS;
+
+    private final PropsStore props = new PropsStore();
+    private Bitmap userLocationBitmap = null;
 
     private ArrayList<String> acceptVehicleTypes = new ArrayList<>();
     private ArrayList<RequestPoint> lastKnownRoutePoints = new ArrayList<>();
@@ -81,94 +93,83 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
     private MasstransitRouter masstransitRouter = TransportFactory.getInstance().createMasstransitRouter();
     private PedestrianRouter pedestrianRouter = TransportFactory.getInstance().createPedestrianRouter();
 
-    private Context context;
+    // location
+    private UserLocationView userLocationView = null;
 
     public YaMapView(Context context) {
         super(context);
-        this.context = context;
+        initUserLocationLayer();
     }
 
-    public void setRouteColors(ReadableMap colors) {
-
-        if (colors == null) return;
-
-        ReadableMapKeySetIterator iterator = colors.keySetIterator();
-        while (iterator.hasNextKey()) {
-            String key = iterator.nextKey();
-
-            ReadableType type = colors.getType(key);
-            if (type != ReadableType.String) {
-                throw new IllegalArgumentException("Color prop for \"" + key + "\" should have a String type");
-            }
-
-            vehicleColors.put(key, colors.getString(key));
-        }
+    private void initUserLocationLayer() {
+        UserLocationLayer userLocationLayer = getMap().getUserLocationLayer();
+        userLocationLayer.setObjectListener(this);
+        userLocationLayer.setEnabled(true);
+        userLocationLayer.setHeadingEnabled(true);
     }
 
-    public void setAcceptVehicleTypes(ArrayList<String> acceptVehicleTypes) {
-        this.acceptVehicleTypes = acceptVehicleTypes;
-        setMarkers(lastKnownMarkers);
+    // ref methods
+    public void setCenter(Point location, float zoom) {
+        // todo[0]: добавить параметры анимации
+        getMap().move(new CameraPosition(location, zoom, 0.0F, 0.0F), new Animation(Animation.Type.SMOOTH, 1.8F), null);
+    }
 
-        if (acceptVehicleTypes.isEmpty()) {
-            onReceiveNativeEvent(Arguments.createArray());
+    public void fitAllMarkers() {
+        // todo[0]: добавить параметры анимации и дефолтного зума (для одного маркера)
+        if (lastKnownMarkers.size() == 0) {
             return;
         }
-
-        if (!lastKnownRoutePoints.isEmpty()) {
-            if (acceptVehicleTypes.contains("walk")) {
-                if (walkSession != null) {
-                    walkSession.retry(this);
-                } else {
-                    walkSession = pedestrianRouter.requestRoutes(lastKnownRoutePoints, new TimeOptions(), this);
-                }
-            } else {
-                if (transportSession != null) {
-                    transportSession.retry(this);
-                } else {
-                    transportSession = masstransitRouter.requestRoutes(lastKnownRoutePoints, masstransitOptions.setAcceptTypes(acceptVehicleTypes), this);
-                }
+        if (lastKnownMarkers.size() == 1) {
+            Point center = new Point(lastKnownMarkers.get(0).lat, lastKnownMarkers.get(0).lon);
+            getMap().move(new CameraPosition(center, 15, 0, 0));
+            return;
+        }
+        double minLon = lastKnownMarkers.get(0).lon;
+        double maxLon = lastKnownMarkers.get(0).lon;
+        double minLat = lastKnownMarkers.get(0).lat;
+        double maxLat = lastKnownMarkers.get(0).lat;
+        for (int i = 0; i < lastKnownMarkers.size(); i++) {
+            if (lastKnownMarkers.get(i).lon > maxLon) {
+                maxLon = lastKnownMarkers.get(i).lon;
+            }
+            if (lastKnownMarkers.get(i).lon < minLon) {
+                minLon = lastKnownMarkers.get(i).lon;
+            }
+            if (lastKnownMarkers.get(i).lat > maxLat) {
+                maxLat = lastKnownMarkers.get(i).lat;
+            }
+            if (lastKnownMarkers.get(i).lat < minLat) {
+                minLat = lastKnownMarkers.get(i).lat;
             }
         }
+        Point southWest = new Point(minLat, minLon);
+        Point northEast = new Point(maxLat, maxLon);
+
+        BoundingBox boundingBox = new BoundingBox(southWest, northEast);
+        CameraPosition cameraPosition = getMap().cameraPosition(boundingBox);
+        cameraPosition = new CameraPosition(cameraPosition.getTarget(), cameraPosition.getZoom() - 0.8f, cameraPosition.getAzimuth(), cameraPosition.getTilt());
+        getMap().move(cameraPosition, new Animation(Animation.Type.SMOOTH, 0.7f), null);
     }
 
-    public void setCenter(Point location, float zoom) {
-        getMap().move(new CameraPosition(location, zoom, 0.0F, 0.0F),
-                new Animation(Animation.Type.SMOOTH, 1.8F), null);
-        if (!lastKnownRoutePoints.isEmpty()) {
-            removeAllSections();
-        }
-    }
-
-    public void requestRoute(@Nonnull ArrayList<RequestPoint> points) {
-        lastKnownRoutePoints = points;
-        if (acceptVehicleTypes.size() > 0) {
-            if (acceptVehicleTypes.contains("walk")) {
-                walkSession = pedestrianRouter.requestRoutes(points, new TimeOptions(), this);
-                return;
-            }
-            transportSession = masstransitRouter.requestRoutes(points, masstransitOptions.setAcceptTypes(acceptVehicleTypes), this);
-        }
-    }
-
-    private void actualizePlacemark(final PlacemarkMapObject placemark, RNMarker marker) {
-        placemark.setGeometry(new Point(marker.lat, marker.lon));
-        IconStyle style = new IconStyle();
-        style.setZIndex((float) marker.zIndex);
-        placemark.setIconStyle(style);
-        if (!marker.uri.equals("")) {
-            ImageLoader.DownloadImageBitmap(context, marker.uri, new Callback<Bitmap>() {
-                @Override
-                public void invoke(Bitmap bitmap) {
-                    placemark.setIcon(ImageProvider.fromBitmap(bitmap));
+    // props
+    public void setUserLocationIcon(final String iconSource) {
+        // todo[0]: можно устанавливать разные иконки на покой и движение. Дополнительно можно устанавливать стиль иконки, например scale
+        props.userLocationIcon = iconSource;
+        ImageLoader.DownloadImageBitmap(getContext(), iconSource, new Callback<Bitmap>() {
+            @Override
+            public void invoke(Bitmap bitmap) {
+                if (iconSource.equals(props.userLocationIcon)) {
+                    userLocationBitmap = bitmap;
+                    updateUserLocationIcon();
                 }
-            });
-        }
+            }
+        });
     }
 
     public void setMarkers(ArrayList<RNMarker> markers) {
         lastKnownMarkers = markers;
         MapObjectCollection objects = getMap().getMapObjects();
-        ArrayList<Boolean> statuses = new ArrayList<>();
+        ArrayList<Boolean> statuses = new ArrayList<>(); // true - уже существовал, false - новый
         try {
             for (int i = 0; i < markers.size(); ++i) {
                 statuses.add(i, false);
@@ -215,7 +216,70 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
         } catch (Exception e) {
             e.printStackTrace();
         }
-        fitAllMarkers();
+    }
+
+    public void setRouteColors(ReadableMap colors) {
+        // todo[1]: RERENDER!!!
+        // todo[1]: ставить дефолтный если не передан конкретный транспорт. Логично делать в js
+        if (colors == null) {
+            vehicleColors = DEFAULT_VEHICLE_COLORS;
+            return;
+        }
+        ReadableMapKeySetIterator iterator = colors.keySetIterator();
+        while (iterator.hasNextKey()) {
+            String key = iterator.nextKey();
+            ReadableType type = colors.getType(key);
+            if (type != ReadableType.String) {
+                throw new IllegalArgumentException("Color prop for \"" + key + "\" should have a String type");
+            }
+            vehicleColors.put(key, colors.getString(key));
+        }
+    }
+
+    public void setAcceptVehicleTypes(ArrayList<String> _acceptVehicleTypes) {
+        acceptVehicleTypes = _acceptVehicleTypes;
+        removeAllSections();
+        if (acceptVehicleTypes.isEmpty()) {
+            onRoutesFound(Arguments.createArray());
+            return;
+        }
+        if (!lastKnownRoutePoints.isEmpty()) {
+            requestRoute(lastKnownRoutePoints);
+        }
+    }
+
+    public void removeRoute() {
+        lastKnownRoutePoints = null;
+        removeAllSections();
+    }
+
+    public void requestRoute(@Nonnull ArrayList<RequestPoint> points) {
+        // todo[1] - все равно не надежно - мог произойти запрос маршрута, затем запрос нового, пока старый еще не найден. Тогда будут найдены и отрисованы оба маршрута
+        // todo[2] - нужно делать через ref. Запрос маршрута -> проброс найденых вариантов в js -> запрос из js нарисовать маршруты по id. Удалять аналогично
+        lastKnownRoutePoints = points;
+        removeAllSections();
+        if (acceptVehicleTypes.size() > 0) {
+            if (acceptVehicleTypes.contains("walk")) {
+                walkSession = pedestrianRouter.requestRoutes(points, new TimeOptions(), this);
+                return;
+            }
+            transportSession = masstransitRouter.requestRoutes(points, masstransitOptions.setAcceptTypes(acceptVehicleTypes), this);
+        }
+    }
+
+    private void actualizePlacemark(final PlacemarkMapObject placemark, RNMarker marker) {
+        placemark.setGeometry(new Point(marker.lat, marker.lon));
+        IconStyle style = new IconStyle();
+        style.setZIndex((float) marker.zIndex);
+        placemark.setIconStyle(style);
+        if (!marker.uri.equals("")) {
+            ImageLoader.DownloadImageBitmap(getContext(), marker.uri, new Callback<Bitmap>() {
+                @Override
+                public void invoke(Bitmap bitmap) {
+                    placemark.setIcon(ImageProvider.fromBitmap(bitmap));
+                }
+            });
+        }
     }
 
     @Override
@@ -228,7 +292,7 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
                     processRoute(routes.get(i), i);
                 }
             }
-            onReceiveNativeEvent(this.routes);
+            onRoutesFound(this.routes);
             this.routes = Arguments.createArray();
         }
     }
@@ -271,7 +335,6 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
     }
 
     private void drawSection(final Section section, Polyline geometry, Weight routeWeight, int routeIndex) {
-
         if (acceptVehicleTypes.isEmpty()) {
             removeAllSections();
             return;
@@ -279,38 +342,28 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
 
         SectionMetadata.SectionData data = section.getMetadata().getData();
         PolylineMapObject polylineMapObject = getMap().getMapObjects().addCollection().addPolyline(geometry);
-
         WritableMap routeMetadata = Arguments.createMap();
         WritableMap routeWeightData = Arguments.createMap();
         WritableMap sectionWeightData = Arguments.createMap();
-
         Map<String, ArrayList<String>> transports = new HashMap<>();
-
         routeWeightData.putString("time", routeWeight.getTime().getText());
         routeWeightData.putInt("transferCount", routeWeight.getTransfersCount());
         routeWeightData.putDouble("walkingDistance", routeWeight.getWalkingDistance().getValue());
-
         sectionWeightData.putString("time", section.getMetadata().getWeight().getTime().getText());
         sectionWeightData.putInt("transferCount", section.getMetadata().getWeight().getTransfersCount());
         sectionWeightData.putDouble("walkingDistance", section.getMetadata().getWeight().getWalkingDistance().getValue());
-
         routeMetadata.putMap("sectionInfo", sectionWeightData);
         routeMetadata.putMap("routeInfo", routeWeightData);
         routeMetadata.putInt("routeIndex", routeIndex);
-
         final WritableArray stops = new WritableNativeArray();
-
         for (RouteStop stop : section.getStops()) {
             stops.pushString(stop.getStop().getName());
         }
-
         routeMetadata.putArray("stops", stops);
-
         if (data.getTransports() != null) {
             for (Transport transport : data.getTransports()) {
                 for (String type : transport.getLine().getVehicleTypes()) {
                     if (type.equals("suburban")) continue;
-
                     if (transports.get(type) != null) {
                         ArrayList<String> list = transports.get(type);
                         if (list != null) {
@@ -322,9 +375,7 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
                         list.add(transport.getLine().getName());
                         transports.put(type, list);
                     }
-
                     routeMetadata.putString("type", type);
-
                     int color;
                     if (transportHasStyle(transport)) {
                         color = transport.getLine().getStyle().getColor() | 0xFF000000;
@@ -335,9 +386,7 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
                             color = Color.BLACK;
                         }
                     }
-
                     routeMetadata.putString("sectionColor", formatColor(color));
-
                     polylineMapObject.setStrokeColor(color);
                 }
             }
@@ -350,52 +399,12 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
                 routeMetadata.putString("type", "walk");
             }
         }
-
         WritableMap wTransports = Arguments.createMap();
         for (Map.Entry<String, ArrayList<String>> entry : transports.entrySet()) {
             wTransports.putArray(entry.getKey(), Arguments.fromList(entry.getValue()));
         }
-
         routeMetadata.putMap("transports", wTransports);
         currentRouteInfo.pushMap(routeMetadata);
-    }
-
-    public void fitAllMarkers() {
-        if (lastKnownMarkers.size() == 0) {
-            return;
-        }
-        if (lastKnownMarkers.size() == 1) {
-            Point center = new Point(lastKnownMarkers.get(0).lat, lastKnownMarkers.get(0).lon);
-            getMap().move(new CameraPosition(center, 15, 0, 0));
-            return;
-        }
-
-        double minLon = lastKnownMarkers.get(0).lon;
-        double maxLon = lastKnownMarkers.get(0).lon;
-        double minLat = lastKnownMarkers.get(0).lat;
-        double maxLat = lastKnownMarkers.get(0).lat;
-        for (int i = 0; i < lastKnownMarkers.size(); i++) {
-            if (lastKnownMarkers.get(i).lon > maxLon) {
-                maxLon = lastKnownMarkers.get(i).lon;
-            }
-            if (lastKnownMarkers.get(i).lon < minLon) {
-                minLon = lastKnownMarkers.get(i).lon;
-            }
-            if (lastKnownMarkers.get(i).lat > maxLat) {
-                maxLat = lastKnownMarkers.get(i).lat;
-            }
-            if (lastKnownMarkers.get(i).lat < minLat) {
-                minLat = lastKnownMarkers.get(i).lat;
-            }
-        }
-
-        Point southWest = new Point(minLat, minLon);
-        Point northEast = new Point(maxLat, maxLon);
-
-        BoundingBox boundingBox = new BoundingBox(southWest, northEast);
-        CameraPosition cameraPosition = getMap().cameraPosition(boundingBox);
-        cameraPosition = new CameraPosition(cameraPosition.getTarget(), cameraPosition.getZoom() - 0.8f, cameraPosition.getAzimuth(), cameraPosition.getTilt());
-        getMap().move(cameraPosition, new Animation(Animation.Type.SMOOTH, 0.7f), null);
     }
 
     private void removeAllSections() {
@@ -406,7 +415,7 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
         setMarkers(lastKnownMarkers);
     }
 
-    public void onReceiveNativeEvent(WritableArray routes) {
+    public void onRoutesFound(WritableArray routes) {
         WritableMap event = Arguments.createMap();
         event.putArray("routes", routes);
         ReactContext reactContext = (ReactContext) getContext();
@@ -444,5 +453,32 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
             ((ReactContext) context).getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onMarkerPress", e);
         }
         return false;
+    }
+
+    // location listener implementation
+    @Override
+    public void onObjectAdded(@Nonnull UserLocationView _userLocationView) {
+        userLocationView = _userLocationView;
+        updateUserLocationIcon();
+    }
+    @Override
+    public void onObjectRemoved(@Nonnull UserLocationView userLocationView) {
+    }
+
+    @Override
+    public void onObjectUpdated(@Nonnull UserLocationView _userLocationView, @Nonnull ObjectEvent objectEvent) {
+        userLocationView = _userLocationView;
+        updateUserLocationIcon();
+    }
+
+    private void updateUserLocationIcon() {
+        if (userLocationView != null && userLocationBitmap != null) {
+            PlacemarkMapObject pin = userLocationView.getPin();
+            PlacemarkMapObject arrow = userLocationView.getArrow();
+            if (userLocationBitmap != null) {
+                pin.setIcon(ImageProvider.fromBitmap(userLocationBitmap));
+                arrow.setIcon(ImageProvider.fromBitmap(userLocationBitmap));
+            }
+        }
     }
 }

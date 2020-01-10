@@ -1,9 +1,12 @@
 import React from 'react';
 import {
+  Platform,
   requireNativeComponent,
   NativeModules,
   PermissionsAndroid,
   InteractionManager,
+  UIManager,
+  findNodeHandle,
 } from 'react-native';
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource.js';
 
@@ -30,16 +33,36 @@ export default class YaMap extends React.Component {
     });
   }
 
-  fitAllMarkers() {
-    if (this.map.current) {
-      this.map.current.setNativeProps({fitAllMarkers: 'fit'});
+  getCommand(cmd) {
+    if (Platform.OS === 'ios') {
+      return UIManager.getViewManagerConfig('YamapView').Commands[cmd];
+    } else {
+      return UIManager.YamapView.Commands[cmd];
     }
   }
 
+  drawRoute(route) {
+    this.map.current.setNativeProps({route: route});
+  }
+
+  clearRoute() {
+    this.drawRoute(null);
+  }
+
+  fitAllMarkers() {
+    UIManager.dispatchViewManagerCommand(
+      findNodeHandle(this),
+      this.getCommand('fitAllMarkers'),
+      [],
+    );
+  }
+
   setCenter(center) {
-    if (this.map.current) {
-      this.map.current.setNativeProps({center});
-    }
+    UIManager.dispatchViewManagerCommand(
+      findNodeHandle(this),
+      this.getCommand('setCenter'),
+      [center],
+    );
   }
 
   resolveImageUri(img) {
