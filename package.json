@@ -1,6 +1,6 @@
 {
   "name": "react-native-yamap",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Yandex.MapKit for react-native",
   "main": "index.js",
   "scripts": {
@@ -10,6 +10,6 @@
   "author": "Nikita Sirotkin",
   "license": "",
   "peerDependencies": {
-    "react-native": "^0.41.2"
+    "react-native": "^0.60.0"
   }
 }
