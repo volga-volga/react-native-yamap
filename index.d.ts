@@ -44,3 +44,26 @@ declare class YaMap extends React.Component<Props> {
 }
 
 export default YaMap;
+
+export interface Address {
+  country_code: string;
+  formatted: string;
+  postal_code: string;
+  Components: {kind: string, name: string}[];
+}
+
+export type ObjectKind = 'house' | 'street' | 'metro' | 'district' | 'locality';
+export type Lang = 'ru_RU' | 'uk_UA' | 'be_BY' | 'en_RU' | 'en_US' | 'tr_TR';
+export type YandexGeoResponse = any;
+
+export class Geocoder {
+  static init(apiKey: string): void;
+
+  static geocode(geocode: Point, kind?: ObjectKind, results?: number, skip?: number, lang?: Lang): Promise<YandexGeoResponse>;
+
+  static reverseGeocode(geocode: string, kind?: ObjectKind, results?: number, skip?: number, lang?: Lang, rspn?: 0 | 1, ll?: Point, spn?: [number, number], bbox?: [Point, Point]): Promise<YandexGeoResponse>;
+
+  static addressToGeo(address: string): Promise<Point | null>
+
+  static getToAddress(geo: Point): Promise<Address | null>
+}
