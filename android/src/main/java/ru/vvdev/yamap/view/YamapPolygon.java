@@ -21,7 +21,7 @@ import java.util.ArrayList;
 
 public class YamapPolygon extends ViewGroup implements MapObjectTapListener {
     public Polygon polygon;
-    public ArrayList<Point> _points;
+    public ArrayList<Point> _points = new ArrayList<>();
     private PolygonMapObject mapObject;
     private int fillColor = Color.BLACK;
     private int strokeColor = Color.BLACK;

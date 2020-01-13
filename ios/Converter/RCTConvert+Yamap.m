@@ -34,6 +34,18 @@
     return result;
 }
 
++ (NSMutableArray<YMKPoint *> *)Points:(id)json {
+    NSArray *parsedArray = [self NSArray:json];
+    NSMutableArray *result = [[NSMutableArray alloc] init];
+    for (NSDictionary *jsonMarker in parsedArray) {
+        double lat = [[jsonMarker valueForKey:@"lat"] doubleValue];
+        double lon = [[jsonMarker valueForKey:@"lon"] doubleValue];
+        YMKPoint *point = [YMKPoint pointWithLatitude:lat longitude:lon];
+        [result addObject:point];
+    }
+    return result;
+}
+
 +(NSMutableDictionary *)RouteDict:(id)json {
     json = [self NSDictionary:json];
     NSMutableDictionary* route = [[NSMutableDictionary alloc] init];
