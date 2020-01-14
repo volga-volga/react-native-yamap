@@ -29,7 +29,6 @@ RCT_EXPORT_MODULE()
 
 - (UIView *_Nullable)view {
     return [[YamapPolygonView alloc] init];
-    [YamapPolygonView class];
 }
 
 // props

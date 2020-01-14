@@ -30,6 +30,7 @@
 #endif
 
 #import "YamapPolygonView.h"
+#import "YamapPolylineView.h"
 #import "RNYMView.h"
 
 
@@ -46,7 +47,7 @@
     void (^routeHandler)(NSArray<YMKMasstransitRoute *>*, NSError *);
 
     NSMutableArray* _reactSubviews;
-    
+
     NSMutableArray *routes;
     NSMutableArray *currentRouteInfo;
     NSMutableArray<YMKRequestPoint *>* lastKnownRoutePoints;
@@ -424,6 +425,11 @@
         YamapPolygonView* polygon = (YamapPolygonView*) subview;
         YMKPolygonMapObject* obj = [objects addPolygonWithPolygon:[polygon getPolygon]];
         [polygon setMapObject:obj];
+    } else if ([subview isKindOfClass:[YamapPolylineView class]]) {
+        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+        YamapPolylineView* polyline = (YamapPolylineView*) subview;
+        YMKPolylineMapObject* obj = [objects addPolylineWithPolyline:[polyline getPolyline]];
+        [polyline setMapObject:obj];
     } else {
         NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
         for (int i = 0; i < childSubviews.count; i++) {
@@ -439,6 +445,10 @@
         YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
         YamapPolygonView* polygon = (YamapPolygonView*) subview;
         [objects removeWithMapObject:[polygon getMapObject]];
+    } else if ([subview isKindOfClass:[YamapPolylineView class]]) {
+        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+        YamapPolylineView* polyline = (YamapPolylineView*) subview;
+        [objects removeWithMapObject:[polyline getMapObject]];
     } else {
         NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
         for (int i = 0; i < childSubviews.count; i++) {

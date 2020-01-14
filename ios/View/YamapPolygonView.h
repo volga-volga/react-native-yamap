@@ -8,14 +8,6 @@
 
 @property (nonatomic, copy) RCTBubblingEventBlock onPress;
 
-@property (nonatomic) NSMutableArray<YMKPoint*> * _points;
-@property (nonatomic) YMKPolygonMapObject* mapObject;
-@property (nonatomic) YMKPolygon* polygon;
-@property (nonatomic) UIColor* fillColor;
-@property (nonatomic) UIColor* strokeColor;
-@property (nonatomic) NSNumber* strokeWidth;
-@property (nonatomic) NSNumber* zIndex;
-
 // props
 -(void) setFillColor:(UIColor*) color;
 -(void) setStrokeColor:(UIColor*) color;
@@ -26,6 +18,7 @@
 -(NSMutableArray<YMKPoint*>*) getPoints;
 -(YMKPolygon*) getPolygon;
 -(YMKPolygonMapObject*) getMapObject;
+-(void) setMapObject: (YMKPolygonMapObject*) mapObject;
 
 @end
 

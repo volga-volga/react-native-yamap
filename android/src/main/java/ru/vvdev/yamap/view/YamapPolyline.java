@@ -24,7 +24,7 @@ public class YamapPolyline extends ViewGroup implements MapObjectTapListener, Re
     public Polyline polyline;
     public ArrayList<Point> _points = new ArrayList<>();
     private PolylineMapObject mapObject;
-    private int outlineColor = Color.TRANSPARENT;
+    private int outlineColor = Color.BLACK;
     private int strokeColor = Color.BLACK;
     private int zIndex = 1;
     private float strokeWidth = 1.f;
