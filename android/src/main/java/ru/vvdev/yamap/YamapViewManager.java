@@ -19,16 +19,16 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import ru.vvdev.yamap.models.RNMarker;
-import ru.vvdev.yamap.view.YaMapView;
+import ru.vvdev.yamap.view.YamapView;
 
-public class RNYamapManager extends ViewGroupManager<YaMapView> {
+public class YamapViewManager extends ViewGroupManager<YamapView> {
     public static final String REACT_CLASS = "YamapView";
 
     private static final int SET_CENTER = 1;
     private static final int FIT_ALL_MARKERS = 2;
     private static final int TRY_BUILD_ROUTES = 3;
 
-    RNYamapManager() { }
+    YamapViewManager() { }
 
     @Override
     public String getName() {
@@ -61,7 +61,7 @@ public class RNYamapManager extends ViewGroupManager<YaMapView> {
 
     @Override
     public void receiveCommand(
-            YaMapView view,
+            YamapView view,
             int commandType,
             @Nullable ReadableArray args) {
         Assertions.assertNotNull(view);
@@ -81,14 +81,14 @@ public class RNYamapManager extends ViewGroupManager<YaMapView> {
         }
     }
 
-    private YaMapView castToYaMapView(View view) {
-        return (YaMapView) view;
+    private YamapView castToYaMapView(View view) {
+        return (YamapView) view;
     }
 
     @Nonnull
     @Override
-    public YaMapView createViewInstance(@Nonnull ThemedReactContext context) {
-        YaMapView view = new YaMapView(context);
+    public YamapView createViewInstance(@Nonnull ThemedReactContext context) {
+        YamapView view = new YamapView(context);
         MapKitFactory.getInstance().onStart();
         view.onStart();
         return view;
@@ -162,5 +162,14 @@ public class RNYamapManager extends ViewGroupManager<YaMapView> {
             parsed.add(marker);
         }
         castToYaMapView(view).setMarkers(parsed);
+    }
+
+    @Override
+    public void addView(YamapView parent, View child, int index) {
+        parent.addFeature(child, index);
+    }
+    @Override
+    public void removeViewAt(YamapView parent, int index) {
+        parent.removeChild(index);
     }
 }

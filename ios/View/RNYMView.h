@@ -5,7 +5,9 @@
 
 #import "RNMarker.h"
 
-@interface RNYMView: YMKMapView<YMKMapObjectTapListener, YMKUserLocationObjectListener>
+@class RCTBridge;
+
+@interface RNYMView: YMKMapView<YMKMapObjectTapListener, YMKUserLocationObjectListener, RCTComponent>
 
 @property (nonatomic, copy) RCTBubblingEventBlock onMarkerPress;
 @property (nonatomic, copy) RCTBubblingEventBlock onRouteFound;
@@ -14,8 +16,6 @@
 @property (nonatomic) YMKUserLocationView* _Nullable userLocationView;
 @property (nonatomic) NSMutableDictionary<NSString*, YMKPlacemarkMapObject*> * _Nullable markersDict;
 @property (nonatomic) UIImage* _Nullable userLocationImage;
-
--(void) onStart;
 
 // ref
 -(void) setCenter:(YMKPoint*) center withZoom:(float) zoom;

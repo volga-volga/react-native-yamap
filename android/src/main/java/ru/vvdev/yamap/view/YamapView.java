@@ -3,6 +3,7 @@ package ru.vvdev.yamap.view;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.view.View;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
@@ -26,6 +27,7 @@ import com.yandex.mapkit.map.MapObject;
 import com.yandex.mapkit.map.MapObjectCollection;
 import com.yandex.mapkit.map.MapObjectTapListener;
 import com.yandex.mapkit.map.PlacemarkMapObject;
+import com.yandex.mapkit.map.PolygonMapObject;
 import com.yandex.mapkit.map.PolylineMapObject;
 import com.yandex.mapkit.mapview.MapView;
 import com.yandex.mapkit.transport.TransportFactory;
@@ -57,11 +59,12 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 
 import ru.vvdev.yamap.models.PropsStore;
+import ru.vvdev.yamap.models.ReactMapObject;
 import ru.vvdev.yamap.utils.Callback;
 import ru.vvdev.yamap.models.RNMarker;
 import ru.vvdev.yamap.utils.ImageLoader;
 
-public class YaMapView extends MapView implements Session.RouteListener, MapObjectTapListener, UserLocationObjectListener {
+public class YamapView extends MapView implements Session.RouteListener, MapObjectTapListener, UserLocationObjectListener {
 
     // default colors for known vehicles
     // "underground" actually get color considering with his own branch"s color
@@ -93,10 +96,12 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
     private MasstransitRouter masstransitRouter = TransportFactory.getInstance().createMasstransitRouter();
     private PedestrianRouter pedestrianRouter = TransportFactory.getInstance().createPedestrianRouter();
 
+    private List<ReactMapObject> childs = new ArrayList();
+
     // location
     private UserLocationView userLocationView = null;
 
-    public YaMapView(Context context) {
+    public YamapView(Context context) {
         super(context);
         initUserLocationLayer();
     }
@@ -410,6 +415,7 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
     private void removeAllSections() {
         // todo: удалять только секции
         // todo: вынести clear в отдельный метод, чтобы чистить одновременно
+        // todo: не удалять полигоны
         getMap().getMapObjects().clear();
         placemarkObjects.clear();
         setMarkers(lastKnownMarkers);
@@ -453,6 +459,28 @@ public class YaMapView extends MapView implements Session.RouteListener, MapObje
             ((ReactContext) context).getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onMarkerPress", e);
         }
         return false;
+    }
+
+    // children
+    public void addFeature(View child, int index) {
+        if (child instanceof YamapPolygon) {
+            YamapPolygon polygonChild = (YamapPolygon) child;
+            PolygonMapObject obj = getMap().getMapObjects().addPolygon(polygonChild.polygon);
+            polygonChild.setMapObject(obj);
+            childs.add(polygonChild);
+        } else if (child instanceof YamapPolyline) {
+            YamapPolyline polylineChild = (YamapPolyline) child;
+            PolylineMapObject obj = getMap().getMapObjects().addPolyline(polylineChild.polyline);
+            polylineChild.setMapObject(obj);
+            childs.add(polylineChild);
+        }
+    }
+
+    public void removeChild(int index) {
+        if (index < childs.size()) {
+            ReactMapObject child = childs.remove(index);
+            getMap().getMapObjects().remove(child.getMapObject());
+        }
     }
 
     // location listener implementation

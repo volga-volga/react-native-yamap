@@ -1,4 +1,5 @@
 #import <React/RCTComponent.h>
+#import <React/UIView+React.h>
 
 #import <MapKit/MapKit.h>
 #import <YandexMapKit/YMKMapKitFactory.h>
@@ -28,6 +29,8 @@
 #import <NSObjCRuntime.h>
 #endif
 
+#import "YamapPolygonView.h"
+#import "YamapPolylineView.h"
 #import "RNYMView.h"
 
 
@@ -43,6 +46,8 @@
     YMKMasstransitOptions *masstransitOptions;
     void (^routeHandler)(NSArray<YMKMasstransitRoute *>*, NSError *);
 
+    NSMutableArray* _reactSubviews;
+
     NSMutableArray *routes;
     NSMutableArray *currentRouteInfo;
     NSMutableArray<YMKRequestPoint *>* lastKnownRoutePoints;
@@ -56,6 +61,7 @@
 
 - (instancetype)init {
     self = [super init];
+    _reactSubviews = [[NSMutableArray alloc] init];
     masstransitRouter = [[YMKTransport sharedInstance] createMasstransitRouter];
     pedestrianRouter = [[YMKTransport sharedInstance] createPedestrianRouter];
     masstransitOptions = [YMKMasstransitOptions masstransitOptionsWithAvoidTypes:[[NSArray alloc] init] acceptTypes:[[NSArray alloc] init] timeOptions:[[YMKTimeOptions alloc] init]];
@@ -406,6 +412,51 @@
     CGFloat g = components[1];
     CGFloat b = components[2];
     return [NSString stringWithFormat:@"#%02lX%02lX%02lX", lroundf(r * 255), lroundf(g * 255), lroundf(b * 255)];
+}
+
+// children
+-(void)addSubview:(UIView *)view {
+    [super addSubview:view];
+}
+
+- (void)insertReactSubview:(id<RCTComponent>)subview atIndex:(NSInteger)atIndex {
+    if ([subview isKindOfClass:[YamapPolygonView class]]) {
+        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+        YamapPolygonView* polygon = (YamapPolygonView*) subview;
+        YMKPolygonMapObject* obj = [objects addPolygonWithPolygon:[polygon getPolygon]];
+        [polygon setMapObject:obj];
+    } else if ([subview isKindOfClass:[YamapPolylineView class]]) {
+        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+        YamapPolylineView* polyline = (YamapPolylineView*) subview;
+        YMKPolylineMapObject* obj = [objects addPolylineWithPolyline:[polyline getPolyline]];
+        [polyline setMapObject:obj];
+    } else {
+        NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
+        for (int i = 0; i < childSubviews.count; i++) {
+          [self insertReactSubview:(UIView *)childSubviews[i] atIndex:atIndex];
+        }
+    }
+    [_reactSubviews insertObject:(UIView *)subview atIndex:(NSUInteger) atIndex];
+    [super insertReactSubview:subview atIndex:atIndex];
+}
+
+- (void)removeReactSubview:(id<RCTComponent>)subview {
+    if ([subview isKindOfClass:[YamapPolygonView class]]) {
+        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+        YamapPolygonView* polygon = (YamapPolygonView*) subview;
+        [objects removeWithMapObject:[polygon getMapObject]];
+    } else if ([subview isKindOfClass:[YamapPolylineView class]]) {
+        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+        YamapPolylineView* polyline = (YamapPolylineView*) subview;
+        [objects removeWithMapObject:[polyline getMapObject]];
+    } else {
+        NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
+        for (int i = 0; i < childSubviews.count; i++) {
+          [self removeReactSubview:(UIView *)childSubviews[i]];
+        }
+    }
+    [_reactSubviews removeObject:(UIView *)subview];
+    [super removeReactSubview: subview];
 }
 
 @end
