@@ -10,29 +10,32 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
-import com.yandex.mapkit.geometry.LinearRing;
 import com.yandex.mapkit.geometry.Point;
-import com.yandex.mapkit.geometry.Polygon;
+import com.yandex.mapkit.geometry.Polyline;
 import com.yandex.mapkit.map.MapObject;
 import com.yandex.mapkit.map.MapObjectTapListener;
-import com.yandex.mapkit.map.PolygonMapObject;
+import com.yandex.mapkit.map.PolylineMapObject;
 
 import java.util.ArrayList;
 
 import ru.vvdev.yamap.models.ReactMapObject;
 
-public class YamapPolygon extends ViewGroup implements MapObjectTapListener, ReactMapObject {
-    public Polygon polygon;
+public class YamapPolyline extends ViewGroup implements MapObjectTapListener, ReactMapObject {
+    public Polyline polyline;
     public ArrayList<Point> _points = new ArrayList<>();
-    private PolygonMapObject mapObject;
-    private int fillColor = Color.BLACK;
+    private PolylineMapObject mapObject;
+    private int outlineColor = Color.TRANSPARENT;
     private int strokeColor = Color.BLACK;
     private int zIndex = 1;
     private float strokeWidth = 1.f;
+    private int dashLength = 1;
+    private int gapLength = 0;
+    private float dashOffset = 0;
+    private int outlineWidth = 0;
 
-    public YamapPolygon(Context context) {
+    public YamapPolyline(Context context) {
         super(context);
-        polygon = new Polygon(new LinearRing(new ArrayList<Point>()), new ArrayList<LinearRing>());
+        polyline = new Polyline(new ArrayList<Point>());
     }
 
     @Override
@@ -42,44 +45,68 @@ public class YamapPolygon extends ViewGroup implements MapObjectTapListener, Rea
     // props
     public void setPolygonPoints(ArrayList<Point> points) {
         _points = points;
-        polygon = new Polygon(new LinearRing(_points), new ArrayList<LinearRing>());
-        updatePolygon();
+        polyline = new Polyline(_points);
+        updatePolyline();
     }
 
     public void setZIndex(int _zIndex) {
         zIndex = _zIndex;
-        updatePolygon();
+        updatePolyline();
     }
 
     public void setStrokeColor(int _color) {
         strokeColor = _color;
-        updatePolygon();
+        updatePolyline();
     }
 
-    public void setFillColor(int _color) {
-        fillColor = _color;
-        updatePolygon();
+    public void setDashLength(int length) {
+        dashLength = length;
+        updatePolyline();
+    }
+
+    public void setDashOffset(float offset) {
+        dashOffset = offset;
+        updatePolyline();
+    }
+
+    public void setGapLength(int length) {
+        gapLength = length;
+        updatePolyline();
+    }
+
+    public void setOutlineWidth(int width) {
+        outlineWidth = width;
+        updatePolyline();
+    }
+
+    public void setOutlineColor(int color) {
+        outlineColor = color;
+        updatePolyline();
     }
 
     public void setStrokeWidth(float width) {
         strokeWidth = width;
-        updatePolygon();
+        updatePolyline();
     }
 
-    private void updatePolygon() {
+    private void updatePolyline() {
         if (mapObject != null) {
-            mapObject.setGeometry(polygon);
+            mapObject.setGeometry(polyline);
             mapObject.setStrokeWidth(strokeWidth);
             mapObject.setStrokeColor(strokeColor);
-            mapObject.setFillColor(fillColor);
             mapObject.setZIndex(zIndex);
+            mapObject.setDashLength(dashLength);
+            mapObject.setGapLength(gapLength);
+            mapObject.setDashOffset(dashOffset);
+            mapObject.setOutlineColor(outlineColor);
+            mapObject.setOutlineWidth(outlineWidth);
         }
     }
 
     public void setMapObject(MapObject obj) {
-        mapObject = (PolygonMapObject) obj;
+        mapObject = (PolylineMapObject) obj;
         mapObject.addTapListener(this);
-        updatePolygon();
+        updatePolyline();
     }
 
     public MapObject getMapObject() {

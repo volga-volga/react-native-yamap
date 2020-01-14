@@ -17,9 +17,7 @@ import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.yandex.mapkit.Animation;
 import com.yandex.mapkit.RequestPoint;
 import com.yandex.mapkit.geometry.BoundingBox;
-import com.yandex.mapkit.geometry.LinearRing;
 import com.yandex.mapkit.geometry.Point;
-import com.yandex.mapkit.geometry.Polygon;
 import com.yandex.mapkit.geometry.Polyline;
 import com.yandex.mapkit.geometry.SubpolylineHelper;
 import com.yandex.mapkit.layers.ObjectEvent;
@@ -61,6 +59,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 
 import ru.vvdev.yamap.models.PropsStore;
+import ru.vvdev.yamap.models.ReactMapObject;
 import ru.vvdev.yamap.utils.Callback;
 import ru.vvdev.yamap.models.RNMarker;
 import ru.vvdev.yamap.utils.ImageLoader;
@@ -97,8 +96,7 @@ public class YamapView extends MapView implements Session.RouteListener, MapObje
     private MasstransitRouter masstransitRouter = TransportFactory.getInstance().createMasstransitRouter();
     private PedestrianRouter pedestrianRouter = TransportFactory.getInstance().createPedestrianRouter();
 
-    // todo: interface YamapChild
-    private List<YamapPolygon> childs = new ArrayList();
+    private List<ReactMapObject> childs = new ArrayList();
 
     // location
     private UserLocationView userLocationView = null;
@@ -470,12 +468,19 @@ public class YamapView extends MapView implements Session.RouteListener, MapObje
             PolygonMapObject obj = getMap().getMapObjects().addPolygon(polygonChild.polygon);
             polygonChild.setMapObject(obj);
             childs.add(polygonChild);
+        } else if (child instanceof YamapPolyline) {
+            YamapPolyline polylineChild = (YamapPolyline) child;
+            PolylineMapObject obj = getMap().getMapObjects().addPolyline(polylineChild.polyline);
+            polylineChild.setMapObject(obj);
+            childs.add(polylineChild);
         }
     }
 
     public void removeChild(int index) {
-        YamapPolygon child = childs.remove(index);
-        getMap().getMapObjects().remove(child.getMapObject());
+        if (index < childs.size()) {
+            ReactMapObject child = childs.remove(index);
+            getMap().getMapObjects().remove(child.getMapObject());
+        }
     }
 
     // location listener implementation

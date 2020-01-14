@@ -15,12 +15,13 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
-import ru.vvdev.yamap.view.YamapPolygon;
+import ru.vvdev.yamap.view.YamapPolyline;
 
-public class YamapPolygonManager extends ViewGroupManager<YamapPolygon> {
-    public static final String REACT_CLASS = "YamapPolygon";
+public class YamapPolylineManager extends ViewGroupManager<YamapPolyline> {
+    public static final String REACT_CLASS = "YamapPolyline";
 
-    YamapPolygonManager() { }
+    YamapPolylineManager() {
+    }
 
     @Override
     public String getName() {
@@ -39,14 +40,14 @@ public class YamapPolygonManager extends ViewGroupManager<YamapPolygon> {
                 .build();
     }
 
-    private YamapPolygon castToYaMapView(View view) {
-        return (YamapPolygon) view;
+    private YamapPolyline castToYaMapView(View view) {
+        return (YamapPolyline) view;
     }
 
     @Nonnull
     @Override
-    public YamapPolygon createViewInstance(@Nonnull ThemedReactContext context) {
-        return new YamapPolygon(context);
+    public YamapPolyline createViewInstance(@Nonnull ThemedReactContext context) {
+        return new YamapPolyline(context);
     }
 
     // props
@@ -72,12 +73,34 @@ public class YamapPolygonManager extends ViewGroupManager<YamapPolygon> {
     public void setStrokeColor(View view, int color) {
         castToYaMapView(view).setStrokeColor(color);
     }
-    @ReactProp(name = "fillColor")
-    public void setFillColor(View view, int color) {
-        castToYaMapView(view).setFillColor(color);
-    }
+
     @ReactProp(name = "zIndex")
     public void setZIndex(View view, int zIndex) {
         castToYaMapView(view).setZIndex(zIndex);
+    }
+
+    @ReactProp(name = "dashLength")
+    public void setDashLength(View view, int length) {
+        castToYaMapView(view).setDashLength(length);
+    }
+
+    @ReactProp(name = "dashOffset")
+    public void setDashOffset(View view, int offset) {
+        castToYaMapView(view).setDashOffset(offset);
+    }
+
+    @ReactProp(name = "gapLength")
+    public void setGapLength(View view, int length) {
+        castToYaMapView(view).setGapLength(length);
+    }
+
+    @ReactProp(name = "outlineWidth")
+    public void setOutlineWidth(View view, int width) {
+        castToYaMapView(view).setOutlineWidth(width);
+    }
+
+    @ReactProp(name = "outlineColor")
+    public void setOutlineColor(View view, int color) {
+        castToYaMapView(view).setOutlineColor(color);
     }
 }
