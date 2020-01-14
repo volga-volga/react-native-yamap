@@ -43,6 +43,34 @@ declare class YaMap extends React.Component<Props> {
   setCenter(center: { lon: number, lat: number, zoom: number }): void;
 }
 
+interface PolylineProps {
+  strokeColor?: string;
+  outlineColor?: string;
+  strokeWidth?: number;
+  outlineWidth?: number;
+  dashLength?: number;
+  dashOffset?: number;
+  gapLength?: number;
+  zIndex?: number;
+  onPress?: () => void;
+  points: Point[];
+}
+
+export class Polyline extends React.Component<PolylineProps> {
+}
+
+interface PolygonProps {
+  fillColor?: string;
+  strokeColor?: string;
+  strokeWidth?: number;
+  zIndex?: number;
+  onPress?: () => void;
+  points: Point[];
+}
+
+export class Polygon extends React.Component<PolygonProps> {
+}
+
 export default YaMap;
 
 export interface Address {

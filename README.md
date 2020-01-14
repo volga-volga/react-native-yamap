@@ -97,6 +97,66 @@ interface Point {
 ### Замечание
 При использовании изображений из js (через require('./img.png')) в дебаге и релизе на андроиде могут быть разные размеры маркера. В текущей версии рекомендуется проверять рендер в релизной сборке. Будет исправлено в следующих релизах
 
+## Отображение примитивов
+
+### Polyline
+```
+import { Polyline } from 'react-native-yamap';
+
+...
+<MapView>
+    <Polyline points={[
+      {lat: 50, lon: 50},
+      {lat: 50, lon: 20},
+      {lat: 20, lon: 20},
+    ]}/>
+</MapView>
+```
+
+Доступные props:
+```typescript
+interface PolylineProps {
+  strokeColor?: string; // цвет линии
+  outlineColor?: string; // цвет обводки
+  strokeWidth?: number; // толщина линии
+  outlineWidth?: number; // толщина обвотки (0 по умолчанию)
+  dashLength?: number; // длина штриха
+  dashOffset?: number; // отступ первого штриха от начала полилинии
+  gapLength?: number; // длина разрыва между штрихами (0 по умолчанию - сплошная линия)
+  points: Point[]; // массив точек линии
+  zIndex?: number;
+  onPress?: () => void;
+}
+```
+
+### Polygon
+```
+import { Polygon } from 'react-native-yamap';
+
+...
+<MapView>
+    <Polygon points={[
+      {lat: 50, lon: 50},
+      {lat: 50, lon: 20},
+      {lat: 20, lon: 20},
+    ]}/>
+</MapView>
+```
+
+Доступные props:
+```typescript
+interface PolygonProps {
+  fillColor?: string; // цвет заливки
+  strokeColor?: string; // цвет границы
+  strokeWidth?: number; // толщина границы
+  points: Point[]; // точки полигона
+  zIndex?: number;
+  onPress?: () => void;
+}
+```
+
+**TODO:** реализовать поддержку полигонов с отверстиями
+
 ## Использование апи геокодера
 
 ### Инициализация
