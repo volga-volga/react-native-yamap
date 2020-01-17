@@ -39,7 +39,7 @@ public class YamapPolygonManager extends ViewGroupManager<YamapPolygon> {
                 .build();
     }
 
-    private YamapPolygon castToYaMapView(View view) {
+    private YamapPolygon castToPolygonView(View view) {
         return (YamapPolygon) view;
     }
 
@@ -60,7 +60,7 @@ public class YamapPolygonManager extends ViewGroupManager<YamapPolygon> {
             Point point = new Point(lat, lon);
             parsed.add(point);
         }
-        castToYaMapView(view).setPolygonPoints(parsed);
+        castToPolygonView(view).setPolygonPoints(parsed);
     }
 
     @ReactProp(name = "innerRings")
@@ -80,24 +80,24 @@ public class YamapPolygonManager extends ViewGroupManager<YamapPolygon> {
                 rings.add(parsed);
             }
         }
-        castToYaMapView(view).setInnerRings(rings);
+        castToPolygonView(view).setInnerRings(rings);
     }
 
     @ReactProp(name = "strokeWidth")
     public void setStrokeWidth(View view, float width) {
-        castToYaMapView(view).setStrokeWidth(width);
+        castToPolygonView(view).setStrokeWidth(width);
     }
 
     @ReactProp(name = "strokeColor")
     public void setStrokeColor(View view, int color) {
-        castToYaMapView(view).setStrokeColor(color);
+        castToPolygonView(view).setStrokeColor(color);
     }
     @ReactProp(name = "fillColor")
     public void setFillColor(View view, int color) {
-        castToYaMapView(view).setFillColor(color);
+        castToPolygonView(view).setFillColor(color);
     }
     @ReactProp(name = "zIndex")
     public void setZIndex(View view, int zIndex) {
-        castToYaMapView(view).setZIndex(zIndex);
+        castToPolygonView(view).setZIndex(zIndex);
     }
 }

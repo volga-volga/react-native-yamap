@@ -464,15 +464,20 @@ public class YamapView extends MapView implements Session.RouteListener, MapObje
     // children
     public void addFeature(View child, int index) {
         if (child instanceof YamapPolygon) {
-            YamapPolygon polygonChild = (YamapPolygon) child;
-            PolygonMapObject obj = getMap().getMapObjects().addPolygon(polygonChild.polygon);
-            polygonChild.setMapObject(obj);
-            childs.add(polygonChild);
+            YamapPolygon _child = (YamapPolygon) child;
+            PolygonMapObject obj = getMap().getMapObjects().addPolygon(_child.polygon);
+            _child.setMapObject(obj);
+            childs.add(_child);
         } else if (child instanceof YamapPolyline) {
-            YamapPolyline polylineChild = (YamapPolyline) child;
-            PolylineMapObject obj = getMap().getMapObjects().addPolyline(polylineChild.polyline);
-            polylineChild.setMapObject(obj);
-            childs.add(polylineChild);
+            YamapPolyline _child = (YamapPolyline) child;
+            PolylineMapObject obj = getMap().getMapObjects().addPolyline(_child.polyline);
+            _child.setMapObject(obj);
+            childs.add(_child);
+        } else if (child instanceof YamapMarker) {
+            YamapMarker _child = (YamapMarker) child;
+            PlacemarkMapObject obj = getMap().getMapObjects().addPlacemark(_child.point);
+            _child.setMapObject(obj);
+            childs.add(_child);
         }
     }
 

@@ -169,6 +169,7 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         parent.addFeature(child, index);
         super.addView(parent, child, index);
     }
+    
     @Override
     public void removeViewAt(YamapView parent, int index) {
         parent.removeChild(index);
