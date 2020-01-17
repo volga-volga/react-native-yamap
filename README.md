@@ -30,16 +30,12 @@ const route = {
   start: { lat: 0, lon: 0},
   end: { lat: 10, lon: 10},
 };
-const markers = [{ lat: 10, lon: 10}];
-// ...
+
 class Map extends React.Component {
   handleOnRouteFound(event) {
-    this.setState({ routes: event.nativeEvent.routes });
+    console.log(event.nativeEvent.routes);
   }
-  handleOnMarkerPress(id: number) {
-    console.log(`Marker with id ${id} pressed!`);
-  }
-  // ...
+
   render() {
     return (
       <YaMap
@@ -47,55 +43,48 @@ class Map extends React.Component {
         userLocationIcon={{ uri: 'https://www.clipartmax.com/png/middle/180-1801760_pin-png.png' }}
         onRouteFound={this.handleOnRouteFound}
         routeColors={{bus: '#fff', walk: '#f00'}}
-        markers={markers}
         route={route}
-        onMarkerPress={this.handleOnMarkerPress}
         style={{ flex: 1 }}
       />
     );
   }
 }
 ```
-
+#### Основные типы
 ```typescript
-export interface Marker {
-  lon: number,
-  lat: number,
-  id?: number,
-  zIndex?: number,
-  source?: ImageSource,
-}
-```
-```typescript
+interface Point {
+ lat: Number; 
+ lon: Number;
+}  
 interface Route {
   start: Point
   end: Point
 }
+export type Vehiles =  'bus' | 'railway' | 'tramway' | 'suburban' | 'trolleybus' | 'underground' | 'walk';
 ```
+
+#### Доступные `props` для компонента **MapView**
 ```typescript
-interface Point {
- lat: double 
- lon: double
-}  
+interface Props extends ViewProps {
+  userLocationIcon: ImageSource; // иконка позиции пользователя. Доступны те же значения что и у компонента Image из react native
+  route?: Route; // запрашиваемый маршурут
+  vehicles?: Array<Vehiles>; // доступные виды транспорта
+  routeColors?: { [key in Vehiles]: string }; // цвета отображения маршрута для каждого транспорта
+  onRouteFound?: (event: Event) => void; // вызовется, если найден запрошеный маршрут
+  children: Marker | Polygon | Polyline; // см раздел "Отображение примитивов"
+}
 ```
 
+#### Методы
+- `fitAllMarkers` - подобрать положение камеры, чтобы вместить все маркеры
+(если возможно)
+ 
+- `setCenter(center: { lat, lon, zoom })` - устанавливает камеру в позицию, указанную в аргументе метода, с заданным zoom
 
+#### Замечание
 - Компонент карт стилизуется, как и View из react-native. Если карта не отображается, после инициализации с валидным ключем АПИ, вероятно необходимо прописать стиль, который опишет размеры компонента (height+width или flex)
 
-- Для кастомизации иконки положения пользователя можно использовать userLocationIcon. Может принимать те же значения что и source в компоненте Image в react-native
-
-- Для отображения маркеров, используется props markers, с минимальными параметрами lon и lat.
-
-- Для кастомизации изображения маркера, маркеру можно передать параметр source, как и у Image из react-native.
-
-- Для отображения маркера поверх других, у объекта marker используется параметр zIndex.
-
-- Для обработки нажатия на маркер, используется onMarkerPress. В метод приходит id выбранного маркера. Если для маркеров не передается id, то вместо него будет использоваться индекс в массиве маркеров. Не рекомендуется передавать id только для части маркеров - необходимо либо передавать во все маркеры, либо не передавать нигде.
-
-- Для центрированиия карты можно использовать методы по ref: fitAllMarkers() и setCenter(center), где center { lat, lon, zoom }. fitAllMarkers подбирает положение камеры, чтобы вместить все маркеры (если возможно)
-
-### Замечание
-При использовании изображений из js (через require('./img.png')) в дебаге и релизе на андроиде могут быть разные размеры маркера. В текущей версии рекомендуется проверять рендер в релизной сборке. Будет исправлено в следующих релизах
+- При использовании изображений из js (через require('./img.png')) в дебаге и релизе на андроиде могут быть разные размеры маркера. В текущей версии рекомендуется проверять рендер в релизной сборке. Будет исправлено в следующих релизах
 
 ## Отображение примитивов
 
@@ -110,7 +99,8 @@ import { Polyline } from 'react-native-yamap';
 </MapView>
 ```
 
-Доступные props:
+#### Доступные props:
+
 ```typescript
 interface MarkerProps {
   scale?: number; // масштабирование иконки маркера. Не работает если использовать children у маркера
@@ -136,7 +126,8 @@ import { Polyline } from 'react-native-yamap';
 </MapView>
 ```
 
-Доступные props:
+#### Доступные props:
+
 ```typescript
 interface PolylineProps {
   strokeColor?: string; // цвет линии
@@ -166,7 +157,8 @@ import { Polygon } from 'react-native-yamap';
 </MapView>
 ```
 
-Доступные props:
+#### Доступные props:
+
 ```typescript
 interface PolygonProps {
   fillColor?: string; // цвет заливки
@@ -178,8 +170,6 @@ interface PolygonProps {
   onPress?: () => void;
 }
 ```
-
-**TODO:** реализовать поддержку полигонов с отверстиями
 
 ## Использование апи геокодера
 

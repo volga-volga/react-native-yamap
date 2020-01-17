@@ -16,7 +16,7 @@
 RCT_EXPORT_MODULE()
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"onMarkerPress", @"onRouteFound"];
+    return @[@"onRouteFound"];
 }
 
 - (instancetype)init {
@@ -36,13 +36,7 @@ RCT_EXPORT_MODULE()
 }
 
 // props
-RCT_EXPORT_VIEW_PROPERTY(onMarkerPress, RCTBubblingEventBlock)
-
 RCT_EXPORT_VIEW_PROPERTY(onRouteFound, RCTBubblingEventBlock)
-
-RCT_CUSTOM_VIEW_PROPERTY (markers, NSArray<YMKPoint>, RNYMView) {
-    [view setMarkers: [RCTConvert Markers:json]];
-}
 
 RCT_CUSTOM_VIEW_PROPERTY(route, NSDictionary, RNYMView) {
     if (json) {

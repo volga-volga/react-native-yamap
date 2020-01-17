@@ -22,6 +22,7 @@ export default class YaMap extends React.Component {
   }
 
   componentDidMount() {
+    // todo: вынести в пропсы
     InteractionManager.runAfterInteractions(() => {
       PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
@@ -69,34 +70,12 @@ export default class YaMap extends React.Component {
     return img ? resolveAssetSource(img).uri : '';
   }
 
-  prepareMarkers = () => {
-    if (this.props.markers) {
-      return this.props.markers.map((marker, index) => ({
-        id: String(marker.id || index),
-        zIndex: typeof marker.zIndex === 'number' ? marker.zIndex : 1,
-        lon: marker.lon,
-        lat: marker.lat,
-        source: this.resolveImageUri(marker.source),
-      }));
-    }
-    return undefined;
-  };
-
-  onMarkerPress = e => {
-    if (this.props.onMarkerPress) {
-      this.props.onMarkerPress(Number(e.nativeEvent.id));
-    }
-  };
-
   render() {
-    const {showSelectedOnTop, ...props} = this.props;
     return (
       <YaMapNative
-        {...props}
+        {...this.props}
         ref={this.map}
-        markers={this.prepareMarkers()}
         userLocationIcon={this.resolveImageUri(this.props.userLocationIcon)}
-        onMarkerPress={this.onMarkerPress}
       />
     );
   }

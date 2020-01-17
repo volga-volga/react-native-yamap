@@ -7,14 +7,11 @@
 
 @class RCTBridge;
 
-@interface RNYMView: YMKMapView<YMKMapObjectTapListener, YMKUserLocationObjectListener, RCTComponent>
+@interface RNYMView: YMKMapView<YMKUserLocationObjectListener, RCTComponent>
 
-@property (nonatomic, copy) RCTBubblingEventBlock onMarkerPress;
 @property (nonatomic, copy) RCTBubblingEventBlock onRouteFound;
 
-@property (nonatomic) NSMutableArray<RNMarker*> * _Nullable markers;
 @property (nonatomic) YMKUserLocationView* _Nullable userLocationView;
-@property (nonatomic) NSMutableDictionary<NSString*, YMKPlacemarkMapObject*> * _Nullable markersDict;
 @property (nonatomic) UIImage* _Nullable userLocationImage;
 
 // ref
@@ -22,7 +19,6 @@
 -(void) fitAllMarkers;
 
 // props
--(void) setMarkers:(NSMutableArray<RNMarker*>*) markerList;
 -(void) clearRoute;
 -(void) setRouteWithStart:(YMKRequestPoint*) start end:(YMKRequestPoint*) end;
 -(void) setAcceptedVehicleTypes:(NSArray*) acceptVehicleTypes;

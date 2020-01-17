@@ -47,13 +47,11 @@
     YMKMasstransitOptions *masstransitOptions;
     void (^routeHandler)(NSArray<YMKMasstransitRoute *>*, NSError *);
 
-    NSMutableArray* _reactSubviews;
+    NSMutableArray<UIView*>* _reactSubviews;
 
     NSMutableArray *routes;
     NSMutableArray *currentRouteInfo;
     NSMutableArray<YMKRequestPoint *>* lastKnownRoutePoints;
-    NSMutableArray<RNMarker *>* lastKnownMarkers;
-    NSMutableArray<YMKPlacemarkMapObject*>* placemarkObjects;
     YMKUserLocationView* userLocationView;
     NSMutableDictionary *vehicleColors;
     UIImage* userLocationImage;
@@ -70,7 +68,6 @@
     routes = [[NSMutableArray alloc] init];
     currentRouteInfo = [[NSMutableArray alloc] init];
     lastKnownRoutePoints = [[NSMutableArray alloc] init];
-    placemarkObjects = [[NSMutableArray alloc] init];
     vehicleColors = [[NSMutableDictionary alloc] init];
     [vehicleColors setObject:@"#59ACFF" forKey:@"bus"];
     [vehicleColors setObject:@"#7D60BD" forKey:@"minibus"];
@@ -232,8 +229,6 @@
 
 -(void) removeAllSections {
     [self.mapWindow.map.mapObjects clear];
-    [placemarkObjects removeAllObjects];
-    if (lastKnownMarkers != nil) [self setMarkers:lastKnownMarkers];
 }
 
 // ref
@@ -242,18 +237,29 @@
 }
 
 -(void) fitAllMarkers {
+    NSMutableArray<YMKPoint*>* lastKnownMarkers = [[NSMutableArray alloc] init];
+    for (int i = 0; i < [_reactSubviews count]; ++i) {
+        UIView* view = [_reactSubviews objectAtIndex:i];
+        if ([view isKindOfClass:[YamapMarkerView class]]) {
+            YamapMarkerView* marker = (YamapMarkerView*) view;
+            [lastKnownMarkers addObject:[marker getPoint]];
+        }
+    }
+    if ([lastKnownMarkers count] == 0) {
+        return;
+    }
     if ([lastKnownMarkers count] == 1) {
-        YMKPoint *center = [YMKPoint pointWithLatitude:lastKnownMarkers[0].lat longitude:lastKnownMarkers[0].lon];
+        YMKPoint *center = [lastKnownMarkers objectAtIndex:0];
         [self.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:15 azimuth:0 tilt:0]];
         return;
     }
-    double minLon = lastKnownMarkers[0].lon, maxLon = lastKnownMarkers[0].lon;
-    double minLat  = lastKnownMarkers[0].lat, maxLat = lastKnownMarkers[0].lat;
+    double minLon = [lastKnownMarkers[0] longitude], maxLon = [lastKnownMarkers[0] longitude];
+    double minLat = [lastKnownMarkers[0] latitude], maxLat = [lastKnownMarkers[0] latitude];
     for (int i = 0; i < [lastKnownMarkers count]; i++) {
-        if (lastKnownMarkers[i].lon > maxLon) maxLon = lastKnownMarkers[i].lon;
-        if (lastKnownMarkers[i].lon < minLon) minLon = lastKnownMarkers[i].lon;
-        if (lastKnownMarkers[i].lat > maxLat) maxLat = lastKnownMarkers[i].lat;
-        if (lastKnownMarkers[i].lat < minLat) minLat = lastKnownMarkers[i].lat;
+        if ([lastKnownMarkers[i] longitude] > maxLon) maxLon = [lastKnownMarkers[i] longitude];
+        if ([lastKnownMarkers[i] longitude] < minLon) minLon = [lastKnownMarkers[i] longitude];
+        if ([lastKnownMarkers[i] latitude] > maxLat) maxLat = [lastKnownMarkers[i] latitude];
+        if ([lastKnownMarkers[i] latitude] < minLat) minLat = [lastKnownMarkers[i] latitude];
     }
     YMKPoint *southWest = [YMKPoint pointWithLatitude:minLat longitude:minLon];
     YMKPoint *northEast = [YMKPoint pointWithLatitude:maxLat longitude:maxLon];
@@ -285,49 +291,6 @@
 }
 
 // props
--(void) setMarkers:(NSMutableArray<RNMarker *> *) markerList {
-    YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
-    lastKnownMarkers = markerList;
-    NSMutableArray<NSNumber*>* statuses = [[NSMutableArray alloc] init];
-    NSNumber* _false = [[NSNumber alloc] initWithInt:0];
-    NSNumber* _true = [[NSNumber alloc] initWithInt:1];
-    for (int i = 0; i < markerList.count; ++i) {
-        [statuses insertObject:_false atIndex:i];
-    }
-    for (int i = 0; i < placemarkObjects.count; ++i) {
-        YMKPlacemarkMapObject* obj = [placemarkObjects objectAtIndex:i];
-        if (obj != nil) {
-            NSDictionary* json = obj.userData;
-            NSString* _id =  [json valueForKey:@"id"];
-            bool removed = true;
-            for (int j = 0; j < markerList.count; ++j) {
-                RNMarker* marker = [markerList objectAtIndex:j];
-                if ([marker._id isEqual:_id]) {
-                    removed = false;
-                    [statuses replaceObjectAtIndex:j withObject:_true];
-                    [self actualizePlacemark:obj withMarker:marker];
-                }
-            }
-            if (removed) {
-                [objects removeWithMapObject:obj];
-                [placemarkObjects removeObject:obj];
-                --i;
-            }
-        }
-    }
-    for (int i = 0; i < markerList.count; ++i) {
-        NSNumber* status = [statuses objectAtIndex:i];
-        if ([status isEqual:_false]) {
-            RNMarker* marker = [markerList objectAtIndex:i];
-            YMKPlacemarkMapObject *placemark = [objects addPlacemarkWithPoint:[YMKPoint pointWithLatitude:marker.lat longitude:marker.lon]];
-            [placemarkObjects addObject:placemark];
-            [placemark setUserData:@{@"id": marker._id}];
-            [placemark addTapListenerWithTapListener:self];
-            [self actualizePlacemark:placemark withMarker:marker];
-        }
-    }
-}
-
 -(void) clearRoute {
     lastKnownRoutePoints = nil;
     [self removeAllSections];
@@ -380,12 +343,6 @@
     }
 }
 
-// object tap listener
-- (BOOL)onMapObjectTapWithMapObject:(nonnull YMKMapObject *)mapObject point:(nonnull YMKPoint *)point {
-    if (self.onMarkerPress) self.onMarkerPress(@{@"id": [mapObject.userData valueForKey:@"id"]});
-    return YES;
-}
-
 // user location listener implementation
 - (void)onObjectAddedWithView:(nonnull YMKUserLocationView *)view {
     userLocationView = view;
@@ -420,7 +377,7 @@
     [super addSubview:view];
 }
 
-- (void)insertReactSubview:(id<RCTComponent>)subview atIndex:(NSInteger)atIndex {
+- (void)insertReactSubview:(UIView<RCTComponent>*)subview atIndex:(NSInteger)atIndex {
     if ([subview isKindOfClass:[YamapPolygonView class]]) {
         YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
         YamapPolygonView* polygon = (YamapPolygonView*) subview;
@@ -442,11 +399,11 @@
           [self insertReactSubview:(UIView *)childSubviews[i] atIndex:atIndex];
         }
     }
-    [_reactSubviews insertObject:(UIView *)subview atIndex:(NSUInteger) atIndex];
+    [_reactSubviews insertObject:subview atIndex:atIndex];
     [super insertReactSubview:subview atIndex:atIndex];
 }
 
-- (void)removeReactSubview:(id<RCTComponent>)subview {
+- (void)removeReactSubview:(UIView<RCTComponent>*)subview {
     if ([subview isKindOfClass:[YamapPolygonView class]]) {
         YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
         YamapPolygonView* polygon = (YamapPolygonView*) subview;
@@ -465,7 +422,7 @@
           [self removeReactSubview:(UIView *)childSubviews[i]];
         }
     }
-    [_reactSubviews removeObject:(UIView *)subview];
+    [_reactSubviews removeObject:subview];
     [super removeReactSubview: subview];
 }
 
