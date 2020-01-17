@@ -43,6 +43,18 @@ declare class YaMap extends React.Component<Props> {
   setCenter(center: { lon: number, lat: number, zoom: number }): void;
 }
 
+interface MarkerProps {
+  children?: React.ReactElement;
+  zIndex?: number;
+  scale?: number;
+  onPress?: () => void;
+  point: Point;
+  source?: ImageSource;
+}
+
+export class Marker extends React.Component<MarkerProps> {
+}
+
 interface PolylineProps {
   strokeColor?: string;
   outlineColor?: string;

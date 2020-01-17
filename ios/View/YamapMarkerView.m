@@ -62,13 +62,13 @@
         [mapObject setZIndex:[zIndex floatValue]];
         YMKIconStyle* iconStyle = [[YMKIconStyle alloc] init];
         [iconStyle setScale:scale];
-        [mapObject setIconStyleWithStyle:iconStyle];
         if (![source isEqual:@""]) {
             if (![source isEqual:lastSource]) {
                 [mapObject setIconWithImage:[self resolveUIImage:source]];
                 lastSource = source;
             }
         }
+        [mapObject setIconStyleWithStyle:iconStyle];
     }
 }
 
@@ -140,6 +140,7 @@
 }
 
 -(void) didUpdateReactSubviews {
+    // todo: Если вызывать сразу то frame имеет размеры 0. В идеале делать подписку на событие
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         [self setChildView];
     });

@@ -99,6 +99,29 @@ interface Point {
 
 ## Отображение примитивов
 
+### Marker
+
+```
+import { Polyline } from 'react-native-yamap';
+
+...
+<MapView>
+    <Marker point={{lat: 50, lon: 50}}/>
+</MapView>
+```
+
+Доступные props:
+```typescript
+interface MarkerProps {
+  scale?: number; // масштабирование иконки маркера. Не работает если использовать children у маркера
+  point: Point; // координаты точки для отображения маркера
+  source?: ImageSource; // данные для изображения маркера
+  children?: React.ReactElement; // рендер маркера как компонента (не рекомендуется) 
+  onPress?: () => void;
+  zIndex?: number;
+}
+```
+
 ### Polyline
 ```
 import { Polyline } from 'react-native-yamap';

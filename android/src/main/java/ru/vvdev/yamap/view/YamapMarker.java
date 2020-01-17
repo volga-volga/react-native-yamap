@@ -72,7 +72,7 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
 
     private void updateMarker() {
         if (mapObject != null) {
-            IconStyle iconStyle = new IconStyle();
+            final IconStyle iconStyle = new IconStyle();
             iconStyle.setScale(scale);
             mapObject.setGeometry(point);
             mapObject.setZIndex(zIndex);
@@ -92,6 +92,7 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
                     @Override
                     public void invoke(Bitmap bitmap) {
                         mapObject.setIcon(ImageProvider.fromBitmap(bitmap));
+                        mapObject.setIconStyle(iconStyle);
                     }
                 });
             }

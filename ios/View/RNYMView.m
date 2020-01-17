@@ -455,6 +455,10 @@
         YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
         YamapPolylineView* polyline = (YamapPolylineView*) subview;
         [objects removeWithMapObject:[polyline getMapObject]];
+    } else if ([subview isKindOfClass:[YamapMarkerView class]]) {
+        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+        YamapMarkerView* marker = (YamapMarkerView*) subview;
+        [objects removeWithMapObject:[marker getMapObject]];
     } else {
         NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
         for (int i = 0; i < childSubviews.count; i++) {

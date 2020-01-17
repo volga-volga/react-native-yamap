@@ -1,10 +1,31 @@
 import React from 'react';
-import {requireNativeComponent} from 'react-native';
+import {requireNativeComponent, Platform} from 'react-native';
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 
 const NativeMarker = requireNativeComponent('YamapMarker');
 
 export default class Marker extends React.Component {
+  state = {
+    recreateKey: false,
+    children: this.props.children,
+  };
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    if (Platform.OS === 'ios') {
+      return {
+        children: nextProps.children,
+        recreateKey:
+          nextProps.children === prevState.children
+            ? prevState.recreateKey
+            : !prevState.recreateKey,
+      };
+    }
+    return {
+      children: nextProps.children,
+      recreateKey: Boolean(nextProps.children),
+    };
+  }
+
   resolveImageUri(img) {
     return img ? resolveAssetSource(img).uri : '';
   }
@@ -14,7 +35,7 @@ export default class Marker extends React.Component {
     return (
       <NativeMarker
         {...props}
-        key={Boolean(this.props.children)}
+        key={this.state.recreateKey}
         source={this.resolveImageUri(this.props.source)}
       />
     );
