@@ -37,6 +37,7 @@
 
 @implementation YamapPolygonView {
     NSMutableArray<YMKPoint*> * _points;
+    NSArray<NSArray<YMKPoint*>*>* innerRings;
     YMKPolygonMapObject* mapObject;
     YMKPolygon* polygon;
     UIColor* fillColor;
@@ -52,6 +53,7 @@
     zIndex =  [[NSNumber alloc] initWithInt:1];
     strokeWidth =  [[NSNumber alloc] initWithInt:1];
     _points = [[NSMutableArray alloc] init];
+    innerRings = [[NSMutableArray alloc] init];
     polygon = [YMKPolygon polygonWithOuterRing:[YMKLinearRing linearRingWithPoints:@[]] innerRings:@[]];
     return self;
 }
@@ -82,13 +84,25 @@
     zIndex = _zIndex;
     [self updatePolygon];
 }
+-(void) updatePolygonGeometry {
+    YMKLinearRing* ring = [YMKLinearRing linearRingWithPoints:_points];
+    NSMutableArray<YMKLinearRing*>* _innerRings = [[NSMutableArray alloc] init];
+    for (int i = 0; i < [innerRings count]; ++i) {
+        YMKLinearRing* iRing = [YMKLinearRing linearRingWithPoints:[innerRings objectAtIndex:i]];
+        [_innerRings addObject:iRing];
+    }
+    polygon = [YMKPolygon polygonWithOuterRing:ring innerRings:_innerRings];
+}
 -(void) setPolygonPoints:(NSMutableArray<YMKPoint*>*) points {
     _points = points;
-    YMKLinearRing* ring = [YMKLinearRing linearRingWithPoints:points];
-    polygon = [YMKPolygon polygonWithOuterRing:ring innerRings:@[]];
+    [self updatePolygonGeometry];
     [self updatePolygon];
 }
-
+-(void) setInnerRings:(NSArray<NSArray<YMKPoint*>*>*) _innerRings {
+    innerRings = _innerRings;
+    [self updatePolygonGeometry];
+    [self updatePolygon];
+}
 -(void) setMapObject:(YMKPolygonMapObject *)_mapObject {
     mapObject = _mapObject;
     [mapObject addTapListenerWithTapListener:self];

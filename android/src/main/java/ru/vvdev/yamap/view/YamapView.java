@@ -22,10 +22,6 @@ import com.yandex.mapkit.geometry.Polyline;
 import com.yandex.mapkit.geometry.SubpolylineHelper;
 import com.yandex.mapkit.layers.ObjectEvent;
 import com.yandex.mapkit.map.CameraPosition;
-import com.yandex.mapkit.map.IconStyle;
-import com.yandex.mapkit.map.MapObject;
-import com.yandex.mapkit.map.MapObjectCollection;
-import com.yandex.mapkit.map.MapObjectTapListener;
 import com.yandex.mapkit.map.PlacemarkMapObject;
 import com.yandex.mapkit.map.PolygonMapObject;
 import com.yandex.mapkit.map.PolylineMapObject;
@@ -48,9 +44,6 @@ import com.yandex.mapkit.user_location.UserLocationView;
 import com.yandex.runtime.Error;
 import com.yandex.runtime.image.ImageProvider;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -58,13 +51,11 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
-import ru.vvdev.yamap.models.PropsStore;
 import ru.vvdev.yamap.models.ReactMapObject;
 import ru.vvdev.yamap.utils.Callback;
-import ru.vvdev.yamap.models.RNMarker;
 import ru.vvdev.yamap.utils.ImageLoader;
 
-public class YamapView extends MapView implements Session.RouteListener, MapObjectTapListener, UserLocationObjectListener {
+public class YamapView extends MapView implements Session.RouteListener, UserLocationObjectListener {
 
     // default colors for known vehicles
     // "underground" actually get color considering with his own branch"s color
@@ -79,16 +70,14 @@ public class YamapView extends MapView implements Session.RouteListener, MapObje
     }};
     private Map<String, String> vehicleColors = DEFAULT_VEHICLE_COLORS;
 
-    private final PropsStore props = new PropsStore();
+    private String userLocationIcon = "";
     private Bitmap userLocationBitmap = null;
 
     private ArrayList<String> acceptVehicleTypes = new ArrayList<>();
     private ArrayList<RequestPoint> lastKnownRoutePoints = new ArrayList<>();
-    private ArrayList<RNMarker> lastKnownMarkers = new ArrayList<>();
     private MasstransitOptions masstransitOptions = new MasstransitOptions(new ArrayList<String>(), acceptVehicleTypes, new TimeOptions());
     private Session walkSession;
     private Session transportSession;
-    private ArrayList<PlacemarkMapObject> placemarkObjects = new ArrayList<>();
 
     WritableArray currentRouteInfo = Arguments.createArray();
     WritableArray routes = Arguments.createArray();
@@ -96,7 +85,7 @@ public class YamapView extends MapView implements Session.RouteListener, MapObje
     private MasstransitRouter masstransitRouter = TransportFactory.getInstance().createMasstransitRouter();
     private PedestrianRouter pedestrianRouter = TransportFactory.getInstance().createPedestrianRouter();
 
-    private List<ReactMapObject> childs = new ArrayList();
+    private List<ReactMapObject> childs = new ArrayList<>();
 
     // location
     private UserLocationView userLocationView = null;
@@ -120,31 +109,39 @@ public class YamapView extends MapView implements Session.RouteListener, MapObje
     }
 
     public void fitAllMarkers() {
+        ArrayList<Point> lastKnownMarkers = new ArrayList<>();
+        for (int i = 0; i < childs.size(); ++i) {
+            ReactMapObject obj = childs.get(i);
+            if (obj instanceof YamapMarker) {
+                YamapMarker marker = (YamapMarker) obj;
+                lastKnownMarkers.add(marker.point);
+            }
+        }
         // todo[0]: добавить параметры анимации и дефолтного зума (для одного маркера)
         if (lastKnownMarkers.size() == 0) {
             return;
         }
         if (lastKnownMarkers.size() == 1) {
-            Point center = new Point(lastKnownMarkers.get(0).lat, lastKnownMarkers.get(0).lon);
+            Point center = new Point(lastKnownMarkers.get(0).getLatitude(), lastKnownMarkers.get(0).getLongitude());
             getMap().move(new CameraPosition(center, 15, 0, 0));
             return;
         }
-        double minLon = lastKnownMarkers.get(0).lon;
-        double maxLon = lastKnownMarkers.get(0).lon;
-        double minLat = lastKnownMarkers.get(0).lat;
-        double maxLat = lastKnownMarkers.get(0).lat;
+        double minLon = lastKnownMarkers.get(0).getLongitude();
+        double maxLon = lastKnownMarkers.get(0).getLongitude();
+        double minLat = lastKnownMarkers.get(0).getLatitude();
+        double maxLat = lastKnownMarkers.get(0).getLatitude();
         for (int i = 0; i < lastKnownMarkers.size(); i++) {
-            if (lastKnownMarkers.get(i).lon > maxLon) {
-                maxLon = lastKnownMarkers.get(i).lon;
+            if (lastKnownMarkers.get(i).getLongitude() > maxLon) {
+                maxLon = lastKnownMarkers.get(i).getLongitude();
             }
-            if (lastKnownMarkers.get(i).lon < minLon) {
-                minLon = lastKnownMarkers.get(i).lon;
+            if (lastKnownMarkers.get(i).getLongitude() < minLon) {
+                minLon = lastKnownMarkers.get(i).getLongitude();
             }
-            if (lastKnownMarkers.get(i).lat > maxLat) {
-                maxLat = lastKnownMarkers.get(i).lat;
+            if (lastKnownMarkers.get(i).getLatitude() > maxLat) {
+                maxLat = lastKnownMarkers.get(i).getLatitude();
             }
-            if (lastKnownMarkers.get(i).lat < minLat) {
-                minLat = lastKnownMarkers.get(i).lat;
+            if (lastKnownMarkers.get(i).getLatitude() < minLat) {
+                minLat = lastKnownMarkers.get(i).getLatitude();
             }
         }
         Point southWest = new Point(minLat, minLon);
@@ -159,68 +156,16 @@ public class YamapView extends MapView implements Session.RouteListener, MapObje
     // props
     public void setUserLocationIcon(final String iconSource) {
         // todo[0]: можно устанавливать разные иконки на покой и движение. Дополнительно можно устанавливать стиль иконки, например scale
-        props.userLocationIcon = iconSource;
+        userLocationIcon = iconSource;
         ImageLoader.DownloadImageBitmap(getContext(), iconSource, new Callback<Bitmap>() {
             @Override
             public void invoke(Bitmap bitmap) {
-                if (iconSource.equals(props.userLocationIcon)) {
+                if (iconSource.equals(userLocationIcon)) {
                     userLocationBitmap = bitmap;
                     updateUserLocationIcon();
                 }
             }
         });
-    }
-
-    public void setMarkers(ArrayList<RNMarker> markers) {
-        lastKnownMarkers = markers;
-        MapObjectCollection objects = getMap().getMapObjects();
-        ArrayList<Boolean> statuses = new ArrayList<>(); // true - уже существовал, false - новый
-        try {
-            for (int i = 0; i < markers.size(); ++i) {
-                statuses.add(i, false);
-            }
-            for (int i = 0; i < placemarkObjects.size(); ++i) {
-                PlacemarkMapObject obj = placemarkObjects.get(i);
-                try {
-                    JSONObject json = (JSONObject) obj.getUserData();
-                    if (json != null) {
-                        String id = json.getString("id");
-                        boolean removed = true;
-                        for (int j = 0; j < markers.size(); ++j) {
-                            RNMarker marker = markers.get(j);
-                            if (marker.id.equals(id)) {
-                                removed = false;
-                                statuses.set(j, true);
-                                actualizePlacemark(obj, marker);
-                                break;
-                            }
-                        }
-                        if (removed) {
-                            objects.remove(obj);
-                            placemarkObjects.remove(obj);
-                            --i;
-                        }
-                    }
-                } catch (Exception ignored) {
-                }
-            }
-            for (int j = 0; j < markers.size(); ++j) {
-                if (!statuses.get(j)) {
-                    RNMarker marker = markers.get(j);
-                    PlacemarkMapObject placemark = objects.addPlacemark(new Point(marker.lat, marker.lon));
-                    placemarkObjects.add(placemark);
-                    try {
-                        placemark.setUserData(new JSONObject().put("id", marker.id));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    placemark.addTapListener(this);
-                    actualizePlacemark(placemark, marker);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     public void setRouteColors(ReadableMap colors) {
@@ -269,21 +214,6 @@ public class YamapView extends MapView implements Session.RouteListener, MapObje
                 return;
             }
             transportSession = masstransitRouter.requestRoutes(points, masstransitOptions.setAcceptTypes(acceptVehicleTypes), this);
-        }
-    }
-
-    private void actualizePlacemark(final PlacemarkMapObject placemark, RNMarker marker) {
-        placemark.setGeometry(new Point(marker.lat, marker.lon));
-        IconStyle style = new IconStyle();
-        style.setZIndex((float) marker.zIndex);
-        placemark.setIconStyle(style);
-        if (!marker.uri.equals("")) {
-            ImageLoader.DownloadImageBitmap(getContext(), marker.uri, new Callback<Bitmap>() {
-                @Override
-                public void invoke(Bitmap bitmap) {
-                    placemark.setIcon(ImageProvider.fromBitmap(bitmap));
-                }
-            });
         }
     }
 
@@ -415,10 +345,7 @@ public class YamapView extends MapView implements Session.RouteListener, MapObje
     private void removeAllSections() {
         // todo: удалять только секции
         // todo: вынести clear в отдельный метод, чтобы чистить одновременно
-        // todo: не удалять полигоны
         getMap().getMapObjects().clear();
-        placemarkObjects.clear();
-        setMarkers(lastKnownMarkers);
     }
 
     public void onRoutesFound(WritableArray routes) {
@@ -443,36 +370,23 @@ public class YamapView extends MapView implements Session.RouteListener, MapObje
         return String.format("#%06X", (0xFFFFFF & color));
     }
 
-    @Override
-    public boolean onMapObjectTap(@Nonnull MapObject mapObject, @Nonnull Point point) {
-        final Context context = getContext();
-        if (context instanceof ReactContext) {
-            WritableMap e = Arguments.createMap();
-            JSONObject userData = (JSONObject) mapObject.getUserData();
-            if (userData != null) {
-                try {
-                    e.putString("id", userData.get("id").toString());
-                } catch (JSONException e1) {
-                    e1.printStackTrace();
-                }
-            }
-            ((ReactContext) context).getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onMarkerPress", e);
-        }
-        return false;
-    }
-
     // children
     public void addFeature(View child, int index) {
         if (child instanceof YamapPolygon) {
-            YamapPolygon polygonChild = (YamapPolygon) child;
-            PolygonMapObject obj = getMap().getMapObjects().addPolygon(polygonChild.polygon);
-            polygonChild.setMapObject(obj);
-            childs.add(polygonChild);
+            YamapPolygon _child = (YamapPolygon) child;
+            PolygonMapObject obj = getMap().getMapObjects().addPolygon(_child.polygon);
+            _child.setMapObject(obj);
+            childs.add(_child);
         } else if (child instanceof YamapPolyline) {
-            YamapPolyline polylineChild = (YamapPolyline) child;
-            PolylineMapObject obj = getMap().getMapObjects().addPolyline(polylineChild.polyline);
-            polylineChild.setMapObject(obj);
-            childs.add(polylineChild);
+            YamapPolyline _child = (YamapPolyline) child;
+            PolylineMapObject obj = getMap().getMapObjects().addPolyline(_child.polyline);
+            _child.setMapObject(obj);
+            childs.add(_child);
+        } else if (child instanceof YamapMarker) {
+            YamapMarker _child = (YamapMarker) child;
+            PlacemarkMapObject obj = getMap().getMapObjects().addPlacemark(_child.point);
+            _child.setMapObject(obj);
+            childs.add(_child);
         }
     }
 

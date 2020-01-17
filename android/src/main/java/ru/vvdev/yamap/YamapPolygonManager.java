@@ -39,7 +39,7 @@ public class YamapPolygonManager extends ViewGroupManager<YamapPolygon> {
                 .build();
     }
 
-    private YamapPolygon castToYaMapView(View view) {
+    private YamapPolygon castToPolygonView(View view) {
         return (YamapPolygon) view;
     }
 
@@ -60,24 +60,44 @@ public class YamapPolygonManager extends ViewGroupManager<YamapPolygon> {
             Point point = new Point(lat, lon);
             parsed.add(point);
         }
-        castToYaMapView(view).setPolygonPoints(parsed);
+        castToPolygonView(view).setPolygonPoints(parsed);
+    }
+
+    @ReactProp(name = "innerRings")
+    public void setInnerRings(View view, ReadableArray _rings) {
+        ArrayList<ArrayList<Point>> rings = new ArrayList<>();
+        if (_rings != null) {
+            for (int j = 0; j < _rings.size(); ++j) {
+                ReadableArray points = _rings.getArray(j);
+                ArrayList<Point> parsed = new ArrayList<>();
+                for (int i = 0; i < points.size(); ++i) {
+                    ReadableMap markerMap = points.getMap(i);
+                    double lon = markerMap.getDouble("lon");
+                    double lat = markerMap.getDouble("lat");
+                    Point point = new Point(lat, lon);
+                    parsed.add(point);
+                }
+                rings.add(parsed);
+            }
+        }
+        castToPolygonView(view).setInnerRings(rings);
     }
 
     @ReactProp(name = "strokeWidth")
     public void setStrokeWidth(View view, float width) {
-        castToYaMapView(view).setStrokeWidth(width);
+        castToPolygonView(view).setStrokeWidth(width);
     }
 
     @ReactProp(name = "strokeColor")
     public void setStrokeColor(View view, int color) {
-        castToYaMapView(view).setStrokeColor(color);
+        castToPolygonView(view).setStrokeColor(color);
     }
     @ReactProp(name = "fillColor")
     public void setFillColor(View view, int color) {
-        castToYaMapView(view).setFillColor(color);
+        castToPolygonView(view).setFillColor(color);
     }
     @ReactProp(name = "zIndex")
     public void setZIndex(View view, int zIndex) {
-        castToYaMapView(view).setZIndex(zIndex);
+        castToPolygonView(view).setZIndex(zIndex);
     }
 }

@@ -21,7 +21,8 @@ public class RNYamapPackage implements ReactPackage {
         return Arrays.<ViewManager>asList(
                 new YamapViewManager(),
                 new YamapPolygonManager(),
-                new YamapPolylineManager()
+                new YamapPolylineManager(),
+                new YamapMarkerManager()
         );
     }
 }

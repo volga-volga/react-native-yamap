@@ -18,7 +18,6 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import ru.vvdev.yamap.models.RNMarker;
 import ru.vvdev.yamap.view.YamapView;
 
 public class YamapViewManager extends ViewGroupManager<YamapView> {
@@ -38,7 +37,6 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     @Override
     public Map<String, Object> getExportedCustomDirectEventTypeConstants() {
         return MapBuilder.<String, Object>builder()
-                .put("onMarkerPress", MapBuilder.of("registrationName", "onMarkerPress"))
                 .build();
     }
 
@@ -148,28 +146,15 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         }
     }
 
-    @ReactProp(name = "markers")
-    public void setMarkers(View view, ReadableArray markers) {
-        ArrayList<RNMarker> parsed = new ArrayList<>();
-        for (int i = 0; i < markers.size(); ++i) {
-            ReadableMap markerMap = markers.getMap(i);
-            double lon = markerMap.getDouble("lon");
-            double lat = markerMap.getDouble("lat");
-            String id = markerMap.getString("id");
-            String uri = markerMap.getString("source");
-            Integer zIndex = markerMap.getInt("zIndex");
-            RNMarker marker = new RNMarker(lon, lat, id, zIndex, uri);
-            parsed.add(marker);
-        }
-        castToYaMapView(view).setMarkers(parsed);
-    }
-
     @Override
     public void addView(YamapView parent, View child, int index) {
         parent.addFeature(child, index);
+        super.addView(parent, child, index);
     }
+
     @Override
     public void removeViewAt(YamapView parent, int index) {
         parent.removeChild(index);
+        super.removeViewAt(parent, index);
     }
 }

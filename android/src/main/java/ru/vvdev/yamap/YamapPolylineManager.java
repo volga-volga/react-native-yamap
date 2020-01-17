@@ -40,7 +40,7 @@ public class YamapPolylineManager extends ViewGroupManager<YamapPolyline> {
                 .build();
     }
 
-    private YamapPolyline castToYaMapView(View view) {
+    private YamapPolyline castToPolylineView(View view) {
         return (YamapPolyline) view;
     }
 
@@ -61,46 +61,46 @@ public class YamapPolylineManager extends ViewGroupManager<YamapPolyline> {
             Point point = new Point(lat, lon);
             parsed.add(point);
         }
-        castToYaMapView(view).setPolygonPoints(parsed);
+        castToPolylineView(view).setPolygonPoints(parsed);
     }
 
     @ReactProp(name = "strokeWidth")
     public void setStrokeWidth(View view, float width) {
-        castToYaMapView(view).setStrokeWidth(width);
+        castToPolylineView(view).setStrokeWidth(width);
     }
 
     @ReactProp(name = "strokeColor")
     public void setStrokeColor(View view, int color) {
-        castToYaMapView(view).setStrokeColor(color);
+        castToPolylineView(view).setStrokeColor(color);
     }
 
     @ReactProp(name = "zIndex")
     public void setZIndex(View view, int zIndex) {
-        castToYaMapView(view).setZIndex(zIndex);
+        castToPolylineView(view).setZIndex(zIndex);
     }
 
     @ReactProp(name = "dashLength")
     public void setDashLength(View view, int length) {
-        castToYaMapView(view).setDashLength(length);
+        castToPolylineView(view).setDashLength(length);
     }
 
     @ReactProp(name = "dashOffset")
     public void setDashOffset(View view, int offset) {
-        castToYaMapView(view).setDashOffset(offset);
+        castToPolylineView(view).setDashOffset(offset);
     }
 
     @ReactProp(name = "gapLength")
     public void setGapLength(View view, int length) {
-        castToYaMapView(view).setGapLength(length);
+        castToPolylineView(view).setGapLength(length);
     }
 
     @ReactProp(name = "outlineWidth")
     public void setOutlineWidth(View view, int width) {
-        castToYaMapView(view).setOutlineWidth(width);
+        castToPolylineView(view).setOutlineWidth(width);
     }
 
     @ReactProp(name = "outlineColor")
     public void setOutlineColor(View view, int color) {
-        castToYaMapView(view).setOutlineColor(color);
+        castToPolylineView(view).setOutlineColor(color);
     }
 }

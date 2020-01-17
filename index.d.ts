@@ -3,14 +3,6 @@ import { ViewProps, ImageSource } from 'react-native';
 
 declare module 'react-native-yamap';
 
-export interface Marker {
-  lon: number,
-  lat: number,
-  id?: number,
-  zIndex?: number,
-  source?: ImageSource,
-}
-
 export interface Point {
   lat: number,
   lon: number,
@@ -24,23 +16,29 @@ export interface Route {
 export type Vehiles =  'bus' | 'railway' | 'tramway' | 'suburban' | 'trolleybus' | 'underground' | 'walk';
 
 interface Props extends ViewProps {
-  userLocationIcon: ImageSource,
-  onMarkerPress?: (id: string) => void,
-  onRouteFound?: (event: Event) => void,
-  markers?: Marker[],
-  route?: Route,
-  vehicles?: Array<Vehiles>
-
-  /** supported vehicle types
-   *  bus, railway, tramway, suburban, trolleybus, underground, walk
-   */
-  routeColors?: { [key: string]: string }
+  userLocationIcon: ImageSource;
+  onRouteFound?: (event: Event) => void;
+  route?: Route;
+  vehicles?: Array<Vehiles>;
+  routeColors?: { [key in Vehiles]: string };
 }
 
 declare class YaMap extends React.Component<Props> {
   static init(apiKey: string): void;
   fitAllMarkers(): void;
   setCenter(center: { lon: number, lat: number, zoom: number }): void;
+}
+
+interface MarkerProps {
+  children?: React.ReactElement;
+  zIndex?: number;
+  scale?: number;
+  onPress?: () => void;
+  point: Point;
+  source?: ImageSource;
+}
+
+export class Marker extends React.Component<MarkerProps> {
 }
 
 interface PolylineProps {
@@ -66,6 +64,7 @@ interface PolygonProps {
   zIndex?: number;
   onPress?: () => void;
   points: Point[];
+  innerRings: (Point[])[];
 }
 
 export class Polygon extends React.Component<PolygonProps> {
@@ -93,5 +92,5 @@ export class Geocoder {
 
   static addressToGeo(address: string): Promise<Point | null>
 
-  static getToAddress(geo: Point): Promise<Address | null>
+  static geoToAddress(geo: Point): Promise<Address | null>
 }
