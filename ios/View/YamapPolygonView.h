@@ -13,7 +13,8 @@
 -(void) setStrokeColor:(UIColor*) color;
 -(void) setStrokeWidth:(NSNumber*) width;
 -(void) setZIndex:(NSNumber*) _zIndex;
--(void) setPolygonPoints:(YMKPoint*) _points;
+-(void) setPolygonPoints:(NSArray<YMKPoint*>*) _points;
+-(void) setInnerRings:(NSArray<NSArray<YMKPoint*>*>*) _innerRings;
 
 -(NSMutableArray<YMKPoint*>*) getPoints;
 -(YMKPolygon*) getPolygon;

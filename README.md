@@ -150,6 +150,7 @@ interface PolygonProps {
   strokeColor?: string; // цвет границы
   strokeWidth?: number; // толщина границы
   points: Point[]; // точки полигона
+  innerRings: (Point[])[]; // массив полилиний, которые образуют отверстия в полигоне 
   zIndex?: number;
   onPress?: () => void;
 }

@@ -66,6 +66,7 @@ interface PolygonProps {
   zIndex?: number;
   onPress?: () => void;
   points: Point[];
+  innerRings: (Point[])[];
 }
 
 export class Polygon extends React.Component<PolygonProps> {

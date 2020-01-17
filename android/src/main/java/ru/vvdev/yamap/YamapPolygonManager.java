@@ -63,6 +63,26 @@ public class YamapPolygonManager extends ViewGroupManager<YamapPolygon> {
         castToYaMapView(view).setPolygonPoints(parsed);
     }
 
+    @ReactProp(name = "innerRings")
+    public void setInnerRings(View view, ReadableArray _rings) {
+        ArrayList<ArrayList<Point>> rings = new ArrayList<>();
+        if (_rings != null) {
+            for (int j = 0; j < _rings.size(); ++j) {
+                ReadableArray points = _rings.getArray(j);
+                ArrayList<Point> parsed = new ArrayList<>();
+                for (int i = 0; i < points.size(); ++i) {
+                    ReadableMap markerMap = points.getMap(i);
+                    double lon = markerMap.getDouble("lon");
+                    double lat = markerMap.getDouble("lat");
+                    Point point = new Point(lat, lon);
+                    parsed.add(point);
+                }
+                rings.add(parsed);
+            }
+        }
+        castToYaMapView(view).setInnerRings(rings);
+    }
+
     @ReactProp(name = "strokeWidth")
     public void setStrokeWidth(View view, float width) {
         castToYaMapView(view).setStrokeWidth(width);

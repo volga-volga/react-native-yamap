@@ -24,6 +24,7 @@ import ru.vvdev.yamap.models.ReactMapObject;
 public class YamapPolygon extends ViewGroup implements MapObjectTapListener, ReactMapObject {
     public Polygon polygon;
     public ArrayList<Point> _points = new ArrayList<>();
+    ArrayList<ArrayList<Point>> innerRings = new ArrayList<>();
     private PolygonMapObject mapObject;
     private int fillColor = Color.BLACK;
     private int strokeColor = Color.BLACK;
@@ -42,8 +43,22 @@ public class YamapPolygon extends ViewGroup implements MapObjectTapListener, Rea
     // props
     public void setPolygonPoints(ArrayList<Point> points) {
         _points = points;
-        polygon = new Polygon(new LinearRing(_points), new ArrayList<LinearRing>());
+        updatePolygonGeometry();
         updatePolygon();
+    }
+
+    public void setInnerRings(ArrayList<ArrayList<Point>> _innerRings) {
+        innerRings = _innerRings;
+        updatePolygonGeometry();
+        updatePolygon();
+    }
+
+    private void updatePolygonGeometry() {
+        ArrayList<LinearRing> _rings = new ArrayList<>();
+        for (int i = 0; i < innerRings.size(); ++i) {
+            _rings.add(new LinearRing(innerRings.get(i)));
+        }
+        polygon = new Polygon(new LinearRing(_points), _rings);
     }
 
     public void setZIndex(int _zIndex) {
