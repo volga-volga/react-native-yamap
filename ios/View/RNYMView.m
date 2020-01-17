@@ -31,6 +31,7 @@
 
 #import "YamapPolygonView.h"
 #import "YamapPolylineView.h"
+#import "YamapMarkerView.h"
 #import "RNYMView.h"
 
 
@@ -430,6 +431,11 @@
         YamapPolylineView* polyline = (YamapPolylineView*) subview;
         YMKPolylineMapObject* obj = [objects addPolylineWithPolyline:[polyline getPolyline]];
         [polyline setMapObject:obj];
+    } else if ([subview isKindOfClass:[YamapMarkerView class]]) {
+        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+        YamapMarkerView* marker = (YamapMarkerView*) subview;
+        YMKPlacemarkMapObject* obj = [objects addPlacemarkWithPoint:[marker getPoint]];
+        [marker setMapObject:obj];
     } else {
         NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
         for (int i = 0; i < childSubviews.count; i++) {

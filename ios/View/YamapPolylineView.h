@@ -17,7 +17,7 @@
 -(void) setDashOffset:(NSNumber*) offset;
 -(void) setOutlineWidth:(NSNumber*) width;
 -(void) setZIndex:(NSNumber*) _zIndex;
--(void) setPolylinePoints:(YMKPoint*) _points;
+-(void) setPolylinePoints:(NSArray<YMKPoint*>*) _points;
 
 -(NSMutableArray<YMKPoint*>*) getPoints;
 -(YMKPolyline*) getPolyline;
