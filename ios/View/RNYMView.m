@@ -277,19 +277,6 @@
     [self.mapWindow.map moveWithCameraPosition:cameraPosition animationType:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:1.0] cameraCallback:^(BOOL completed){}];
 }
 
--(void) actualizePlacemark:(YMKPlacemarkMapObject*) placemark withMarker:(RNMarker*) marker {
-    [placemark setGeometry:[YMKPoint pointWithLatitude:marker.lat longitude:marker.lon]];
-    if (![marker.uri isEqualToString:@""]) {
-        UIImage *icon = [self resolveUIImage: marker.uri];
-        if (icon != nil) {
-            [placemark setIconWithImage:icon];
-        }
-    }
-    YMKIconStyle *style = [[YMKIconStyle alloc] init];
-    style.zIndex = [NSNumber numberWithInt:marker.zIndex];
-    [placemark setIconStyleWithStyle:style];
-}
-
 // props
 -(void) clearRoute {
     lastKnownRoutePoints = nil;

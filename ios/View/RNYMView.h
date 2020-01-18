@@ -3,8 +3,6 @@
 #import <React/RCTComponent.h>
 #import <YandexMapKit/YMKMapView.h>
 
-#import "RNMarker.h"
-
 @class RCTBridge;
 
 @interface RNYMView: YMKMapView<YMKUserLocationObjectListener, RCTComponent>

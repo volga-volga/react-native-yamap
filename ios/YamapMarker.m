@@ -8,7 +8,6 @@
 #import "View/RNYMView.h"
 
 #import "Converter/RCTConvert+Yamap.m"
-#import "Models/RNMarker.h"
 
 #ifndef MAX
 #import <NSObjCRuntime.h>
