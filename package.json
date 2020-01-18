@@ -1,6 +1,6 @@
 {
   "name": "react-native-yamap",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Yandex.MapKit and Yandex.Geocoder for react-native",
   "main": "index.js",
   "scripts": {
