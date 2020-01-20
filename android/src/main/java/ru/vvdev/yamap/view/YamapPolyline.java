@@ -44,7 +44,7 @@ public class YamapPolyline extends ViewGroup implements MapObjectTapListener, Re
 
     // props
     public void setPolygonPoints(ArrayList<Point> points) {
-        _points = points;
+        _points = points != null ? points : new ArrayList<Point>();
         polyline = new Polyline(_points);
         updatePolyline();
     }

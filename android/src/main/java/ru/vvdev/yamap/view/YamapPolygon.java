@@ -42,21 +42,23 @@ public class YamapPolygon extends ViewGroup implements MapObjectTapListener, Rea
 
     // props
     public void setPolygonPoints(ArrayList<Point> points) {
-        _points = points;
+        _points = (points !=  null) ? points :new ArrayList<Point>();
         updatePolygonGeometry();
         updatePolygon();
     }
 
     public void setInnerRings(ArrayList<ArrayList<Point>> _innerRings) {
-        innerRings = _innerRings;
+        innerRings = _innerRings != null ? _innerRings : new ArrayList<ArrayList<Point>>();
         updatePolygonGeometry();
         updatePolygon();
     }
 
     private void updatePolygonGeometry() {
         ArrayList<LinearRing> _rings = new ArrayList<>();
-        for (int i = 0; i < innerRings.size(); ++i) {
-            _rings.add(new LinearRing(innerRings.get(i)));
+        if (innerRings != null) {
+            for (int i = 0; i < innerRings.size(); ++i) {
+                _rings.add(new LinearRing(innerRings.get(i)));
+            }
         }
         polygon = new Polygon(new LinearRing(_points), _rings);
     }

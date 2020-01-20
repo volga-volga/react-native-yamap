@@ -91,8 +91,13 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
                 ImageLoader.DownloadImageBitmap(getContext(), iconSource, new Callback<Bitmap>() {
                     @Override
                     public void invoke(Bitmap bitmap) {
-                        mapObject.setIcon(ImageProvider.fromBitmap(bitmap));
-                        mapObject.setIconStyle(iconStyle);
+                        try {
+                            if (mapObject != null) {
+                                mapObject.setIcon(ImageProvider.fromBitmap(bitmap));
+                                mapObject.setIconStyle(iconStyle);
+                            }
+                        } catch (Exception e) {
+                        }
                     }
                 });
             }
