@@ -32,7 +32,6 @@ export default class Marker extends React.Component {
 
   render() {
     const props = {...this.props};
-    alert(this.resolveImageUri(this.props.source));
     return (
       <NativeMarker
         {...props}
