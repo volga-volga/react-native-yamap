@@ -93,9 +93,11 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     }
 
     private void setCenter(View view, ReadableMap center) {
-        Point centerPosition = new Point(center.getDouble("lat"), center.getDouble("lon"));
-        float zoom = (float) center.getDouble("zoom");
-        castToYaMapView(view).setCenter(centerPosition, zoom);
+        if (center != null) {
+            Point centerPosition = new Point(center.getDouble("lat"), center.getDouble("lon"));
+            float zoom = (float) center.getDouble("zoom");
+            castToYaMapView(view).setCenter(centerPosition, zoom);
+        }
     }
 
     private void fitAllMarkers(View view) {
@@ -105,12 +107,16 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     // props
     @ReactProp(name = "userLocationIcon")
     public void setUserLocationIcon(View view, String icon) {
-        castToYaMapView(view).setUserLocationIcon(icon);
+        if (icon != null) {
+            castToYaMapView(view).setUserLocationIcon(icon);
+        }
     }
 
     @ReactProp(name = "routeColors")
     public void setRouteColors(View view, ReadableMap colors) {
-        castToYaMapView(view).setRouteColors(colors);
+        if (colors != null) {
+            castToYaMapView(view).setRouteColors(colors);
+        }
     }
 
     @ReactProp(name = "vehicles")

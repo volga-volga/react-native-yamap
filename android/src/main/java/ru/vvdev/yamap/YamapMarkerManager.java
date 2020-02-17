@@ -52,10 +52,12 @@ public class YamapMarkerManager extends ViewGroupManager<YamapMarker> {
     // props
     @ReactProp(name = "point")
     public void setPoint(View view, ReadableMap markerPoint) {
-        double lon = markerPoint.getDouble("lon");
-        double lat = markerPoint.getDouble("lat");
-        Point point = new Point(lat, lon);
-        castToMarkerView(view).setPoint(point);
+        if (markerPoint != null) {
+            double lon = markerPoint.getDouble("lon");
+            double lat = markerPoint.getDouble("lat");
+            Point point = new Point(lat, lon);
+            castToMarkerView(view).setPoint(point);
+        }
     }
 
     @ReactProp(name = "zIndex")
@@ -70,7 +72,9 @@ public class YamapMarkerManager extends ViewGroupManager<YamapMarker> {
 
     @ReactProp(name = "source")
     public void setSource(View view, String source) {
-        castToMarkerView(view).setIconSource(source);
+        if (source != null) {
+            castToMarkerView(view).setIconSource(source);
+        }
     }
 
     @Override

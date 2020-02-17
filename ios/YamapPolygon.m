@@ -34,13 +34,17 @@ RCT_EXPORT_MODULE()
 RCT_EXPORT_VIEW_PROPERTY(onPress, RCTBubblingEventBlock)
 
 RCT_CUSTOM_VIEW_PROPERTY (points, NSArray<YMKPoint>, YamapPolygonView) {
-    [view setPolygonPoints: [RCTConvert Points:json]];
+    if (json != nil) {
+        [view setPolygonPoints: [RCTConvert Points:json]];
+    }
 }
 
 RCT_CUSTOM_VIEW_PROPERTY (innerRings, NSArray<NSArray<YMKPoint>>, YamapPolygonView) {
     NSMutableArray* innerRings = [[NSMutableArray alloc] init];
-    for (int i = 0; i < [json count]; ++i) {
-        [innerRings addObject:[RCTConvert Points:[json objectAtIndex:i]]];
+    if (json != nil) {
+        for (int i = 0; i < [json count]; ++i) {
+            [innerRings addObject:[RCTConvert Points:[json objectAtIndex:i]]];
+        }
     }
     [view setInnerRings: innerRings];
 }

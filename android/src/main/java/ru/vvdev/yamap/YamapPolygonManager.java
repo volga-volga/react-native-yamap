@@ -52,15 +52,19 @@ public class YamapPolygonManager extends ViewGroupManager<YamapPolygon> {
     // props
     @ReactProp(name = "points")
     public void setPoints(View view, ReadableArray points) {
-        ArrayList<Point> parsed = new ArrayList<>();
-        for (int i = 0; i < points.size(); ++i) {
-            ReadableMap markerMap = points.getMap(i);
-            double lon = markerMap.getDouble("lon");
-            double lat = markerMap.getDouble("lat");
-            Point point = new Point(lat, lon);
-            parsed.add(point);
+        if (points != null) {
+            ArrayList<Point> parsed = new ArrayList<>();
+            for (int i = 0; i < points.size(); ++i) {
+                ReadableMap markerMap = points.getMap(i);
+                if (markerMap != null) {
+                    double lon = markerMap.getDouble("lon");
+                    double lat = markerMap.getDouble("lat");
+                    Point point = new Point(lat, lon);
+                    parsed.add(point);
+                }
+            }
+            castToPolygonView(view).setPolygonPoints(parsed);
         }
-        castToPolygonView(view).setPolygonPoints(parsed);
     }
 
     @ReactProp(name = "innerRings")
@@ -69,15 +73,19 @@ public class YamapPolygonManager extends ViewGroupManager<YamapPolygon> {
         if (_rings != null) {
             for (int j = 0; j < _rings.size(); ++j) {
                 ReadableArray points = _rings.getArray(j);
-                ArrayList<Point> parsed = new ArrayList<>();
-                for (int i = 0; i < points.size(); ++i) {
-                    ReadableMap markerMap = points.getMap(i);
-                    double lon = markerMap.getDouble("lon");
-                    double lat = markerMap.getDouble("lat");
-                    Point point = new Point(lat, lon);
-                    parsed.add(point);
+                if (points != null) {
+                    ArrayList<Point> parsed = new ArrayList<>();
+                    for (int i = 0; i < points.size(); ++i) {
+                        ReadableMap markerMap = points.getMap(i);
+                        if (markerMap != null) {
+                            double lon = markerMap.getDouble("lon");
+                            double lat = markerMap.getDouble("lat");
+                            Point point = new Point(lat, lon);
+                            parsed.add(point);
+                        }
+                    }
+                    rings.add(parsed);
                 }
-                rings.add(parsed);
             }
         }
         castToPolygonView(view).setInnerRings(rings);

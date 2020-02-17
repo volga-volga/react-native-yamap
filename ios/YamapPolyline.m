@@ -34,7 +34,9 @@ RCT_EXPORT_MODULE()
 RCT_EXPORT_VIEW_PROPERTY(onPress, RCTBubblingEventBlock)
 
 RCT_CUSTOM_VIEW_PROPERTY (points, NSArray<YMKPoint>, YamapPolylineView) {
-    [view setPolylinePoints: [RCTConvert Points:json]];
+    if (json != nil) {
+        [view setPolylinePoints: [RCTConvert Points:json]];
+    }
 }
 
 RCT_CUSTOM_VIEW_PROPERTY(outlineColor, NSNumber, YamapPolylineView) {

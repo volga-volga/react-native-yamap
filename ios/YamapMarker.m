@@ -34,7 +34,9 @@ RCT_EXPORT_MODULE()
 RCT_EXPORT_VIEW_PROPERTY(onPress, RCTBubblingEventBlock)
 
 RCT_CUSTOM_VIEW_PROPERTY (point, YMKPoint, YamapMarkerView) {
-    [view setPoint: [RCTConvert YMKPoint:json]];
+    if (json != nil) {
+        [view setPoint: [RCTConvert YMKPoint:json]];
+    }
 }
 
 RCT_CUSTOM_VIEW_PROPERTY(scale, NSNumber, YamapMarkerView) {

@@ -53,15 +53,19 @@ public class YamapPolylineManager extends ViewGroupManager<YamapPolyline> {
     // props
     @ReactProp(name = "points")
     public void setPoints(View view, ReadableArray points) {
-        ArrayList<Point> parsed = new ArrayList<>();
-        for (int i = 0; i < points.size(); ++i) {
-            ReadableMap markerMap = points.getMap(i);
-            double lon = markerMap.getDouble("lon");
-            double lat = markerMap.getDouble("lat");
-            Point point = new Point(lat, lon);
-            parsed.add(point);
+        if (points != null) {
+            ArrayList<Point> parsed = new ArrayList<>();
+            for (int i = 0; i < points.size(); ++i) {
+                ReadableMap markerMap = points.getMap(i);
+                if (markerMap != null) {
+                    double lon = markerMap.getDouble("lon");
+                    double lat = markerMap.getDouble("lat");
+                    Point point = new Point(lat, lon);
+                    parsed.add(point);
+                }
+            }
+            castToPolylineView(view).setPolygonPoints(parsed);
         }
-        castToPolylineView(view).setPolygonPoints(parsed);
     }
 
     @ReactProp(name = "strokeWidth")
