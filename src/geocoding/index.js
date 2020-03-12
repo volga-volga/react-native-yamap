@@ -18,6 +18,11 @@ export default class Geocoder {
         },
       },
     );
+    if (res.status !== 200) {
+      const err = new Error();
+      err.yandexResponse = res;
+      throw err;
+    }
     return res.json();
   }
 

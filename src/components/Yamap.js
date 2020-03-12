@@ -9,6 +9,7 @@ import {
   findNodeHandle,
 } from 'react-native';
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource.js';
+import CallbacksManager from '../utils/CallbacksManager';
 
 const {yamap} = NativeModules;
 
@@ -16,6 +17,15 @@ const YaMapNative = requireNativeComponent('YamapView');
 
 export default class YaMap extends React.Component {
   map = React.createRef();
+
+  static ALL_VEHICLES = [
+    'bus',
+    'railway',
+    'tramway',
+    'suburban',
+    'underground',
+    'trolleybus',
+  ];
 
   static init(apiKey) {
     yamap.init(apiKey);
@@ -38,16 +48,37 @@ export default class YaMap extends React.Component {
     if (Platform.OS === 'ios') {
       return UIManager.getViewManagerConfig('YamapView').Commands[cmd];
     } else {
-      return UIManager.YamapView.Commands[cmd];
+      return cmd;
     }
   }
 
-  drawRoute(route) {
-    this.map.current.setNativeProps({route: route});
+  // drawRoute(routeId) {
+  //   UIManager.dispatchViewManagerCommand(
+  //     findNodeHandle(this),
+  //     this.getCommand('drawRoute'),
+  //     [routeId],
+  //   );
+  // }
+  //
+  // removeRoute(routeId) {
+  //   UIManager.dispatchViewManagerCommand(
+  //     findNodeHandle(this),
+  //     this.getCommand('removeRoute'),
+  //     [routeId],
+  //   );
+  // }
+
+  findRoutes(points, vehicles, cb) {
+    const cbId = CallbacksManager.addCallback(cb);
+    UIManager.dispatchViewManagerCommand(
+      findNodeHandle(this),
+      this.getCommand('findRoutes'),
+      [points, vehicles, cbId],
+    );
   }
 
-  clearRoute() {
-    this.drawRoute(null);
+  processRoute(event) {
+    CallbacksManager.call(event.nativeEvent.id, event);
   }
 
   fitAllMarkers() {
@@ -75,6 +106,7 @@ export default class YaMap extends React.Component {
       <YaMapNative
         {...this.props}
         ref={this.map}
+        onRoutesFound={this.processRoute}
         userLocationIcon={this.resolveImageUri(this.props.userLocationIcon)}
       />
     );

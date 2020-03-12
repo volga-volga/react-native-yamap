@@ -13,19 +13,16 @@ export interface Route {
   end: Point,
 }
 
-export type Vehiles =  'bus' | 'railway' | 'tramway' | 'suburban' | 'trolleybus' | 'underground' | 'walk';
+export type Vehicles =  'bus' | 'railway' | 'tramway' | 'suburban' | 'trolleybus' | 'underground' | 'walk';
 
 interface Props extends ViewProps {
   userLocationIcon: ImageSource;
-  onRouteFound?: (event: Event) => void;
-  route?: Route;
-  vehicles?: Array<Vehiles>;
-  routeColors?: { [key in Vehiles]: string };
 }
 
 declare class YaMap extends React.Component<Props> {
   static init(apiKey: string): void;
   fitAllMarkers(): void;
+  findRoutes(points: Point[], vehicles: Vehicles[], callback: (event: any) => void): void;
   setCenter(center: { lon: number, lat: number, zoom: number }): void;
 }
 

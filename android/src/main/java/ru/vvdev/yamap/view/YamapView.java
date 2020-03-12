@@ -5,23 +5,24 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
-import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.ReadableMapKeySetIterator;
-import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.yandex.mapkit.Animation;
 import com.yandex.mapkit.RequestPoint;
+import com.yandex.mapkit.RequestPointType;
 import com.yandex.mapkit.geometry.BoundingBox;
 import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.geometry.Polyline;
 import com.yandex.mapkit.geometry.SubpolylineHelper;
 import com.yandex.mapkit.layers.ObjectEvent;
 import com.yandex.mapkit.map.CameraPosition;
+import com.yandex.mapkit.map.MapObject;
 import com.yandex.mapkit.map.PlacemarkMapObject;
 import com.yandex.mapkit.map.PolygonMapObject;
 import com.yandex.mapkit.map.PolylineMapObject;
@@ -54,9 +55,9 @@ import javax.annotation.Nonnull;
 import ru.vvdev.yamap.models.ReactMapObject;
 import ru.vvdev.yamap.utils.Callback;
 import ru.vvdev.yamap.utils.ImageLoader;
+import ru.vvdev.yamap.utils.RouteManager;
 
-public class YamapView extends MapView implements Session.RouteListener, UserLocationObjectListener {
-
+public class YamapView extends MapView implements UserLocationObjectListener {
     // default colors for known vehicles
     // "underground" actually get color considering with his own branch"s color
     private final static Map<String, String> DEFAULT_VEHICLE_COLORS = new HashMap<String, String>() {{
@@ -68,20 +69,10 @@ public class YamapView extends MapView implements Session.RouteListener, UserLoc
         put("trolleybus", "#55CfDC");
         put("walk", "#333333");
     }};
-    private Map<String, String> vehicleColors = DEFAULT_VEHICLE_COLORS;
-
     private String userLocationIcon = "";
     private Bitmap userLocationBitmap = null;
 
-    private ArrayList<String> acceptVehicleTypes = new ArrayList<>();
-    private ArrayList<RequestPoint> lastKnownRoutePoints = new ArrayList<>();
-    private MasstransitOptions masstransitOptions = new MasstransitOptions(new ArrayList<String>(), acceptVehicleTypes, new TimeOptions());
-    private Session walkSession;
-    private Session transportSession;
-
-    WritableArray currentRouteInfo = Arguments.createArray();
-    WritableArray routes = Arguments.createArray();
-
+    private RouteManager routeMng = new RouteManager();
     private MasstransitRouter masstransitRouter = TransportFactory.getInstance().createMasstransitRouter();
     private PedestrianRouter pedestrianRouter = TransportFactory.getInstance().createPedestrianRouter();
 
@@ -106,6 +97,79 @@ public class YamapView extends MapView implements Session.RouteListener, UserLoc
     public void setCenter(Point location, float zoom) {
         // todo[0]: добавить параметры анимации
         getMap().move(new CameraPosition(location, zoom, 0.0F, 0.0F), new Animation(Animation.Type.SMOOTH, 1.8F), null);
+    }
+
+//    public void removeAllRoutes() {
+//        todo
+//    }
+//
+//    public void removeRoute(String routeId) {
+//        ArrayList<MapObject> objects = routeMng.getRouteMapObjects(routeId);
+//        if (objects != null) {
+//            MapObjectCollection mapObjects = getMap().getMapObjects();
+//            for (int i = 0; i < objects.size(); ++i) {
+//                try {
+//                    mapObjects.remove(objects.get(i));
+//                } catch (Exception ignored) {
+//                }
+//            }
+//            routeMng.putRouteMapObjects(routeId, null);
+//        }
+//    }
+//
+//    public void drawRoute(String routeId) {
+//        Route route = routeMng.getRoute(routeId);
+//        if (route != null) {
+//            ArrayList<MapObject> mapSections = new ArrayList<>();
+//            for (Section section : route.getSections()) {
+//                MapObject obj = drawSection(section, SubpolylineHelper.subpolyline(route.getGeometry(),
+//                        section.getGeometry()), route.getMetadata().getWeight(), 0);
+//                mapSections.add(obj);
+//            }
+//            routeMng.putRouteMapObjects(routeId, mapSections);
+//        }
+//    }
+
+    public void findRoutes(ArrayList<Point> points, final ArrayList<String> vehicles, final String id) {
+        final YamapView self = this;
+        Session.RouteListener listener = new Session.RouteListener() {
+            @Override
+            public void onMasstransitRoutes(@NonNull List<Route> routes) {
+                WritableArray jsonRoutes = Arguments.createArray();
+                for (int i = 0; i < routes.size(); ++i) {
+                    Route _route = routes.get(i);
+                    WritableMap jsonRoute = Arguments.createMap();
+                    String id = RouteManager.generateId();
+                    self.routeMng.saveRoute(_route, id);
+                    jsonRoute.putString("id", id);
+                    WritableArray sections = Arguments.createArray();
+                    for (Section section : _route.getSections()) {
+                        WritableMap jsonSection = convertRouteSection(_route, section, SubpolylineHelper.subpolyline(_route.getGeometry(),
+                                section.getGeometry()), _route.getMetadata().getWeight(), i);
+                        sections.pushMap(jsonSection);
+                    }
+                    jsonRoute.putArray("sections", sections);
+                    jsonRoutes.pushMap(jsonRoute);
+                }
+                self.onRoutesFound(id, jsonRoutes, "success");
+            }
+
+            @Override
+            public void onMasstransitRoutesError(@NonNull Error error) {
+                self.onRoutesFound(id, Arguments.createArray(), "error");
+            }
+        };
+        ArrayList<RequestPoint> _points = new ArrayList<>();
+        for (int i = 0; i < points.size(); ++i) {
+            Point point = points.get(i);
+            _points.add(new RequestPoint(point, new ArrayList<Point>(), RequestPointType.WAYPOINT));
+        }
+        if (vehicles.size() == 0) {
+            pedestrianRouter.requestRoutes(_points, new TimeOptions(), listener);
+            return;
+        }
+        MasstransitOptions masstransitOptions = new MasstransitOptions(new ArrayList<String>(), vehicles, new TimeOptions());
+        masstransitRouter.requestRoutes(_points, masstransitOptions, listener);
     }
 
     public void fitAllMarkers() {
@@ -168,119 +232,40 @@ public class YamapView extends MapView implements Session.RouteListener, UserLoc
         });
     }
 
-    public void setRouteColors(ReadableMap colors) {
-        // todo[1]: RERENDER!!!
-        // todo[1]: ставить дефолтный если не передан конкретный транспорт. Логично делать в js
-        if (colors == null) {
-            vehicleColors = DEFAULT_VEHICLE_COLORS;
-            return;
-        }
-        ReadableMapKeySetIterator iterator = colors.keySetIterator();
-        while (iterator.hasNextKey()) {
-            String key = iterator.nextKey();
-            ReadableType type = colors.getType(key);
-            if (type != ReadableType.String) {
-                throw new IllegalArgumentException("Color prop for \"" + key + "\" should have a String type");
-            }
-            vehicleColors.put(key, colors.getString(key));
-        }
-    }
+//    private MapObject drawSection(final Section section, Polyline geometry, Weight routeWeight, int routeIndex) {
+//        // todo: вынести route в отдельный компонент
+//        PolylineMapObject polylineMapObject = getMap().getMapObjects().addPolyline(geometry);
+//        SectionMetadata.SectionData data = section.getMetadata().getData();
+//        if (data.getTransports() != null) {
+//            for (Transport transport : data.getTransports()) {
+//                for (String type : transport.getLine().getVehicleTypes()) {
+//                    if (type.equals("suburban")) continue;
+//                    int color;
+//                    if (transportHasStyle(transport)) {
+//                        color = transport.getLine().getStyle().getColor() | 0xFF000000;
+//                    } else {
+//                        if (DEFAULT_VEHICLE_COLORS.containsKey(type)) {
+//                            color = Color.parseColor(DEFAULT_VEHICLE_COLORS.get(type));
+//                        } else {
+//                            color = Color.BLACK;
+//                        }
+//                    }
+//                    polylineMapObject.setStrokeColor(color);
+//                }
+//            }
+//        } else {
+//            setDashPolyline(polylineMapObject);
+//        }
+//        return polylineMapObject;
+//    }
 
-    public void setAcceptVehicleTypes(ArrayList<String> _acceptVehicleTypes) {
-        acceptVehicleTypes = _acceptVehicleTypes;
-        removeAllSections();
-        if (acceptVehicleTypes.isEmpty()) {
-            onRoutesFound(Arguments.createArray());
-            return;
-        }
-        if (!lastKnownRoutePoints.isEmpty()) {
-            requestRoute(lastKnownRoutePoints);
-        }
-    }
-
-    public void removeRoute() {
-        lastKnownRoutePoints = null;
-        removeAllSections();
-    }
-
-    public void requestRoute(@Nonnull ArrayList<RequestPoint> points) {
-        // todo[1] - все равно не надежно - мог произойти запрос маршрута, затем запрос нового, пока старый еще не найден. Тогда будут найдены и отрисованы оба маршрута
-        // todo[2] - нужно делать через ref. Запрос маршрута -> проброс найденых вариантов в js -> запрос из js нарисовать маршруты по id. Удалять аналогично
-        lastKnownRoutePoints = points;
-        removeAllSections();
-        if (acceptVehicleTypes.size() > 0) {
-            if (acceptVehicleTypes.contains("walk")) {
-                walkSession = pedestrianRouter.requestRoutes(points, new TimeOptions(), this);
-                return;
-            }
-            transportSession = masstransitRouter.requestRoutes(points, masstransitOptions.setAcceptTypes(acceptVehicleTypes), this);
-        }
-    }
-
-    @Override
-    public void onMasstransitRoutes(@Nonnull List<Route> routes) {
-        if (routes.size() > 0) {
-            if (acceptVehicleTypes.contains("walk")) {
-                processRoute(routes.get(0), 0);
-            } else {
-                for (int i = 0; i < routes.size(); i++) {
-                    processRoute(routes.get(i), i);
-                }
-            }
-            onRoutesFound(this.routes);
-            this.routes = Arguments.createArray();
-        }
-    }
-
-    private void processRoute(Route route, int index) {
-        // You need to check the routes and draw this route only if
-        // there is at least one transport belonging to the acceptVehicleTypes list
-        boolean isRouteBelongToAcceptedVehicleList = false;
-        boolean isWalkRoute = true;
-
-        for (Section section : route.getSections()) {
-            if (section.getMetadata().getData().getTransports() != null) {
-                isWalkRoute = false;
-                for (Transport transport : section.getMetadata().getData().getTransports()) {
-                    for (String type : transport.getLine().getVehicleTypes()) {
-                        if (acceptVehicleTypes.contains(type)) {
-                            isRouteBelongToAcceptedVehicleList = true;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (isRouteBelongToAcceptedVehicleList || isWalkRoute) {
-            for (Section section : route.getSections()) {
-                drawSection(section, SubpolylineHelper.subpolyline(route.getGeometry(),
-                        section.getGeometry()), route.getMetadata().getWeight(), index);
-            }
-
-            this.routes.pushArray(currentRouteInfo);
-            currentRouteInfo = Arguments.createArray();
-        }
-    }
-
-    @Override
-    public void onMasstransitRoutesError(@Nonnull Error error) {
-        // todo: implement error handling
-        // f.e: emit error event to js
-    }
-
-    private void drawSection(final Section section, Polyline geometry, Weight routeWeight, int routeIndex) {
-        if (acceptVehicleTypes.isEmpty()) {
-            removeAllSections();
-            return;
-        }
-
+    private WritableMap convertRouteSection(Route route, final Section section, Polyline geometry, Weight routeWeight, int routeIndex) {
         SectionMetadata.SectionData data = section.getMetadata().getData();
-        PolylineMapObject polylineMapObject = getMap().getMapObjects().addCollection().addPolyline(geometry);
         WritableMap routeMetadata = Arguments.createMap();
         WritableMap routeWeightData = Arguments.createMap();
         WritableMap sectionWeightData = Arguments.createMap();
         Map<String, ArrayList<String>> transports = new HashMap<>();
+//        routeWeightData.putString("geometry", section.getGeometry().);
         routeWeightData.putString("time", routeWeight.getTime().getText());
         routeWeightData.putInt("transferCount", routeWeight.getTransfersCount());
         routeWeightData.putDouble("walkingDistance", routeWeight.getWalkingDistance().getValue());
@@ -311,22 +296,17 @@ public class YamapView extends MapView implements Session.RouteListener, UserLoc
                         transports.put(type, list);
                     }
                     routeMetadata.putString("type", type);
-                    int color;
+                    int color = Color.BLACK;
                     if (transportHasStyle(transport)) {
-                        color = transport.getLine().getStyle().getColor() | 0xFF000000;
-                    } else {
-                        if (vehicleColors.containsKey(type)) {
-                            color = Color.parseColor(vehicleColors.get(type));
-                        } else {
-                            color = Color.BLACK;
+                        try {
+                            color = transport.getLine().getStyle().getColor();
+                        } catch (Exception ignored) {
                         }
                     }
                     routeMetadata.putString("sectionColor", formatColor(color));
-                    polylineMapObject.setStrokeColor(color);
                 }
             }
         } else {
-            setDashPolyline(polylineMapObject);
             routeMetadata.putString("sectionColor", formatColor(Color.DKGRAY));
             if (section.getMetadata().getWeight().getWalkingDistance().getValue() == 0) {
                 routeMetadata.putString("type", "waiting");
@@ -339,18 +319,30 @@ public class YamapView extends MapView implements Session.RouteListener, UserLoc
             wTransports.putArray(entry.getKey(), Arguments.fromList(entry.getValue()));
         }
         routeMetadata.putMap("transports", wTransports);
-        currentRouteInfo.pushMap(routeMetadata);
+        Polyline subpolyline = SubpolylineHelper.subpolyline(route.getGeometry(), section.getGeometry());
+        List<Point> linePoints = subpolyline.getPoints();
+        WritableArray jsonPoints = Arguments.createArray();
+        for (Point point: linePoints) {
+            WritableMap jsonPoint = Arguments.createMap();
+            jsonPoint.putDouble("lat", point.getLatitude());
+            jsonPoint.putDouble("lon", point.getLongitude());
+            jsonPoints.pushMap(jsonPoint);
+        }
+        routeMetadata.putArray("points", jsonPoints);
+        return routeMetadata;
     }
 
-    private void removeAllSections() {
-        // todo: удалять только секции
-        // todo: вынести clear в отдельный метод, чтобы чистить одновременно
-        getMap().getMapObjects().clear();
-    }
+//    private void removeAllSections() {
+//        // todo: удалять только секции
+//        // todo: вынести clear в отдельный метод, чтобы чистить одновременно
+//        getMap().getMapObjects().clear();
+//    }
 
-    public void onRoutesFound(WritableArray routes) {
+    public void onRoutesFound(String id, WritableArray routes, String status) {
         WritableMap event = Arguments.createMap();
         event.putArray("routes", routes);
+        event.putString("id", id);
+        event.putString("status", status);
         ReactContext reactContext = (ReactContext) getContext();
         reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "routes", event);
     }
@@ -362,7 +354,7 @@ public class YamapView extends MapView implements Session.RouteListener, UserLoc
     private void setDashPolyline(PolylineMapObject polylineMapObject) {
         polylineMapObject.setDashLength(8f);
         polylineMapObject.setGapLength(11f);
-        polylineMapObject.setStrokeColor(Color.parseColor(vehicleColors.get("walk")));
+//        polylineMapObject.setStrokeColor(Color.parseColor(vehicleColors.get("walk")));
         polylineMapObject.setStrokeWidth(2f);
     }
 
@@ -403,6 +395,7 @@ public class YamapView extends MapView implements Session.RouteListener, UserLoc
         userLocationView = _userLocationView;
         updateUserLocationIcon();
     }
+
     @Override
     public void onObjectRemoved(@Nonnull UserLocationView userLocationView) {
     }
