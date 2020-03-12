@@ -40,12 +40,13 @@
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 
 @implementation RNYMView {
+    
     YMKMasstransitSession *masstransitSession;
     YMKMasstransitSession *walkSession;
     YMKMasstransitRouter *masstransitRouter;
     YMKPedestrianRouter *pedestrianRouter;
     YMKMasstransitOptions *masstransitOptions;
-    void (^routeHandler)(NSArray<YMKMasstransitRoute *>*, NSError *);
+    YMKMasstransitSessionRouteHandler routeHandler;
 
     NSMutableArray<UIView*>* _reactSubviews;
 
@@ -77,22 +78,22 @@
     [vehicleColors setObject:@"#BDCCDC" forKey:@"underground"];
     [vehicleColors setObject:@"#55CfDC" forKey:@"trolleybus"];
     [vehicleColors setObject:@"#2d9da8" forKey:@"walk"];
-    __weak RNYMView *weakSelf = self;
-    routeHandler = ^(NSArray<YMKMasstransitRoute *> *routes, NSError *error) {
-        if (error != nil) return;
-        RNYMView *strongSelf = weakSelf;
-        if ([routes count] > 0) {
-            if ([strongSelf->acceptVehicleTypes containsObject:@"walk"]) {
-                [strongSelf processRouteWithRoute:routes[0] index:0];
-            } else {
-                for (int i = 0; i < [routes count]; i++) {
-                    [strongSelf processRouteWithRoute:routes[i] index:i];
-                }
-            }
-            [strongSelf onReceiveNativeEvent:strongSelf->routes];
-            strongSelf->routes = [[NSMutableArray alloc] init];
-        }
-    };
+   __weak RNYMView *weakSelf = self;
+   routeHandler = ^(NSArray<YMKMasstransitRoute *> *routes, NSError *error) {
+//       if (error != nil) return;
+       RNYMView *strongSelf = weakSelf;
+       if ([routes count] > 0) {
+           if ([strongSelf->acceptVehicleTypes containsObject:@"walk"]) {
+               [strongSelf processRouteWithRoute:routes[0] index:0];
+           } else {
+               for (int i = 0; i < [routes count]; i++) {
+                   [strongSelf processRouteWithRoute:routes[i] index:i];
+               }
+           }
+           [strongSelf onReceiveNativeEvent:strongSelf->routes];
+           strongSelf->routes = [[NSMutableArray alloc] init];
+       }
+   };
     YMKMapKit* inst = [YMKMapKit sharedInstance];
     YMKUserLocationLayer *userLayer = [inst createUserLocationLayerWithMapWindow: self.mapWindow];
     userLocationView = nil;
@@ -100,6 +101,15 @@
     [userLayer setVisibleWithOn:YES];
     [userLayer setObjectListenerWithObjectListener: self];
     return self;
+}
+
+-(void) findRoutes:(NSArray<YMKRequestPoint*>*) _points vehicles:(NSArray<NSString*>*) vehicles withId:(NSString*)_id {
+    if ([vehicles count] == 0) {
+        walkSession = [pedestrianRouter requestRoutesWithPoints:_points timeOptions:[[YMKTimeOptions alloc] init] routeHandler:routeHandler];
+        return;
+    }
+    YMKMasstransitOptions* _masstransitOptions =[YMKMasstransitOptions masstransitOptionsWithAvoidTypes:[[NSArray alloc] init] acceptTypes:vehicles timeOptions:[[YMKTimeOptions alloc] init]];
+    masstransitSession = [masstransitRouter requestRoutesWithPoints:_points masstransitOptions:_masstransitOptions routeHandler:routeHandler];
 }
 
 -(void)processRouteWithRoute:(YMKMasstransitRoute *)route index:(int) index {

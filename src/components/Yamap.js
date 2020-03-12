@@ -20,12 +20,23 @@ export default class YaMap extends React.Component {
 
   static ALL_VEHICLES = [
     'bus',
-    'railway',
+    'trolleybus',
     'tramway',
+    'minibus',
     'suburban',
     'underground',
-    'trolleybus',
+    'ferry',
+    'cable',
+    'funicular',
   ];
+  // static ALL_VEHICLES = [
+  //   'bus',
+  //   'railway',
+  //   'tramway',
+  //   'suburban',
+  //   'underground',
+  //   'trolleybus',
+  // ];
 
   static init(apiKey) {
     yamap.init(apiKey);
@@ -70,14 +81,19 @@ export default class YaMap extends React.Component {
 
   findRoutes(points, vehicles, cb) {
     const cbId = CallbacksManager.addCallback(cb);
+    const args =
+      Platform.OS === 'ios'
+        ? [{points, vehicles, id: cbId}]
+        : [points, vehicles, cbId];
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('findRoutes'),
-      [points, vehicles, cbId],
+      args, // [points, vehicles, cbId],
     );
   }
 
   processRoute(event) {
+    console.log(event.nativeEvent);
     CallbacksManager.call(event.nativeEvent.id, event);
   }
 

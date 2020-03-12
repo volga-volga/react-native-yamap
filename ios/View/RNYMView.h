@@ -15,12 +15,14 @@
 // ref
 -(void) setCenter:(YMKPoint*) center withZoom:(float) zoom;
 -(void) fitAllMarkers;
+-(void) findRoutes:(NSArray<YMKRequestPoint*>*) points vehicles:(NSArray<NSString*>*) vehicles withId:(NSString*)_id;
 
 // props
 -(void) clearRoute;
 -(void) setRouteWithStart:(YMKRequestPoint*) start end:(YMKRequestPoint*) end;
 -(void) setAcceptedVehicleTypes:(NSArray*) acceptVehicleTypes;
 -(void) setVehicleColors:(NSDictionary*) _vehicleColors;
+
 -(void) setUserLocationIcon:(NSString*) iconSource;
 
 @end
