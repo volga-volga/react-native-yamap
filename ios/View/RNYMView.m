@@ -40,7 +40,7 @@
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 
 @implementation RNYMView {
-    
+
     YMKMasstransitSession *masstransitSession;
     YMKMasstransitSession *walkSession;
     YMKMasstransitRouter *masstransitRouter;
@@ -78,22 +78,6 @@
     [vehicleColors setObject:@"#BDCCDC" forKey:@"underground"];
     [vehicleColors setObject:@"#55CfDC" forKey:@"trolleybus"];
     [vehicleColors setObject:@"#2d9da8" forKey:@"walk"];
-   __weak RNYMView *weakSelf = self;
-   routeHandler = ^(NSArray<YMKMasstransitRoute *> *routes, NSError *error) {
-//       if (error != nil) return;
-       RNYMView *strongSelf = weakSelf;
-       if ([routes count] > 0) {
-           if ([strongSelf->acceptVehicleTypes containsObject:@"walk"]) {
-               [strongSelf processRouteWithRoute:routes[0] index:0];
-           } else {
-               for (int i = 0; i < [routes count]; i++) {
-                   [strongSelf processRouteWithRoute:routes[i] index:i];
-               }
-           }
-           [strongSelf onReceiveNativeEvent:strongSelf->routes];
-           strongSelf->routes = [[NSMutableArray alloc] init];
-       }
-   };
     YMKMapKit* inst = [YMKMapKit sharedInstance];
     YMKUserLocationLayer *userLayer = [inst createUserLocationLayerWithMapWindow: self.mapWindow];
     userLocationView = nil;
@@ -103,63 +87,10 @@
     return self;
 }
 
--(void) findRoutes:(NSArray<YMKRequestPoint*>*) _points vehicles:(NSArray<NSString*>*) vehicles withId:(NSString*)_id {
-    if ([vehicles count] == 0) {
-        walkSession = [pedestrianRouter requestRoutesWithPoints:_points timeOptions:[[YMKTimeOptions alloc] init] routeHandler:routeHandler];
-        return;
-    }
-    YMKMasstransitOptions* _masstransitOptions =[YMKMasstransitOptions masstransitOptionsWithAvoidTypes:[[NSArray alloc] init] acceptTypes:vehicles timeOptions:[[YMKTimeOptions alloc] init]];
-    masstransitSession = [masstransitRouter requestRoutesWithPoints:_points masstransitOptions:_masstransitOptions routeHandler:routeHandler];
-}
-
--(void)processRouteWithRoute:(YMKMasstransitRoute *)route index:(int) index {
-    BOOL isRouteBelongToAcceptedVehicleList = false;
-    BOOL isWalkRoute = true;
-    for (YMKMasstransitSection *section in route.sections) {
-        if (section.metadata.data.transports != nil) {
-            isWalkRoute = false;
-            for (YMKMasstransitTransport *transport in section.metadata.data.transports) {
-                for (NSString *type in transport.line.vehicleTypes) {
-                    if ([self->acceptVehicleTypes containsObject:type]) {
-                        isRouteBelongToAcceptedVehicleList = true;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    if (isRouteBelongToAcceptedVehicleList || isWalkRoute) {
-        for (YMKMasstransitSection *section in route.sections) {
-            [self drawSection:section withGeometry:YMKMakeSubpolyline(route.geometry, section.geometry) withWeight:route.metadata.weight withIndex:index];
-        }
-        [self->routes addObject:self->currentRouteInfo];
-        self->currentRouteInfo = [[NSMutableArray alloc] init];
-    }
-}
-
--(UIImage*) resolveUIImage:(NSString*) uri {
-    UIImage *icon;
-    if ([uri rangeOfString:@"http://"].location == NSNotFound && [uri rangeOfString:@"https://"].location == NSNotFound) {
-        if ([uri rangeOfString:@"file://"].location != NSNotFound){
-            NSString *file = [uri substringFromIndex:8];
-            icon = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL fileURLWithPath:file]]];
-        } else {
-            icon = [UIImage imageNamed:uri];
-        }
-    } else {
-        icon = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:uri]]];
-    }
-    return icon;
-}
-
--(void)drawSection:(YMKMasstransitSection *) section withGeometry:(YMKPolyline *) geometry withWeight:(YMKMasstransitWeight *) routeWeight withIndex:(int) routeIndex {
-    if ([acceptVehicleTypes count] == 0) {
-        [self removeAllSections];
-        return;
-    }
-    YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+-(NSDictionary*) convertRouteSection:(YMKMasstransitRoute*) route withSection:(YMKMasstransitSection*) section {
+    int routeIndex = 0;
+    YMKMasstransitWeight* routeWeight = route.metadata.weight;
     YMKMasstransitSectionMetadataSectionData *data = section.metadata.data;
-    YMKPolylineMapObject *polylineMapObject = [[objects addCollection] addPolylineWithPolyline:geometry];
     NSMutableDictionary *routeMetadata = [[NSMutableDictionary alloc] init];
     NSMutableDictionary *routeWeightData = [[NSMutableDictionary alloc] init];
     NSMutableDictionary *sectionWeightData = [[NSMutableDictionary alloc] init];
@@ -205,11 +136,9 @@
                     }
                 }
                 [routeMetadata setObject:[RNYMView hexStringFromColor:color] forKey:@"sectionColor"];
-                [polylineMapObject setStrokeColor:color];
             }
         }
     } else {
-        [self setDashPolyline:polylineMapObject];
         [routeMetadata setObject:UIColor.darkGrayColor forKey:@"sectionColor"];
         if (section.metadata.weight.walkingDistance.value == 0) {
              [routeMetadata setObject:@"waiting" forKey:@"type"];
@@ -222,19 +151,73 @@
         [wTransports setObject:[transports valueForKey:key] forKey:key];
     }
     [routeMetadata setObject:wTransports forKey:@"transports"];
-    [self->currentRouteInfo addObject:routeMetadata];
+    NSMutableArray* points = [[NSMutableArray alloc] init];
+    YMKPolyline* subpolyline = YMKMakeSubpolyline(route.geometry, section.geometry);
+    for (int i = 0; i < [subpolyline.points count]; ++i) {
+        YMKPoint* point = [subpolyline.points objectAtIndex:i];
+        NSMutableDictionary* jsonPoint = [[NSMutableDictionary alloc] init];
+        [jsonPoint setValue:[NSNumber numberWithDouble:point.latitude] forKey:@"lat"];
+        [jsonPoint setValue:[NSNumber numberWithDouble:point.longitude] forKey:@"lon"];
+        [points addObject:jsonPoint];
+    }
+    [routeMetadata setValue:points forKey:@"points"];
+    return routeMetadata;
 }
 
--(void) setDashPolyline:(YMKPolylineMapObject *)polylineMapObject {
-    [polylineMapObject setDashLength:8.0];
-    [polylineMapObject setGapLength:11.0];
-    [polylineMapObject setStrokeWidth:2.0];
-    [polylineMapObject setStrokeColor:[RNYMView colorFromHexString:[vehicleColors valueForKey:@"walk"]]];
+-(void) findRoutes:(NSArray<YMKRequestPoint*>*) _points vehicles:(NSArray<NSString*>*) vehicles withId:(NSString*)_id {
+    __weak RNYMView *weakSelf = self;
+    YMKMasstransitSessionRouteHandler _routeHandler = ^(NSArray<YMKMasstransitRoute *> *routes, NSError *error) {
+        RNYMView *strongSelf = weakSelf;
+        if (error != nil) {
+            [strongSelf onReceiveNativeEvent: @{@"id": _id, @"status": @"error"}];
+            return;
+        }
+        NSMutableDictionary* response = [[NSMutableDictionary alloc] init];
+        [response setValue:_id forKey:@"id"];
+        [response setValue:@"status" forKey:@"success"];
+        NSMutableArray* jsonRoutes = [[NSMutableArray alloc] init];
+        for (int i = 0; i < [routes count]; ++i) {
+            YMKMasstransitRoute* _route = [routes objectAtIndex:i];
+            NSMutableDictionary* jsonRoute = [[NSMutableDictionary alloc] init];
+
+            [jsonRoute setValue:[NSString stringWithFormat:@"%d", i] forKey:@"id"];
+            NSMutableArray* sections = [[NSMutableArray alloc] init];
+            NSArray<YMKMasstransitSection *>* _sections = [_route sections];
+            for (int j = 0; j < [_sections count]; ++j) {
+                NSDictionary* jsonSection = [self convertRouteSection:_route withSection: [_sections objectAtIndex:j]];
+                [sections addObject:jsonSection];
+            }
+            [jsonRoute setValue:sections forKey:@"sections"];
+            [jsonRoutes addObject:jsonRoute];
+        }
+        [response setValue:jsonRoutes forKey:@"routes"];
+        [strongSelf onReceiveNativeEvent: response];
+    };
+    if ([vehicles count] == 0) {
+        walkSession = [pedestrianRouter requestRoutesWithPoints:_points timeOptions:[[YMKTimeOptions alloc] init] routeHandler:_routeHandler];
+        return;
+    }
+    YMKMasstransitOptions* _masstransitOptions =[YMKMasstransitOptions masstransitOptionsWithAvoidTypes:[[NSArray alloc] init] acceptTypes:vehicles timeOptions:[[YMKTimeOptions alloc] init]];
+    masstransitSession = [masstransitRouter requestRoutesWithPoints:_points masstransitOptions:_masstransitOptions routeHandler:_routeHandler];
 }
 
+-(UIImage*) resolveUIImage:(NSString*) uri {
+    UIImage *icon;
+    if ([uri rangeOfString:@"http://"].location == NSNotFound && [uri rangeOfString:@"https://"].location == NSNotFound) {
+        if ([uri rangeOfString:@"file://"].location != NSNotFound){
+            NSString *file = [uri substringFromIndex:8];
+            icon = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL fileURLWithPath:file]]];
+        } else {
+            icon = [UIImage imageNamed:uri];
+        }
+    } else {
+        icon = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:uri]]];
+    }
+    return icon;
+}
 
--(void)onReceiveNativeEvent:(NSMutableArray *)routes {
-    if (self.onRouteFound) self.onRouteFound(@{@"routes": routes});
+-(void)onReceiveNativeEvent:(NSDictionary *)response {
+    if (self.onRouteFound) self.onRouteFound(response);
 }
 
 -(void) removeAllSections {
@@ -288,33 +271,6 @@
 }
 
 // props
--(void) clearRoute {
-    lastKnownRoutePoints = nil;
-    [self removeAllSections];
-}
-
--(void) setRouteWithStart:(YMKRequestPoint*) start end:(YMKRequestPoint*) end {
-    [self requestRoute:[NSMutableArray arrayWithObjects:start, end, nil]];
-}
-
--(void) setAcceptedVehicleTypes:(NSArray*) _acceptVehicleTypes {
-    acceptVehicleTypes = _acceptVehicleTypes;
-    [self removeAllSections];
-    if ([acceptVehicleTypes count] == 0) {
-        [self onReceiveNativeEvent: [[NSMutableArray alloc] init]];
-        return;
-    }
-    if ([lastKnownRoutePoints count] > 0) {
-        [self requestRoute:lastKnownRoutePoints];
-    }
-}
-
--(void) setVehicleColors:(NSDictionary*) _vehicleColors {
-    for(NSString *key in _vehicleColors) {
-        [vehicleColors setValue:[_vehicleColors valueForKey:key] forKey:key];
-    }
-}
-
 -(void) setUserLocationIcon:(NSString*) iconSource {
     userLocationImage = [self resolveUIImage: iconSource];
     [self updateUserIcon];
@@ -324,19 +280,6 @@
     if (userLocationView != nil && userLocationImage) {
         [userLocationView.pin setIconWithImage: userLocationImage];
         [userLocationView.arrow setIconWithImage: userLocationImage];
-    }
-}
-
--(void) requestRoute:(NSMutableArray<YMKRequestPoint *> *) points {
-    lastKnownRoutePoints = points;
-    if ([acceptVehicleTypes count] > 0) {
-        if ([acceptVehicleTypes containsObject:@"walk"]) {
-            walkSession = [pedestrianRouter requestRoutesWithPoints:points timeOptions:[[YMKTimeOptions alloc] init] routeHandler:routeHandler];
-            return;
-        }
-        masstransitSession = [masstransitRouter requestRoutesWithPoints:points masstransitOptions:masstransitOptions routeHandler:routeHandler];
-    } else {
-        [self clearRoute];
     }
 }
 

@@ -37,33 +37,9 @@ RCT_EXPORT_MODULE()
 // props
 RCT_EXPORT_VIEW_PROPERTY(onRouteFound, RCTBubblingEventBlock)
 
-RCT_CUSTOM_VIEW_PROPERTY(route, NSDictionary, RNYMView) {
-   if (json) {
-       NSDictionary *routeDict = [RCTConvert RouteDict:json];
-       YMKRequestPoint * start = [YMKRequestPoint requestPointWithPoint:[routeDict objectForKey:@"start"] type: YMKRequestPointTypeWaypoint pointContext:nil];
-       YMKRequestPoint * end = [YMKRequestPoint requestPointWithPoint:[routeDict objectForKey:@"end"] type: YMKRequestPointTypeWaypoint pointContext:nil];
-       [view setRouteWithStart:start end: end];
-   } else {
-       [view clearRoute];
-   }
-}
-
 RCT_CUSTOM_VIEW_PROPERTY(userLocationIcon, NSString, RNYMView) {
     if (json && view) {
         [view setUserLocationIcon: json];
-    }
-}
-
-RCT_CUSTOM_VIEW_PROPERTY(routeColors, YMKPoint, RNYMView) {
-    if (json == nil) return;
-    NSDictionary *parsed = [RCTConvert RouteColors:json];
-    [view setVehicleColors: parsed];
-}
-
-RCT_CUSTOM_VIEW_PROPERTY(vehicles, YMKPoint, RNYMView) {
-    if (json) {
-        NSArray *parsed = [RCTConvert Vehicles:json];
-        [view setAcceptedVehicleTypes: parsed];
     }
 }
 

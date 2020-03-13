@@ -22,7 +22,6 @@ import com.yandex.mapkit.geometry.Polyline;
 import com.yandex.mapkit.geometry.SubpolylineHelper;
 import com.yandex.mapkit.layers.ObjectEvent;
 import com.yandex.mapkit.map.CameraPosition;
-import com.yandex.mapkit.map.MapObject;
 import com.yandex.mapkit.map.PlacemarkMapObject;
 import com.yandex.mapkit.map.PolygonMapObject;
 import com.yandex.mapkit.map.PolylineMapObject;
@@ -98,37 +97,6 @@ public class YamapView extends MapView implements UserLocationObjectListener {
         // todo[0]: добавить параметры анимации
         getMap().move(new CameraPosition(location, zoom, 0.0F, 0.0F), new Animation(Animation.Type.SMOOTH, 1.8F), null);
     }
-
-//    public void removeAllRoutes() {
-//        todo
-//    }
-//
-//    public void removeRoute(String routeId) {
-//        ArrayList<MapObject> objects = routeMng.getRouteMapObjects(routeId);
-//        if (objects != null) {
-//            MapObjectCollection mapObjects = getMap().getMapObjects();
-//            for (int i = 0; i < objects.size(); ++i) {
-//                try {
-//                    mapObjects.remove(objects.get(i));
-//                } catch (Exception ignored) {
-//                }
-//            }
-//            routeMng.putRouteMapObjects(routeId, null);
-//        }
-//    }
-//
-//    public void drawRoute(String routeId) {
-//        Route route = routeMng.getRoute(routeId);
-//        if (route != null) {
-//            ArrayList<MapObject> mapSections = new ArrayList<>();
-//            for (Section section : route.getSections()) {
-//                MapObject obj = drawSection(section, SubpolylineHelper.subpolyline(route.getGeometry(),
-//                        section.getGeometry()), route.getMetadata().getWeight(), 0);
-//                mapSections.add(obj);
-//            }
-//            routeMng.putRouteMapObjects(routeId, mapSections);
-//        }
-//    }
 
     public void findRoutes(ArrayList<Point> points, final ArrayList<String> vehicles, final String id) {
         final YamapView self = this;
@@ -232,40 +200,12 @@ public class YamapView extends MapView implements UserLocationObjectListener {
         });
     }
 
-//    private MapObject drawSection(final Section section, Polyline geometry, Weight routeWeight, int routeIndex) {
-//        // todo: вынести route в отдельный компонент
-//        PolylineMapObject polylineMapObject = getMap().getMapObjects().addPolyline(geometry);
-//        SectionMetadata.SectionData data = section.getMetadata().getData();
-//        if (data.getTransports() != null) {
-//            for (Transport transport : data.getTransports()) {
-//                for (String type : transport.getLine().getVehicleTypes()) {
-//                    if (type.equals("suburban")) continue;
-//                    int color;
-//                    if (transportHasStyle(transport)) {
-//                        color = transport.getLine().getStyle().getColor() | 0xFF000000;
-//                    } else {
-//                        if (DEFAULT_VEHICLE_COLORS.containsKey(type)) {
-//                            color = Color.parseColor(DEFAULT_VEHICLE_COLORS.get(type));
-//                        } else {
-//                            color = Color.BLACK;
-//                        }
-//                    }
-//                    polylineMapObject.setStrokeColor(color);
-//                }
-//            }
-//        } else {
-//            setDashPolyline(polylineMapObject);
-//        }
-//        return polylineMapObject;
-//    }
-
     private WritableMap convertRouteSection(Route route, final Section section, Polyline geometry, Weight routeWeight, int routeIndex) {
         SectionMetadata.SectionData data = section.getMetadata().getData();
         WritableMap routeMetadata = Arguments.createMap();
         WritableMap routeWeightData = Arguments.createMap();
         WritableMap sectionWeightData = Arguments.createMap();
         Map<String, ArrayList<String>> transports = new HashMap<>();
-//        routeWeightData.putString("geometry", section.getGeometry().);
         routeWeightData.putString("time", routeWeight.getTime().getText());
         routeWeightData.putInt("transferCount", routeWeight.getTransfersCount());
         routeWeightData.putDouble("walkingDistance", routeWeight.getWalkingDistance().getValue());
@@ -332,12 +272,6 @@ public class YamapView extends MapView implements UserLocationObjectListener {
         return routeMetadata;
     }
 
-//    private void removeAllSections() {
-//        // todo: удалять только секции
-//        // todo: вынести clear в отдельный метод, чтобы чистить одновременно
-//        getMap().getMapObjects().clear();
-//    }
-
     public void onRoutesFound(String id, WritableArray routes, String status) {
         WritableMap event = Arguments.createMap();
         event.putArray("routes", routes);
@@ -349,13 +283,6 @@ public class YamapView extends MapView implements UserLocationObjectListener {
 
     private boolean transportHasStyle(Transport transport) {
         return transport.getLine().getStyle() != null;
-    }
-
-    private void setDashPolyline(PolylineMapObject polylineMapObject) {
-        polylineMapObject.setDashLength(8f);
-        polylineMapObject.setGapLength(11f);
-//        polylineMapObject.setStrokeColor(Color.parseColor(vehicleColors.get("walk")));
-        polylineMapObject.setStrokeWidth(2f);
     }
 
     private String formatColor(int color) {

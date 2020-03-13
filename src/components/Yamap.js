@@ -29,14 +29,6 @@ export default class YaMap extends React.Component {
     'cable',
     'funicular',
   ];
-  // static ALL_VEHICLES = [
-  //   'bus',
-  //   'railway',
-  //   'tramway',
-  //   'suburban',
-  //   'underground',
-  //   'trolleybus',
-  // ];
 
   static init(apiKey) {
     yamap.init(apiKey);
@@ -63,22 +55,6 @@ export default class YaMap extends React.Component {
     }
   }
 
-  // drawRoute(routeId) {
-  //   UIManager.dispatchViewManagerCommand(
-  //     findNodeHandle(this),
-  //     this.getCommand('drawRoute'),
-  //     [routeId],
-  //   );
-  // }
-  //
-  // removeRoute(routeId) {
-  //   UIManager.dispatchViewManagerCommand(
-  //     findNodeHandle(this),
-  //     this.getCommand('removeRoute'),
-  //     [routeId],
-  //   );
-  // }
-
   findRoutes(points, vehicles, cb) {
     const cbId = CallbacksManager.addCallback(cb);
     const args =
@@ -88,12 +64,11 @@ export default class YaMap extends React.Component {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('findRoutes'),
-      args, // [points, vehicles, cbId],
+      args,
     );
   }
 
   processRoute(event) {
-    console.log(event.nativeEvent);
     CallbacksManager.call(event.nativeEvent.id, event);
   }
 
@@ -122,7 +97,9 @@ export default class YaMap extends React.Component {
       <YaMapNative
         {...this.props}
         ref={this.map}
+        // todo: сделать один пропс на обе платформы
         onRoutesFound={this.processRoute}
+        onRouteFound={this.processRoute}
         userLocationIcon={this.resolveImageUri(this.props.userLocationIcon)}
       />
     );
