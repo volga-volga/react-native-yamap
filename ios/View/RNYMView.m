@@ -42,7 +42,6 @@
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 
 @implementation RNYMView {
-
     YMKMasstransitSession *masstransitSession;
     YMKMasstransitSession *walkSession;
     YMKMasstransitRouter *masstransitRouter;
@@ -51,9 +50,7 @@
     YMKPedestrianRouter *pedestrianRouter;
     YMKMasstransitOptions *masstransitOptions;
     YMKMasstransitSessionRouteHandler routeHandler;
-
     NSMutableArray<UIView*>* _reactSubviews;
-
     NSMutableArray *routes;
     NSMutableArray *currentRouteInfo;
     NSMutableArray<YMKRequestPoint *>* lastKnownRoutePoints;
@@ -92,6 +89,47 @@
     return self;
 }
 
+-(NSDictionary*) convertDrivingRouteSection:(YMKDrivingRoute*) route withSection:(YMKDrivingSection*) section {
+    int routeIndex = 0;
+    YMKDrivingWeight* routeWeight = route.metadata.weight;
+    NSMutableDictionary *routeMetadata = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary *routeWeightData = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary *sectionWeightData = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary *transports = [[NSMutableDictionary alloc] init];
+    NSMutableArray *stops = [[NSMutableArray alloc] init];
+    [routeWeightData setObject:routeWeight.time.text forKey:@"time"];
+    [routeWeightData setObject:routeWeight.timeWithTraffic.text forKey:@"timeWithTraffic"];
+    [routeWeightData setObject:@(routeWeight.distance.value) forKey:@"distance"];
+    [sectionWeightData setObject:section.metadata.weight.time.text forKey:@"time"];
+    [sectionWeightData setObject:section.metadata.weight.timeWithTraffic.text forKey:@"timeWithTraffic"];
+    [sectionWeightData setObject:@(section.metadata.weight.distance.value) forKey:@"distance"];
+    [routeMetadata setObject:sectionWeightData forKey:@"sectionInfo"];
+    [routeMetadata setObject:routeWeightData forKey:@"routeInfo"];
+    [routeMetadata setObject:@(routeIndex) forKey:@"routeIndex"];
+    [routeMetadata setObject:stops forKey:@"stops"];
+    [routeMetadata setObject:UIColor.darkGrayColor forKey:@"sectionColor"];
+    if (section.metadata.weight.distance.value == 0) {
+        [routeMetadata setObject:@"waiting" forKey:@"type"];
+    } else {
+        [routeMetadata setObject:@"car" forKey:@"type"];
+    }
+    NSMutableDictionary *wTransports = [[NSMutableDictionary alloc] init];
+    for (NSString *key in transports) {
+        [wTransports setObject:[transports valueForKey:key] forKey:key];
+    }
+    [routeMetadata setObject:wTransports forKey:@"transports"];
+    NSMutableArray* points = [[NSMutableArray alloc] init];
+    YMKPolyline* subpolyline = YMKMakeSubpolyline(route.geometry, section.geometry);
+    for (int i = 0; i < [subpolyline.points count]; ++i) {
+        YMKPoint* point = [subpolyline.points objectAtIndex:i];
+        NSMutableDictionary* jsonPoint = [[NSMutableDictionary alloc] init];
+        [jsonPoint setValue:[NSNumber numberWithDouble:point.latitude] forKey:@"lat"];
+        [jsonPoint setValue:[NSNumber numberWithDouble:point.longitude] forKey:@"lon"];
+        [points addObject:jsonPoint];
+    }
+    [routeMetadata setValue:points forKey:@"points"];
+    return routeMetadata;
+}
 -(NSDictionary*) convertRouteSection:(YMKMasstransitRoute*) route withSection:(YMKMasstransitSection*) section {
     int routeIndex = 0;
     YMKMasstransitWeight* routeWeight = route.metadata.weight;
@@ -146,7 +184,7 @@
     } else {
         [routeMetadata setObject:UIColor.darkGrayColor forKey:@"sectionColor"];
         if (section.metadata.weight.walkingDistance.value == 0) {
-             [routeMetadata setObject:@"waiting" forKey:@"type"];
+            [routeMetadata setObject:@"waiting" forKey:@"type"];
         } else {
             [routeMetadata setObject:@"walk" forKey:@"type"];
         }
@@ -171,6 +209,36 @@
 
 -(void) findRoutes:(NSArray<YMKRequestPoint*>*) _points vehicles:(NSArray<NSString*>*) vehicles withId:(NSString*)_id {
     __weak RNYMView *weakSelf = self;
+    if ([vehicles count] == 1 && [[vehicles objectAtIndex:0] isEqualToString:@"car"]) {
+        YMKDrivingDrivingOptions* options = [[YMKDrivingDrivingOptions alloc] init];
+        drivingSession = [drivingRouter requestRoutesWithPoints:_points drivingOptions:options routeHandler:^(NSArray<YMKDrivingRoute *> *routes, NSError *error) {
+            RNYMView *strongSelf = weakSelf;
+            if (error != nil) {
+                [strongSelf onReceiveNativeEvent: @{@"id": _id, @"status": @"error"}];
+                return;
+            }
+            NSMutableDictionary* response = [[NSMutableDictionary alloc] init];
+            [response setValue:_id forKey:@"id"];
+            [response setValue:@"status" forKey:@"success"];
+            NSMutableArray* jsonRoutes = [[NSMutableArray alloc] init];
+            for (int i = 0; i < [routes count]; ++i) {
+                YMKDrivingRoute* _route = [routes objectAtIndex:i];
+                NSMutableDictionary* jsonRoute = [[NSMutableDictionary alloc] init];
+                [jsonRoute setValue:[NSString stringWithFormat:@"%d", i] forKey:@"id"];
+                NSMutableArray* sections = [[NSMutableArray alloc] init];
+                NSArray<YMKDrivingSection *>* _sections = [_route sections];
+                for (int j = 0; j < [_sections count]; ++j) {
+                    NSDictionary* jsonSection = [self convertDrivingRouteSection:_route withSection: [_sections objectAtIndex:j]];
+                    [sections addObject:jsonSection];
+                }
+                [jsonRoute setValue:sections forKey:@"sections"];
+                [jsonRoutes addObject:jsonRoute];
+            }
+            [response setValue:jsonRoutes forKey:@"routes"];
+            [strongSelf onReceiveNativeEvent: response];
+        }];
+        return;
+    }
     YMKMasstransitSessionRouteHandler _routeHandler = ^(NSArray<YMKMasstransitRoute *> *routes, NSError *error) {
         RNYMView *strongSelf = weakSelf;
         if (error != nil) {
@@ -202,34 +270,6 @@
         walkSession = [pedestrianRouter requestRoutesWithPoints:_points timeOptions:[[YMKTimeOptions alloc] init] routeHandler:_routeHandler];
         return;
     }
-//    YMKDrivingDrivingOptions* foo = [[YMKDrivingDrivingOptions alloc] init];
-//    drivingSession = [drivingRouter requestRoutesWithPoints:_points drivingOptions:foo routeHandler:^(NSArray<YMKDrivingRoute *> *routes, NSError *error) {
-//        RNYMView *strongSelf = weakSelf;
-//        if (error != nil) {
-//            [strongSelf onReceiveNativeEvent: @{@"id": _id, @"status": @"error"}];
-//            return;
-//        }
-//        NSMutableDictionary* response = [[NSMutableDictionary alloc] init];
-//        [response setValue:_id forKey:@"id"];
-//        [response setValue:@"status" forKey:@"success"];
-//        NSMutableArray* jsonRoutes = [[NSMutableArray alloc] init];
-//        for (int i = 0; i < [routes count]; ++i) {
-//            YMKDrivingRoute* _route = [routes objectAtIndex:i];
-//            NSMutableDictionary* jsonRoute = [[NSMutableDictionary alloc] init];
-//
-//            [jsonRoute setValue:[NSString stringWithFormat:@"%d", i] forKey:@"id"];
-//            NSMutableArray* sections = [[NSMutableArray alloc] init];
-//            NSArray<YMKMasstransitSection *>* _sections = @[];//[_route sections];
-//            for (int j = 0; j < [_sections count]; ++j) {
-//                NSDictionary* jsonSection = [self convertRouteSection:_route withSection: [_sections objectAtIndex:j]];
-//                [sections addObject:jsonSection];
-//            }
-//            [jsonRoute setValue:sections forKey:@"sections"];
-//            [jsonRoutes addObject:jsonRoute];
-//        }
-//        [response setValue:jsonRoutes forKey:@"routes"];
-//        [strongSelf onReceiveNativeEvent: response];
-//    }];
     YMKMasstransitOptions* _masstransitOptions =[YMKMasstransitOptions masstransitOptionsWithAvoidTypes:[[NSArray alloc] init] acceptTypes:vehicles timeOptions:[[YMKTimeOptions alloc] init]];
     masstransitSession = [masstransitRouter requestRoutesWithPoints:_points masstransitOptions:_masstransitOptions routeHandler:_routeHandler];
 }
@@ -296,8 +336,6 @@
     double scale = (distance/2)/140;
     int zoom = (int) (16 - log(scale) / log(2));
     YMKBoundingBox *boundingBox = [YMKBoundingBox boundingBoxWithSouthWest:southWest northEast:northEast];
-//    YMKCircle *circle = [YMKCircle circleWithCenter:rectCenter radius:distance];
-//    [map.mapWindow.map.mapObjects addCircleWithCircle:circle strokeColor:UIColor.redColor strokeWidth:5 fillColor:UIColor.clearColor];
     YMKCameraPosition *cameraPosition = [self.mapWindow.map cameraPositionWithBoundingBox:boundingBox];
     cameraPosition = [YMKCameraPosition cameraPositionWithTarget:cameraPosition.target zoom:zoom azimuth:cameraPosition.azimuth tilt:cameraPosition.tilt];
     [self.mapWindow.map moveWithCameraPosition:cameraPosition animationType:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:1.0] cameraCallback:^(BOOL completed){}];
@@ -369,7 +407,7 @@
     } else {
         NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
         for (int i = 0; i < childSubviews.count; i++) {
-          [self insertReactSubview:(UIView *)childSubviews[i] atIndex:atIndex];
+            [self insertReactSubview:(UIView *)childSubviews[i] atIndex:atIndex];
         }
     }
     [_reactSubviews insertObject:subview atIndex:atIndex];
@@ -392,7 +430,7 @@
     } else {
         NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
         for (int i = 0; i < childSubviews.count; i++) {
-          [self removeReactSubview:(UIView *)childSubviews[i]];
+            [self removeReactSubview:(UIView *)childSubviews[i]];
         }
     }
     [_reactSubviews removeObject:subview];
