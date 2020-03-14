@@ -110,8 +110,6 @@ export default class YaMap extends React.Component {
       <YaMapNative
         {...this.props}
         ref={this.map}
-        // todo: сделать один пропс на обе платформы
-        onRoutesFound={this.processRoute}
         onRouteFound={this.processRoute}
         userLocationIcon={this.resolveImageUri(this.props.userLocationIcon)}
       />

@@ -43,7 +43,7 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
 
     public Map getExportedCustomBubblingEventTypeConstants() {
         return MapBuilder.builder()
-                .put("routes", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onRoutesFound")))
+                .put("routes", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onRouteFound")))
                 .build();
     }
 
@@ -73,7 +73,6 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
                 fitAllMarkers(view);
                 return;
             case "findRoutes":
-                // todo:
                 if (args != null) {
                     findRoutes(view, args.getArray(0), args.getArray(1), args.getString(2));
                 }
