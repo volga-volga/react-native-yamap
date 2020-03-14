@@ -8,24 +8,57 @@ export interface Point {
   lon: number,
 }
 
-export interface Route {
-  start: Point,
-  end: Point,
+export type MasstransitVehicles = 'bus' | 'trolleybus' | 'tramway' | 'minibus' | 'suburban' | 'underground' | 'ferry' | 'cable' | 'funicular';
+
+export type Vehicles = MasstransitVehicles | 'walk' | 'car';
+
+export interface DrivingInfo {
+  time: string;
+  timeWithTraffic: string;
+  distance: number;
 }
 
-export type Vehiles =  'bus' | 'railway' | 'tramway' | 'suburban' | 'trolleybus' | 'underground' | 'walk';
+export interface MasstransitInfo {
+  time: string;
+  transferCount: number;
+  walkingDistance: number;
+}
+
+export interface RouteInfo<T extends (DrivingInfo | MasstransitInfo)> {
+  id: string;
+  sections: {
+    points: Point[];
+    sectionInfo: T;
+    routeInfo: T;
+    routeIndex: number;
+    stops: any[];
+    type: string;
+    transports?: any;
+    sectionColor?: string;
+  }
+}
+
+
+export interface RoutesFoundEvent<T extends (DrivingInfo | MasstransitInfo)> {
+  nativeEvent: {
+    status: 'success' | 'error';
+    id: string;
+    routes: RouteInfo<T>[];
+  };
+}
 
 interface Props extends ViewProps {
   userLocationIcon: ImageSource;
-  onRouteFound?: (event: Event) => void;
-  route?: Route;
-  vehicles?: Array<Vehiles>;
-  routeColors?: { [key in Vehiles]: string };
 }
 
 declare class YaMap extends React.Component<Props> {
   static init(apiKey: string): void;
+  static ALL_MASSTRANSIT_VEHICLES: MasstransitVehicles[];
   fitAllMarkers(): void;
+  findRoutes(points: Point[], vehicles: Vehicles[], callback: (event: RoutesFoundEvent<DrivingInfo | MasstransitInfo>) => void): void;
+  findMasstransitRoutes(points: Point[], callback: (event: RoutesFoundEvent<MasstransitInfo>) => void): void;
+  findPedestrianRoutes(points: Point[], callback: (event: RoutesFoundEvent<MasstransitInfo>) => void): void;
+  findDrivingRoutes(points: Point[], callback: (event: RoutesFoundEvent<DrivingInfo>) => void): void;
   setCenter(center: { lon: number, lat: number, zoom: number }): void;
 }
 

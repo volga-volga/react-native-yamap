@@ -10,11 +10,11 @@ import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
 import com.yandex.mapkit.MapKitFactory;
-import com.yandex.mapkit.RequestPoint;
-import com.yandex.mapkit.RequestPointType;
 import com.yandex.mapkit.geometry.Point;
+
 import java.util.ArrayList;
 import java.util.Map;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -25,9 +25,10 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
 
     private static final int SET_CENTER = 1;
     private static final int FIT_ALL_MARKERS = 2;
-    private static final int TRY_BUILD_ROUTES = 3;
+    private static final int FIND_ROUTES = 3;
 
-    YamapViewManager() { }
+    YamapViewManager() {
+    }
 
     @Override
     public String getName() {
@@ -42,34 +43,39 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
 
     public Map getExportedCustomBubblingEventTypeConstants() {
         return MapBuilder.builder()
-                .put("routes", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onRoutesFound")))
+                .put("routes", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onRouteFound")))
                 .build();
     }
 
     @Override
-    public Map<String,Integer> getCommandsMap() {
+    public Map<String, Integer> getCommandsMap() {
         return MapBuilder.of(
                 "setCenter",
                 SET_CENTER,
                 "fitAllMarkers",
                 FIT_ALL_MARKERS,
-                "tryBuildRoutes",
-                TRY_BUILD_ROUTES);
+                "findRoutes",
+                FIND_ROUTES);
     }
 
     @Override
     public void receiveCommand(
             YamapView view,
-            int commandType,
+            String commandType,
             @Nullable ReadableArray args) {
         Assertions.assertNotNull(view);
         Assertions.assertNotNull(args);
         switch (commandType) {
-            case SET_CENTER:
+            case "setCenter":
                 setCenter(view, args.getMap(0));
                 return;
-            case FIT_ALL_MARKERS:
+            case "fitAllMarkers":
                 fitAllMarkers(view);
+                return;
+            case "findRoutes":
+                if (args != null) {
+                    findRoutes(view, args.getArray(0), args.getArray(1), args.getString(2));
+                }
                 return;
             default:
                 throw new IllegalArgumentException(String.format(
@@ -104,51 +110,30 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         castToYaMapView(view).fitAllMarkers();
     }
 
+    private void findRoutes(View view, ReadableArray jsPoints, ReadableArray jsVehicles, String id) {
+        if (jsPoints != null) {
+            ArrayList<Point> points = new ArrayList<>();
+            for (int i = 0; i < jsPoints.size(); ++i) {
+                ReadableMap point = jsPoints.getMap(i);
+                if (point != null) {
+                    points.add(new Point(point.getDouble("lat"), point.getDouble("lon")));
+                }
+            }
+            ArrayList<String> vehicles = new ArrayList<>();
+            if (jsVehicles != null) {
+                for (int i = 0; i < jsVehicles.size(); ++i) {
+                    vehicles.add(jsVehicles.getString(i));
+                }
+            }
+            castToYaMapView(view).findRoutes(points, vehicles, id);
+        }
+    }
+
     // props
     @ReactProp(name = "userLocationIcon")
     public void setUserLocationIcon(View view, String icon) {
         if (icon != null) {
             castToYaMapView(view).setUserLocationIcon(icon);
-        }
-    }
-
-    @ReactProp(name = "routeColors")
-    public void setRouteColors(View view, ReadableMap colors) {
-        if (colors != null) {
-            castToYaMapView(view).setRouteColors(colors);
-        }
-    }
-
-    @ReactProp(name = "vehicles")
-    public void requestRouteWithSpecificVehicles(View view, ReadableArray vehicles) {
-        ArrayList<String> parsed = new ArrayList<>();
-        if (vehicles != null) {
-            for (int i = 0; i < vehicles.size(); ++i) {
-                parsed.add(vehicles.getString(i));
-            }
-        }
-        castToYaMapView(view).setAcceptVehicleTypes(parsed);
-    }
-
-    @ReactProp(name = "route")
-    public void requestRoute(View view, ReadableMap points) {
-        if (points == null) {
-            castToYaMapView(view).removeRoute();
-            return;
-        }
-        ReadableMap start = points.getMap("start");
-        ReadableMap end = points.getMap("end");
-        if (start != null && end != null) {
-            Double startLat = start.getDouble("lat");
-            Double startLon = start.getDouble("lon");
-            Double endLat = end.getDouble("lat");
-            Double endLon = end.getDouble("lon");
-            if (startLat != null && startLon != null && endLat != null && endLon != null) {
-                ArrayList<RequestPoint> routePoints = new ArrayList<>();
-                routePoints.add(new RequestPoint(new Point(startLat, startLon), new ArrayList<Point>(), RequestPointType.WAYPOINT));
-                routePoints.add(new RequestPoint(new Point(endLat, endLon), new ArrayList<Point>(), RequestPointType.WAYPOINT));
-                castToYaMapView(view).requestRoute(routePoints);
-            }
         }
     }
 

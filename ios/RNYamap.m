@@ -28,8 +28,7 @@ static NSString * _selectedMarkerIcon;
 }
 
 RCT_EXPORT_METHOD(init: (NSString *) apiKey) {
-    yamap *map = [[yamap alloc] init];
-    [map initWithKey: apiKey];
+    [self initWithKey: apiKey];
 }
 
 RCT_EXPORT_MODULE()
