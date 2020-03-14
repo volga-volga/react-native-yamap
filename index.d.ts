@@ -12,24 +12,28 @@ export type MasstransitVehicles = 'bus' | 'trolleybus' | 'tramway' | 'minibus' |
 
 export type Vehicles = MasstransitVehicles | 'walk' | 'car';
 
-export interface RouteInfo {
+export interface DrivingInfo {
+  time: string;
+  timeWithTraffic: string;
+  distance: number;
+}
+
+export interface MasstransitInfo {
+  time: string;
+  transferCount: number;
+  walkingDistance: number;
+}
+
+export interface RouteInfo<T extends (DrivingInfo | MasstransitInfo)> {
   id: string;
   sections: {
     points: Point[];
-    sectionInfo: {
-      time: number;
-      transferCount: number;
-      walkingDistance: number;
-    };
-    routeInfo: {
-      time: number;
-      transferCount: number;
-      walkingDistance: number;
-    };
+    sectionInfo: T;
+    routeInfo: T;
     routeIndex: number;
     stops: any[];
     type: string;
-    transports: string[];
+    transports?: any;
     sectionColor?: string;
   }
 }

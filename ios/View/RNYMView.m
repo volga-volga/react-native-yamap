@@ -15,6 +15,8 @@
 #import <YandexMapKit/YMKSubpolylineHelper.h>
 #import <YandexMapKit/YMKPlacemarkMapObject.h>
 #import <YandexMapKitTransport/YMKMasstransitSession.h>
+#import <YandexMapKitDirections/YMKDrivingRouter.h>
+#import <YandexMapKitDirections/YMKDrivingSession.h>
 #import <YandexMapKitTransport/YMKMasstransitRouter.h>
 #import <YandexMapKitTransport/YMKPedestrianRouter.h>
 #import <YandexMapKitTransport/YMKMasstransitRouteStop.h>
@@ -44,6 +46,8 @@
     YMKMasstransitSession *masstransitSession;
     YMKMasstransitSession *walkSession;
     YMKMasstransitRouter *masstransitRouter;
+    YMKDrivingRouter* drivingRouter;
+    YMKDrivingSession* drivingSession;
     YMKPedestrianRouter *pedestrianRouter;
     YMKMasstransitOptions *masstransitOptions;
     YMKMasstransitSessionRouteHandler routeHandler;
@@ -63,6 +67,7 @@
     self = [super init];
     _reactSubviews = [[NSMutableArray alloc] init];
     masstransitRouter = [[YMKTransport sharedInstance] createMasstransitRouter];
+    drivingRouter = [[YMKDirections sharedInstance] createDrivingRouter];
     pedestrianRouter = [[YMKTransport sharedInstance] createPedestrianRouter];
     masstransitOptions = [YMKMasstransitOptions masstransitOptionsWithAvoidTypes:[[NSArray alloc] init] acceptTypes:[[NSArray alloc] init] timeOptions:[[YMKTimeOptions alloc] init]];
     acceptVehicleTypes = [[NSMutableArray<NSString *> alloc] init];
@@ -197,6 +202,34 @@
         walkSession = [pedestrianRouter requestRoutesWithPoints:_points timeOptions:[[YMKTimeOptions alloc] init] routeHandler:_routeHandler];
         return;
     }
+//    YMKDrivingDrivingOptions* foo = [[YMKDrivingDrivingOptions alloc] init];
+//    drivingSession = [drivingRouter requestRoutesWithPoints:_points drivingOptions:foo routeHandler:^(NSArray<YMKDrivingRoute *> *routes, NSError *error) {
+//        RNYMView *strongSelf = weakSelf;
+//        if (error != nil) {
+//            [strongSelf onReceiveNativeEvent: @{@"id": _id, @"status": @"error"}];
+//            return;
+//        }
+//        NSMutableDictionary* response = [[NSMutableDictionary alloc] init];
+//        [response setValue:_id forKey:@"id"];
+//        [response setValue:@"status" forKey:@"success"];
+//        NSMutableArray* jsonRoutes = [[NSMutableArray alloc] init];
+//        for (int i = 0; i < [routes count]; ++i) {
+//            YMKDrivingRoute* _route = [routes objectAtIndex:i];
+//            NSMutableDictionary* jsonRoute = [[NSMutableDictionary alloc] init];
+//
+//            [jsonRoute setValue:[NSString stringWithFormat:@"%d", i] forKey:@"id"];
+//            NSMutableArray* sections = [[NSMutableArray alloc] init];
+//            NSArray<YMKMasstransitSection *>* _sections = @[];//[_route sections];
+//            for (int j = 0; j < [_sections count]; ++j) {
+//                NSDictionary* jsonSection = [self convertRouteSection:_route withSection: [_sections objectAtIndex:j]];
+//                [sections addObject:jsonSection];
+//            }
+//            [jsonRoute setValue:sections forKey:@"sections"];
+//            [jsonRoutes addObject:jsonRoute];
+//        }
+//        [response setValue:jsonRoutes forKey:@"routes"];
+//        [strongSelf onReceiveNativeEvent: response];
+//    }];
     YMKMasstransitOptions* _masstransitOptions =[YMKMasstransitOptions masstransitOptionsWithAvoidTypes:[[NSArray alloc] init] acceptTypes:vehicles timeOptions:[[YMKTimeOptions alloc] init]];
     masstransitSession = [masstransitRouter requestRoutesWithPoints:_points masstransitOptions:_masstransitOptions routeHandler:_routeHandler];
 }

@@ -15,5 +15,6 @@ Pod::Spec.new do |s|
 
     s.dependency "React"
     s.dependency "YandexMapKit"
+    s.dependency 'YandexMapKitDirections'
     s.dependency "YandexMapKitTransport"
 end

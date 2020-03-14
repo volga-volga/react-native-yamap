@@ -27,6 +27,23 @@ import YaMap from 'react-native-yamap';
 YaMap.init('API_KEY');
 ```
 
+#### для ios
+
+Рекомендуется инициализировать MapKit в функции `didFinishLaunchingWithOptions` в AppDelegate.m
+
+```
+#import <YandexMapKit/YMKMapKitFactory.h>
+
+...
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
+    ...
+    [YMKMapKit setApiKey: @"API_KEY"];
+    return YES;
+}
+```
+
 ### Использование компонента
 ```typescript jsx
 import React from 'react';

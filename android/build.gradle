@@ -38,5 +38,8 @@ dependencies {
     implementation ('com.yandex.android:transport:3.1.0') {
         exclude group: "com.google.android.gms"
     }
+    implementation ('com.yandex.android:directions:3.1.0') {
+        exclude group: "com.google.android.gms"
+    }
     implementation 'com.facebook.react:react-native:+'
 }
