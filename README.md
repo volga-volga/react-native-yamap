@@ -80,33 +80,39 @@ export type MasstransitVehicles = 'bus' | 'trolleybus' | 'tramway' | 'minibus' |
 
 export type Vehicles = MasstransitVehicles | 'walk' | 'car';
 
-interface RouteInfo {
+
+export interface DrivingInfo {
+  time: string;
+  timeWithTraffic: string;
+  distance: number;
+}
+
+export interface MasstransitInfo {
+  time: string;
+  transferCount: number;
+  walkingDistance: number;
+}
+
+export interface RouteInfo<T extends (DrivingInfo | MasstransitInfo)> {
   id: string;
   sections: {
     points: Point[];
-    sectionInfo: {
-      time: number;
-      transferCount: number;
-      walkingDistance: number;
-    };
-    routeInfo: {
-      time: number;
-      transferCount: number;
-      walkingDistance: number;
-    };
+    sectionInfo: T;
+    routeInfo: T;
     routeIndex: number;
     stops: any[];
     type: string;
-    transports: string[];
+    transports?: any;
     sectionColor?: string;
   }
 }
 
-interface RoutesFoundEvent {
+
+export interface RoutesFoundEvent<T extends (DrivingInfo | MasstransitInfo)> {
   nativeEvent: {
     status: 'success' | 'error';
     id: string;
-    routes: RouteInfo[];
+    routes: RouteInfo<T>[];
   };
 }
 ```
@@ -126,9 +132,9 @@ interface Props extends ViewProps {
 - `setCenter(center: { lat, lon, zoom })` - устанавливает камеру в позицию, указанную в аргументе метода, с заданным zoom
 
 - `findRoutes(points: Point[], vehicles: Vehicles[], callback: (event: RoutesFoundEvent) => void)` - запрос маршрутов через точки `points` с использованием транспорта `vehicles`. При получении маршрутов будет вызван `callback` с информацией обо всех маршрутах (подробнее в разделе **"Запрос маршрутов"**)
-- `findMasstransitRoutes(points: Point[], callback: (event: RoutesFoundEvent) => void): void` - запрос маршрутов на любом общественном транспорте
-- `findPedestrianRoutes(points: Point[], callback: (event: RoutesFoundEvent) => void): void` - запрос пешеходного маршрута
-- `findDrivingRoutes(points: Point[], callback: (event: RoutesFoundEvent) => void): void` - запрос маршрута для автомобиля
+- `findMasstransitRoutes(points: Point[], callback: (event: RoutesFoundEvent<MasstransitInfo>) => void): void` - запрос маршрутов на любом общественном транспорте
+- `findPedestrianRoutes(points: Point[], callback: (event: RoutesFoundEvent<MasstransitInfo>) => void): void` - запрос пешеходного маршрута
+- `findDrivingRoutes(points: Point[], callback: (event: RoutesFoundEvent<DrivingInfo>) => void): void` - запрос маршрута для автомобиля
 
 #### Замечание
 - Компонент карт стилизуется, как и View из react-native. Если карта не отображается, после инициализации с валидным ключем АПИ, вероятно необходимо прописать стиль, который опишет размеры компонента (height+width или flex)

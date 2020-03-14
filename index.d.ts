@@ -39,11 +39,11 @@ export interface RouteInfo<T extends (DrivingInfo | MasstransitInfo)> {
 }
 
 
-export interface RoutesFoundEvent {
+export interface RoutesFoundEvent<T extends (DrivingInfo | MasstransitInfo)> {
   nativeEvent: {
     status: 'success' | 'error';
     id: string;
-    routes: RouteInfo[];
+    routes: RouteInfo<T>[];
   };
 }
 
@@ -55,10 +55,10 @@ declare class YaMap extends React.Component<Props> {
   static init(apiKey: string): void;
   static ALL_MASSTRANSIT_VEHICLES: MasstransitVehicles[];
   fitAllMarkers(): void;
-  findRoutes(points: Point[], vehicles: Vehicles[], callback: (event: RoutesFoundEvent) => void): void;
-  findMasstransitRoutes(points: Point[], callback: (event: RoutesFoundEvent) => void): void;
-  findPedestrianRoutes(points: Point[], callback: (event: RoutesFoundEvent) => void): void;
-  findDrivingRoutes(points: Point[], callback: (event: RoutesFoundEvent) => void): void;
+  findRoutes(points: Point[], vehicles: Vehicles[], callback: (event: RoutesFoundEvent<DrivingInfo | MasstransitInfo>) => void): void;
+  findMasstransitRoutes(points: Point[], callback: (event: RoutesFoundEvent<MasstransitInfo>) => void): void;
+  findPedestrianRoutes(points: Point[], callback: (event: RoutesFoundEvent<MasstransitInfo>) => void): void;
+  findDrivingRoutes(points: Point[], callback: (event: RoutesFoundEvent<DrivingInfo>) => void): void;
   setCenter(center: { lon: number, lat: number, zoom: number }): void;
 }
 
