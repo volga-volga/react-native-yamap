@@ -9,6 +9,7 @@ import {
   findNodeHandle,
 } from 'react-native';
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource.js';
+import {Point, RoutesFoundEvent} from '../../index';
 import CallbacksManager from '../utils/CallbacksManager';
 
 const {yamap} = NativeModules;
@@ -18,7 +19,7 @@ const YaMapNative = requireNativeComponent('YamapView');
 export default class YaMap extends React.Component {
   map = React.createRef();
 
-  static ALL_VEHICLES = [
+  static ALL_MASSTRANSIT_VEHICLES = [
     'bus',
     'trolleybus',
     'tramway',
@@ -66,6 +67,18 @@ export default class YaMap extends React.Component {
       this.getCommand('findRoutes'),
       args,
     );
+  }
+
+  findMasstransitRoutes(points, callback) {
+    this.findRoutes(points, YaMap.ALL_MASSTRANSIT_VEHICLES, callback);
+  }
+
+  findPedestrianRoutes(points, callback) {
+    this.findRoutes(points, [], callback);
+  }
+
+  findDrivingRoutes(points, callback) {
+    this.findRoutes(points, ['car'], callback);
   }
 
   processRoute(event) {

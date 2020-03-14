@@ -4,7 +4,13 @@
 yarn add react-native-yamap
 ```
 
-### Линковка (для react-native версии меньше 60)
+### Линковка
+
+Если вы планируете использовать только апи геокодера, то линковка библиотеки необязательна. В таком случае, можете отключить автолинкинг библиотеки для `react-native@^0.60.0`.
+
+Для использования Yandex MapKit необходима линковка (библиотека поддерживает автолинкинг).
+
+#### Линковка react-native версии меньше 60
 
 ```
 react-native link react-native-yamap
@@ -39,11 +45,7 @@ class Map extends React.Component {
   render() {
     return (
       <YaMap
-        vehicles={["bus", "walk"]} // bus, railway, trolleybus, tramway, suburban, underground, walk
         userLocationIcon={{ uri: 'https://www.clipartmax.com/png/middle/180-1801760_pin-png.png' }}
-        onRouteFound={this.handleOnRouteFound}
-        routeColors={{bus: '#fff', walk: '#f00'}}
-        route={route}
         style={{ flex: 1 }}
       />
     );
@@ -55,22 +57,47 @@ class Map extends React.Component {
 interface Point {
  lat: Number; 
  lon: Number;
-}  
-interface Route {
-  start: Point
-  end: Point
 }
-export type Vehiles =  'bus' | 'railway' | 'tramway' | 'suburban' | 'trolleybus' | 'underground' | 'walk';
+
+export type MasstransitVehicles = 'bus' | 'trolleybus' | 'tramway' | 'minibus' | 'suburban' | 'underground' | 'ferry' | 'cable' | 'funicular';
+
+export type Vehicles = MasstransitVehicles | 'walk' | 'car';
+
+interface RouteInfo {
+  id: string;
+  sections: {
+    points: Point[];
+    sectionInfo: {
+      time: number;
+      transferCount: number;
+      walkingDistance: number;
+    };
+    routeInfo: {
+      time: number;
+      transferCount: number;
+      walkingDistance: number;
+    };
+    routeIndex: number;
+    stops: any[];
+    type: string;
+    transports: string[];
+    sectionColor?: string;
+  }
+}
+
+interface RoutesFoundEvent {
+  nativeEvent: {
+    status: 'success' | 'error';
+    id: string;
+    routes: RouteInfo[];
+  };
+}
 ```
 
 #### Доступные `props` для компонента **MapView**
 ```typescript
 interface Props extends ViewProps {
   userLocationIcon: ImageSource; // иконка позиции пользователя. Доступны те же значения что и у компонента Image из react native
-  route?: Route; // запрашиваемый маршурут
-  vehicles?: Array<Vehiles>; // доступные виды транспорта
-  routeColors?: { [key in Vehiles]: string }; // цвета отображения маршрута для каждого транспорта
-  onRouteFound?: (event: Event) => void; // вызовется, если найден запрошеный маршрут
   children: Marker | Polygon | Polyline; // см раздел "Отображение примитивов"
 }
 ```
@@ -80,6 +107,11 @@ interface Props extends ViewProps {
 (если возможно)
  
 - `setCenter(center: { lat, lon, zoom })` - устанавливает камеру в позицию, указанную в аргументе метода, с заданным zoom
+
+- `findRoutes(points: Point[], vehicles: Vehicles[], callback: (event: RoutesFoundEvent) => void)` - запрос маршрутов через точки `points` с использованием транспорта `vehicles`. При получении маршрутов будет вызван `callback` с информацией обо всех маршрутах (подробнее в разделе **"Запрос маршрутов"**)
+- `findMasstransitRoutes(points: Point[], callback: (event: RoutesFoundEvent) => void): void` - запрос маршрутов на любом общественном транспорте
+- `findPedestrianRoutes(points: Point[], callback: (event: RoutesFoundEvent) => void): void` - запрос пешеходного маршрута
+- `findDrivingRoutes(points: Point[], callback: (event: RoutesFoundEvent) => void): void` - запрос маршрута для автомобиля
 
 #### Замечание
 - Компонент карт стилизуется, как и View из react-native. Если карта не отображается, после инициализации с валидным ключем АПИ, вероятно необходимо прописать стиль, который опишет размеры компонента (height+width или flex)
@@ -94,9 +126,9 @@ interface Props extends ViewProps {
 import { Polyline } from 'react-native-yamap';
 
 ...
-<MapView>
+<YaMap>
     <Marker point={{lat: 50, lon: 50}}/>
-</MapView>
+</YaMap>
 ```
 
 #### Доступные props:
@@ -117,13 +149,13 @@ interface MarkerProps {
 import { Polyline } from 'react-native-yamap';
 
 ...
-<MapView>
+<YaMap>
     <Polyline points={[
       {lat: 50, lon: 50},
       {lat: 50, lon: 20},
       {lat: 20, lon: 20},
     ]}/>
-</MapView>
+</YaMap>
 ```
 
 #### Доступные props:
@@ -148,13 +180,13 @@ interface PolylineProps {
 import { Polygon } from 'react-native-yamap';
 
 ...
-<MapView>
+<YaMap>
     <Polygon points={[
       {lat: 50, lon: 50},
       {lat: 50, lon: 20},
       {lat: 20, lon: 20},
     ]}/>
-</MapView>
+</YaMap>
 ```
 
 #### Доступные props:
@@ -170,6 +202,34 @@ interface PolygonProps {
   onPress?: () => void;
 }
 ```
+
+## Запрос маршрутов
+
+Маршруты можно запросить используя метод `findRoutes` компонента `YaMap` (через ref).
+
+`findRoutes(points: Point[], vehicles: Vehicles[], callback: (event: RoutesFoundEvent) => void)` - запрос маршрутов через точки `points` с использованием транспорта `vehicles`. При получении маршрутов будет вызван `callback` с информацией обо всех маршрутах.
+
+В настоящее время добавлены следующие роутеры из Yandex MapKit:
+- **masstransit** - для маршрутов на общественном транспорте
+- **pedestrian** - для пешеходных маршрутов
+- **driving** - для маршрутов на автомобиле 
+
+Тип роутера зависит от переданного в функцию массива `vehicles`:
+- если передан пустой массив (`this.map.current.findRoutes(points, [], () => null);`), то будет использован `PedestrianRouter`
+- если передан массив с одним элементом `'car'` (`this.map.current.findRoutes(points, ['car'], () => null);`), то будет использован `DrivingRouter`
+- во всех остальных случаях используется `MasstransitRouter`
+
+Также можно использовать нужный роутер, вызвав соответствующую функцию
+```
+findMasstransitRoutes(points: Point[], callback: (event: RoutesFoundEvent) => void): void;
+
+findPedestrianRoutes(points: Point[], callback: (event: RoutesFoundEvent) => void): void;
+
+findDrivingRoutes(points: Point[], callback: (event: RoutesFoundEvent) => void): void;
+```
+
+#### Замечание
+В зависимости от типа роутера информация о маршутах может незначительно отличаться.
 
 ## Использование апи геокодера
 

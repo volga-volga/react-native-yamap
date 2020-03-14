@@ -8,12 +8,40 @@ export interface Point {
   lon: number,
 }
 
-export interface Route {
-  start: Point,
-  end: Point,
+export type MasstransitVehicles = 'bus' | 'trolleybus' | 'tramway' | 'minibus' | 'suburban' | 'underground' | 'ferry' | 'cable' | 'funicular';
+
+export type Vehicles = MasstransitVehicles | 'walk' | 'car';
+
+export interface RouteInfo {
+  id: string;
+  sections: {
+    points: Point[];
+    sectionInfo: {
+      time: number;
+      transferCount: number;
+      walkingDistance: number;
+    };
+    routeInfo: {
+      time: number;
+      transferCount: number;
+      walkingDistance: number;
+    };
+    routeIndex: number;
+    stops: any[];
+    type: string;
+    transports: string[];
+    sectionColor?: string;
+  }
 }
 
-export type Vehicles =  'bus' | 'railway' | 'tramway' | 'suburban' | 'trolleybus' | 'underground' | 'walk';
+
+export interface RoutesFoundEvent {
+  nativeEvent: {
+    status: 'success' | 'error';
+    id: string;
+    routes: RouteInfo[];
+  };
+}
 
 interface Props extends ViewProps {
   userLocationIcon: ImageSource;
@@ -21,8 +49,12 @@ interface Props extends ViewProps {
 
 declare class YaMap extends React.Component<Props> {
   static init(apiKey: string): void;
+  static ALL_MASSTRANSIT_VEHICLES: MasstransitVehicles[];
   fitAllMarkers(): void;
-  findRoutes(points: Point[], vehicles: Vehicles[], callback: (event: any) => void): void;
+  findRoutes(points: Point[], vehicles: Vehicles[], callback: (event: RoutesFoundEvent) => void): void;
+  findMasstransitRoutes(points: Point[], callback: (event: RoutesFoundEvent) => void): void;
+  findPedestrianRoutes(points: Point[], callback: (event: RoutesFoundEvent) => void): void;
+  findDrivingRoutes(points: Point[], callback: (event: RoutesFoundEvent) => void): void;
   setCenter(center: { lon: number, lat: number, zoom: number }): void;
 }
 
