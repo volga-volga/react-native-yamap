@@ -120,6 +120,7 @@ export interface RoutesFoundEvent<T extends (DrivingInfo | MasstransitInfo)> {
 #### Доступные `props` для компонента **MapView**
 ```typescript
 interface Props extends ViewProps {
+  showUserPosition?: boolean; // если false, то не будут отслеживаться и отображаться геоданные пользователя. Значение по умолчанию true
   userLocationIcon: ImageSource; // иконка позиции пользователя. Доступны те же значения что и у компонента Image из react native
   children: Marker | Polygon | Polyline; // см раздел "Отображение примитивов"
 }

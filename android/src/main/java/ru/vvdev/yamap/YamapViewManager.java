@@ -137,6 +137,11 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         }
     }
 
+    @ReactProp(name = "showUserPosition")
+    public void setShowUserPosition(View view, Boolean show) {
+        castToYaMapView(view).setShowUserPosition(show);
+    }
+
     @Override
     public void addView(YamapView parent, View child, int index) {
         parent.addFeature(child, index);

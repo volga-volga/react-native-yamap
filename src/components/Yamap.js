@@ -9,7 +9,6 @@ import {
   findNodeHandle,
 } from 'react-native';
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource.js';
-import {Point, RoutesFoundEvent} from '../../index';
 import CallbacksManager from '../utils/CallbacksManager';
 
 const {yamap} = NativeModules;
@@ -17,6 +16,10 @@ const {yamap} = NativeModules;
 const YaMapNative = requireNativeComponent('YamapView');
 
 export default class YaMap extends React.Component {
+  static defaultProps = {
+    showUserPosition: true,
+  };
+
   map = React.createRef();
 
   static ALL_MASSTRANSIT_VEHICLES = [

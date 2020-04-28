@@ -58,6 +58,7 @@
     NSMutableDictionary *vehicleColors;
     UIImage* userLocationImage;
     NSArray *acceptVehicleTypes;
+    YMKUserLocationLayer *userLayer;
 }
 
 - (instancetype)init {
@@ -80,12 +81,6 @@
     [vehicleColors setObject:@"#BDCCDC" forKey:@"underground"];
     [vehicleColors setObject:@"#55CfDC" forKey:@"trolleybus"];
     [vehicleColors setObject:@"#2d9da8" forKey:@"walk"];
-    YMKMapKit* inst = [YMKMapKit sharedInstance];
-    YMKUserLocationLayer *userLayer = [inst createUserLocationLayerWithMapWindow: self.mapWindow];
-    userLocationView = nil;
-    userLocationImage = nil;
-    [userLayer setVisibleWithOn:YES];
-    [userLayer setObjectListenerWithObjectListener: self];
     return self;
 }
 
@@ -300,6 +295,22 @@
 // ref
 -(void) setCenter:(YMKPoint*) center withZoom:(float) zoom {
     [self.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:zoom azimuth:0 tilt:0]];
+}
+
+-(void) setListenUserLocation:(BOOL)listen {
+    YMKMapKit* inst = [YMKMapKit sharedInstance];
+    if (userLayer == nil) {
+        userLayer = [inst createUserLocationLayerWithMapWindow: self.mapWindow];
+    }
+    if (listen) {
+        userLocationView = nil;
+        userLocationImage = nil;
+        [userLayer setVisibleWithOn:YES];
+        [userLayer setObjectListenerWithObjectListener: self];
+    } else {
+        [userLayer setVisibleWithOn:NO];
+        [userLayer setObjectListenerWithObjectListener: nil];
+    }
 }
 
 -(void) fitAllMarkers {
