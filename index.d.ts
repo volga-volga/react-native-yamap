@@ -49,6 +49,7 @@ export interface RoutesFoundEvent<T extends (DrivingInfo | MasstransitInfo)> {
 
 interface Props extends ViewProps {
   userLocationIcon: ImageSource;
+  showUserPosition?: boolean;
 }
 
 declare class YaMap extends React.Component<Props> {

@@ -82,7 +82,7 @@ public class YamapView extends MapView implements UserLocationObjectListener {
     private MasstransitRouter masstransitRouter = TransportFactory.getInstance().createMasstransitRouter();
     private DrivingRouter drivingRouter;
     private PedestrianRouter pedestrianRouter = TransportFactory.getInstance().createPedestrianRouter();
-
+    private UserLocationLayer userLocationLayer = null;
     private List<ReactMapObject> childs = new ArrayList<>();
 
     // location
@@ -92,14 +92,6 @@ public class YamapView extends MapView implements UserLocationObjectListener {
         super(context);
         DirectionsFactory.initialize(context);
         drivingRouter = DirectionsFactory.getInstance().createDrivingRouter();
-        initUserLocationLayer();
-    }
-
-    private void initUserLocationLayer() {
-        UserLocationLayer userLocationLayer = getMap().getUserLocationLayer();
-        userLocationLayer.setObjectListener(this);
-        userLocationLayer.setEnabled(true);
-        userLocationLayer.setHeadingEnabled(true);
     }
 
     // ref methods
@@ -243,6 +235,21 @@ public class YamapView extends MapView implements UserLocationObjectListener {
                 }
             }
         });
+    }
+
+    public void setShowUserPosition(Boolean show) {
+        if (userLocationLayer == null) {
+            userLocationLayer = getMap().getUserLocationLayer();
+        }
+        if (show) {
+            userLocationLayer.setObjectListener(this);
+            userLocationLayer.setEnabled(true);
+            userLocationLayer.setHeadingEnabled(true);
+        } else {
+            userLocationLayer.setEnabled(false);
+            userLocationLayer.setHeadingEnabled(false);
+            userLocationLayer.setObjectListener(null);
+        }
     }
 
     private WritableMap convertRouteSection(Route route, final Section section, Polyline geometry, Weight routeWeight, int routeIndex) {

@@ -18,6 +18,7 @@
 -(void) findRoutes:(NSArray<YMKRequestPoint*>*) points vehicles:(NSArray<NSString*>*) vehicles withId:(NSString*)_id;
 
 // props
+-(void) setListenUserLocation:(BOOL)listen;
 -(void) setUserLocationIcon:(NSString*) iconSource;
 
 @end

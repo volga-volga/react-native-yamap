@@ -43,6 +43,12 @@ RCT_CUSTOM_VIEW_PROPERTY(userLocationIcon, NSString, RNYMView) {
     }
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(showUserPosition, BOOL, RNYMView) {
+    if (json && view) {
+        [view setListenUserLocation: [json boolValue]];
+    }
+}
+
 // ref
 RCT_EXPORT_METHOD(fitAllMarkers:(nonnull NSNumber*) reactTag) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
