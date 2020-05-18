@@ -77,6 +77,7 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
             mapObject.setGeometry(point);
             mapObject.setZIndex(zIndex);
             mapObject.setIconStyle(iconStyle);
+
             if (_childView != null) {
                 try {
                     Bitmap b = Bitmap.createBitmap(_childView.getWidth(), _childView.getHeight(), Bitmap.Config.ARGB_8888);
@@ -87,19 +88,22 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
                     e.printStackTrace();
                 }
             }
-            if (!iconSource.equals("")) {
-                ImageLoader.DownloadImageBitmap(getContext(), iconSource, new Callback<Bitmap>() {
-                    @Override
-                    public void invoke(Bitmap bitmap) {
-                        try {
-                            if (mapObject != null) {
-                                mapObject.setIcon(ImageProvider.fromBitmap(bitmap));
-                                mapObject.setIconStyle(iconStyle);
+            if (childs.size() == 0) {
+                if (!iconSource.equals("")) {
+                    ImageLoader.DownloadImageBitmap(getContext(), iconSource, new Callback<Bitmap>() {
+                        @Override
+                        public void invoke(Bitmap bitmap) {
+                            try {
+                                if (mapObject != null) {
+                                    mapObject.setIcon(ImageProvider.fromBitmap(bitmap));
+                                    mapObject.setIconStyle(iconStyle);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
-                        } catch (Exception e) {
                         }
-                    }
-                });
+                    });
+                }
             }
         }
     }
