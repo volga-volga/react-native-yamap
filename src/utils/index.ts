@@ -1,8 +1,11 @@
-import {processColor} from 'react-native';
+import { processColor } from 'react-native';
 
-export function processColorProps(props, name) {
+export function processColorProps<T>(props: T, name: keyof T) {
   if (props[name]) {
+    /* eslint-disable no-param-reassign */
+    // @ts-ignore
     props[name] = processColor(props[name]);
+    /* eslint-enable no-param-reassign */
   }
 }
 
