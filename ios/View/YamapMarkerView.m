@@ -60,16 +60,18 @@
     if (mapObject != nil) {
         [mapObject setGeometry:_point];
         [mapObject setZIndex:[zIndex floatValue]];
-        YMKIconStyle* iconStyle = [[YMKIconStyle alloc] init];
-        [iconStyle setScale:scale];
-        if (![source isEqual:@""]) {
-            if (![source isEqual:lastSource]) {
-                [mapObject setIconWithImage:[self resolveUIImage:source]];
-                lastSource = source;
-            }
-        }
-        [mapObject setIconStyleWithStyle:iconStyle];
-    }
+		if ([_reactSubviews count] == 0) {
+			YMKIconStyle* iconStyle = [[YMKIconStyle alloc] init];
+			[iconStyle setScale:scale];
+			if (![source isEqual:@""]) {
+				if (![source isEqual:lastSource]) {
+					[mapObject setIconWithImage:[self resolveUIImage:source]];
+					lastSource = source;
+				}
+			}
+			[mapObject setIconStyleWithStyle:iconStyle];
+		}
+	}
 }
 
 -(void) setScale:(NSNumber*) _scale {
@@ -110,6 +112,7 @@
     [mapObject addTapListenerWithTapListener:self];
     [self updateMarker];
 }
+
 // object tap listener
 - (BOOL)onMapObjectTapWithMapObject:(nonnull YMKMapObject *)_mapObject point:(nonnull YMKPoint *)point {
     if (self.onPress) self.onPress(@{});
@@ -131,7 +134,9 @@
             [_childView setOpaque:false];
             YRTViewProvider* v = [[YRTViewProvider alloc] initWithUIView:_childView];
             if (v != nil) {
-                [mapObject setViewWithView:v];
+				if (mapObject.isValid) {
+					 [mapObject setViewWithView:v];
+				}
             }
         }
     } else {
