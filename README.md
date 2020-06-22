@@ -147,7 +147,7 @@ interface Props extends ViewProps {
 ### Marker
 
 ```
-import { Polyline } from 'react-native-yamap';
+import { Marker } from 'react-native-yamap';
 
 ...
 <YaMap>
