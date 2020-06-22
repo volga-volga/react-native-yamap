@@ -4,7 +4,7 @@
   "description": "Yandex.MapKit and Yandex.Geocoder for react-native",
   "main": "build/index.js",
   "scripts": {
-    "postinstall": "rm -rf build && tsc",
+    "postinstall": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "homepage": "https://github.com/volga-volga/react-native-yamap",
