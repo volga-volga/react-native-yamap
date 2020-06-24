@@ -31,6 +31,39 @@ RCT_EXPORT_METHOD(init: (NSString *) apiKey) {
     [self initWithKey: apiKey];
 }
 
+RCT_EXPORT_METHOD(setLocale: (NSString *) locale successCallback:(RCTResponseSenderBlock)successCb errorCallback:(RCTResponseSenderBlock) errorCb) {
+    [YRTI18nManagerFactory setLocaleWithLanguage:locale localeUpdateDelegate:^(NSError * _Nullable error) {
+        if (error == nil) {
+            successCb(@[]);
+        } else {
+            NSString* errMsg = [error localizedDescription];
+            errorCb(@[errMsg]);
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(resetLocale:(RCTResponseSenderBlock)successCb errorCallback:(RCTResponseSenderBlock) errorCb) {
+    [YRTI18nManagerFactory resetLocaleWithLocaleResetDelegate:^(NSError * _Nullable error) {
+        if (error == nil) {
+            successCb(@[]);
+        } else {
+            NSString* errMsg = [error localizedDescription];
+            errorCb(@[errMsg]);
+        }
+    }];
+}
+
+RCT_EXPORT_METHOD(getLocale:(RCTResponseSenderBlock)successCb errorCallback:(RCTResponseSenderBlock) errorCb) {
+    [YRTI18nManagerFactory getLocaleWithLocaleDelegate:^(NSString * _Nullable locale, NSError * _Nullable error) {
+        if (error == nil) {
+            successCb(@[locale]);
+        } else {
+            NSString* errMsg = [error localizedDescription];
+            errorCb(@[errMsg]);
+        }
+    }];
+}
+
 RCT_EXPORT_MODULE()
 
 @end
