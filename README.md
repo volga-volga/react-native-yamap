@@ -44,6 +44,26 @@ YaMap.init('API_KEY');
 }
 ```
 
+### Изменение языка карт
+
+
+```
+// js
+import YaMap from 'react-native-yamap';
+
+const currentLocale = await YaMap.getLocale(); 
+YaMap.setLocale('en'); // 'ru'...
+YaMap.resetLocale();
+
+```
+- **getLocale(): Promise\<string\>** - возвращает используемый язык карт
+- **setLocale(locale: string): Promise\<void\>** - установить язык
+- **resetLocale(): Promise\<void\>** - использовать для карт язык системы
+
+Каждый метод возвращает Promise, который выполняется, при ответе нативного sdk. Promise может отклониться, если sdk вернет ошибку.
+
+Замечание: Изменение языка карт вступит в силу только после перезапуска приложения. См метод setLocale в [документации нативного sdk](https://tech.yandex.com/maps/mapkit/doc/3.x/concepts/android/runtime/ref/com/yandex/runtime/i18n/I18nManagerFactory-docpage/#method_detail__method_setLocale___NonNullString___NonNullString___NonNullLocaleUpdateListener).
+
 ### Использование компонента
 ```typescript jsx
 import React from 'react';
