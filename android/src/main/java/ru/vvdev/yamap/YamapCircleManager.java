@@ -1,8 +1,5 @@
 package ru.vvdev.yamap;
 
-import android.view.View;
-
-import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.ThemedReactContext;
@@ -10,13 +7,11 @@ import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
 import com.yandex.mapkit.geometry.Point;
 
-import java.util.ArrayList;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
 
 import ru.vvdev.yamap.view.YamapCircle;
-import ru.vvdev.yamap.view.YamapPolygon;
 
 public class YamapCircleManager extends ViewGroupManager<YamapCircle> {
     public static final String REACT_CLASS = "YamapCircle";

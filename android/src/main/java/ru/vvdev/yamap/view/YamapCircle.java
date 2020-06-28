@@ -16,8 +16,6 @@ import com.yandex.mapkit.map.CircleMapObject;
 import com.yandex.mapkit.map.MapObject;
 import com.yandex.mapkit.map.MapObjectTapListener;
 
-import java.util.ArrayList;
-
 import ru.vvdev.yamap.models.ReactMapObject;
 
 public class YamapCircle extends ViewGroup implements MapObjectTapListener, ReactMapObject {
