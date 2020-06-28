@@ -1,0 +1,120 @@
+#import <React/RCTComponent.h>
+
+#import <MapKit/MapKit.h>
+#import <YandexMapKit/YMKMapKitFactory.h>
+#import <YandexMapKit/YMKMapView.h>
+#import <YandexMapKit/YMKBoundingBox.h>
+#import <YandexMapKit/YMKCameraPosition.h>
+#import <YandexMapKit/YMKCircle.h>
+#import <YandexMapKit/YMKPolyline.h>
+#import <YandexMapKit/YMKPolylineMapObject.h>
+#import <YandexMapKit/YMKMap.h>
+#import <YandexMapKit/YMKMapObjectCollection.h>
+#import <YandexMapKit/YMKGeoObjectCollection.h>
+#import <YandexMapKit/YMKSubpolylineHelper.h>
+#import <YandexMapKit/YMKPlacemarkMapObject.h>
+#import <YandexMapKitTransport/YMKMasstransitSession.h>
+#import <YandexMapKitTransport/YMKMasstransitRouter.h>
+#import <YandexMapKitTransport/YMKPedestrianRouter.h>
+#import <YandexMapKitTransport/YMKMasstransitRouteStop.h>
+#import <YandexMapKitTransport/YMKMasstransitOptions.h>
+#import <YandexMapKitTransport/YMKMasstransitSection.h>
+#import <YandexMapKitTransport/YMKMasstransitSectionMetadata.h>
+#import <YandexMapKitTransport/YMKMasstransitTransport.h>
+#import <YandexMapKitTransport/YMKMasstransitWeight.h>
+#import <YandexMapKitTransport/YMKTimeOptions.h>
+
+#ifndef MAX
+#import <NSObjCRuntime.h>
+#endif
+
+#import "YamapCircleView.h"
+
+
+#define ANDROID_COLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 green:((c>>8)&0xFF)/255.0 blue:((c)&0xFF)/255.0  alpha:((c>>24)&0xFF)/255.0]
+
+#define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
+
+@implementation YamapCircleView {
+    YMKPoint* center;
+    float radius;
+    YMKCircleMapObject* mapObject;
+    YMKCircle* circle;
+    UIColor* fillColor;
+    UIColor* strokeColor;
+    NSNumber* strokeWidth;
+    NSNumber* zIndex;
+}
+
+- (instancetype)init {
+    self = [super init];
+    fillColor = UIColor.blackColor;
+    strokeColor = UIColor.blackColor;
+    zIndex =  [[NSNumber alloc] initWithInt:1];
+    strokeWidth =  [[NSNumber alloc] initWithInt:1];
+    center = [YMKPoint pointWithLatitude:0 longitude:0];
+    radius = 0.f;
+    circle = [YMKCircle circleWithCenter:center radius:radius];
+    return self;
+}
+
+-(void) updateCircle {
+    if (mapObject != nil) {
+        [mapObject setGeometry:circle];
+        [mapObject setZIndex:[zIndex floatValue]];
+        [mapObject setFillColor:fillColor];
+        [mapObject setStrokeColor:strokeColor];
+        [mapObject setStrokeWidth:[strokeWidth floatValue]];
+    }
+}
+
+-(void) setFillColor:(UIColor*) color {
+    fillColor = color;
+    [self updateCircle];
+}
+-(void) setStrokeColor:(UIColor*) color {
+    strokeColor = color;
+    [self updateCircle];
+}
+-(void) setStrokeWidth:(NSNumber*) width {
+    strokeWidth = width;
+    [self updateCircle];
+}
+-(void) setZIndex:(NSNumber*) _zIndex {
+    zIndex = _zIndex;
+    [self updateCircle];
+}
+-(void) updateGeometry {
+    if (center) {
+        circle = [YMKCircle circleWithCenter:center radius:radius];
+    }
+}
+-(void) setCircleCenter:(YMKPoint*) point {
+    center = point;
+    [self updateGeometry];
+    [self updateCircle];
+}
+-(void) setRadius:(float)_radius {
+    radius = _radius;
+    [self updateGeometry];
+    [self updateCircle];
+}
+-(void) setMapObject:(YMKCircleMapObject *)_mapObject {
+    mapObject = _mapObject;
+    [mapObject addTapListenerWithTapListener:self];
+    [self updateCircle];
+}
+- (YMKCircle*) getCircle {
+    return circle;
+}
+// object tap listener
+- (BOOL)onMapObjectTapWithMapObject:(nonnull YMKMapObject *)mapObject point:(nonnull YMKPoint *)point {
+    if (self.onPress) self.onPress(@{});
+    return YES;
+}
+
+-(YMKCircleMapObject*) getMapObject {
+    return mapObject;
+}
+
+@end

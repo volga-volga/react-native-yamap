@@ -34,6 +34,7 @@
 #import "YamapPolygonView.h"
 #import "YamapPolylineView.h"
 #import "YamapMarkerView.h"
+#import "YamapCircleView.h"
 #import "RNYMView.h"
 
 
@@ -293,8 +294,14 @@
 }
 
 // ref
--(void) setCenter:(YMKPoint*) center withZoom:(float) zoom {
-    [self.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:zoom azimuth:0 tilt:0]];
+-(void) setCenter:(YMKCameraPosition*) position withDuration:(float) duration withAnimation:(int) animation {
+    if (duration > 0) {
+        YMKAnimationType anim = animation == 0 ? YMKAnimationTypeSmooth : YMKAnimationTypeLinear;
+        [self.mapWindow.map moveWithCameraPosition:position animationType:[YMKAnimation animationWithType:anim duration: duration] cameraCallback: ^(BOOL completed) {
+         }];
+    } else {
+        [self.mapWindow.map moveWithCameraPosition:position];
+    }
 }
 
 -(void) setListenUserLocation:(BOOL)listen {
@@ -415,6 +422,11 @@
         YamapMarkerView* marker = (YamapMarkerView*) subview;
         YMKPlacemarkMapObject* obj = [objects addPlacemarkWithPoint:[marker getPoint]];
         [marker setMapObject:obj];
+    } else if ([subview isKindOfClass:[YamapCircleView class]]) {
+           YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+           YamapCircleView* circle = (YamapCircleView*) subview;
+           YMKCircleMapObject* obj = [objects addCircleWithCircle:[circle getCircle] strokeColor:UIColor.blackColor strokeWidth:0.f fillColor:UIColor.blackColor];
+           [circle setMapObject:obj];
     } else {
         NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
         for (int i = 0; i < childSubviews.count; i++) {
@@ -438,6 +450,10 @@
         YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
         YamapMarkerView* marker = (YamapMarkerView*) subview;
         [objects removeWithMapObject:[marker getMapObject]];
+    } else if ([subview isKindOfClass:[YamapCircleView class]]) {
+        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+        YamapCircleView* marker = (YamapCircleView*) subview;
+        [objects removeWithMapObject:[marker getMapObject]];
     } else {
         NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
         for (int i = 0; i < childSubviews.count; i++) {
@@ -447,5 +463,7 @@
     [_reactSubviews removeObject:subview];
     [super removeReactSubview: subview];
 }
+
+@synthesize reactTag;
 
 @end

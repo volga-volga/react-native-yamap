@@ -32,35 +32,18 @@ RCT_EXPORT_METHOD(init: (NSString *) apiKey) {
 }
 
 RCT_EXPORT_METHOD(setLocale: (NSString *) locale successCallback:(RCTResponseSenderBlock)successCb errorCallback:(RCTResponseSenderBlock) errorCb) {
-    [YRTI18nManagerFactory setLocaleWithLanguage:locale localeUpdateDelegate:^(NSError * _Nullable error) {
-        if (error == nil) {
-            successCb(@[]);
-        } else {
-            NSString* errMsg = [error localizedDescription];
-            errorCb(@[errMsg]);
-        }
-    }];
+    [YRTI18nManagerFactory setLocaleWithLocale:locale];
+    successCb(@[]);
 }
 
 RCT_EXPORT_METHOD(resetLocale:(RCTResponseSenderBlock)successCb errorCallback:(RCTResponseSenderBlock) errorCb) {
-    [YRTI18nManagerFactory resetLocaleWithLocaleResetDelegate:^(NSError * _Nullable error) {
-        if (error == nil) {
-            successCb(@[]);
-        } else {
-            NSString* errMsg = [error localizedDescription];
-            errorCb(@[errMsg]);
-        }
-    }];
+    [YRTI18nManagerFactory setLocaleWithLocale:nil];
+    successCb(@[]);
 }
 
 RCT_EXPORT_METHOD(getLocale:(RCTResponseSenderBlock)successCb errorCallback:(RCTResponseSenderBlock) errorCb) {
-    [YRTI18nManagerFactory getLocaleWithLocaleDelegate:^(NSString * _Nullable locale, NSError * _Nullable error) {
-        if (error == nil) {
-            successCb(@[locale]);
-        } else {
-            NSString* errMsg = [error localizedDescription];
-            errorCb(@[errMsg]);
-        }
+    [YRTI18nManagerFactory getLocaleWithLocaleDelegate:^(NSString * _Nonnull locale) {
+        successCb(@[locale]);
     }];
 }
 

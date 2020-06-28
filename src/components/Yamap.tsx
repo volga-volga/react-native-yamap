@@ -11,7 +11,7 @@ import {
 // @ts-ignore
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 import CallbacksManager from '../utils/CallbacksManager';
-import { Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles } from '../interfaces';
+import { Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles } from '../interfaces';
 
 const { yamap: NativeYamapModule } = NativeModules;
 
@@ -88,11 +88,11 @@ export class YaMap extends React.Component<YaMapProps> {
     );
   }
 
-  public setCenter(center: { lon: number, lat: number, zoom: number }) {
+  public setCenter(center: { lon: number, lat: number, zoom?: number }, zoom: number = center.zoom || 10, azimuth: number = 0, tilt: number = 0, duration: number = 0, animation: Animation = Animation.SMOOTH) {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('setCenter'),
-      [center],
+      [center, zoom, azimuth, tilt, duration, animation],
     );
   }
 

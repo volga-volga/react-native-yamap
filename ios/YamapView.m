@@ -28,10 +28,10 @@ RCT_EXPORT_MODULE()
     return map;
 }
 
--(void) setCenterForMap: (RNYMView*) map center:(NSDictionary*) _center {
+-(void) setCenterForMap: (RNYMView*) map center:(NSDictionary*) _center zoom:(float) zoom azimuth:(float) azimuth tilt:(float) tilt duration:(float) duration animation:(int) animation {
     YMKPoint *center = [RCTConvert YMKPoint:_center];
-    float zoom = [RCTConvert Zoom:_center];
-    [map setCenter: center withZoom: zoom];
+    YMKCameraPosition* pos = [YMKCameraPosition cameraPositionWithTarget:center zoom:zoom azimuth:azimuth tilt:tilt];
+    [map setCenter: pos withDuration: duration withAnimation: animation];
 }
 
 // props
@@ -52,7 +52,7 @@ RCT_CUSTOM_VIEW_PROPERTY(showUserPosition, BOOL, RNYMView) {
 // ref
 RCT_EXPORT_METHOD(fitAllMarkers:(nonnull NSNumber*) reactTag) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
-        RNYMView *view = viewRegistry[reactTag];
+        RNYMView *view = (RNYMView*) viewRegistry[reactTag];
         if (!view || ![view isKindOfClass:[RNYMView class]]) {
             RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
             return;
@@ -63,7 +63,7 @@ RCT_EXPORT_METHOD(fitAllMarkers:(nonnull NSNumber*) reactTag) {
 
 RCT_EXPORT_METHOD(findRoutes:(nonnull NSNumber*) reactTag json:(NSDictionary*) json) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
-        RNYMView *view = viewRegistry[reactTag];
+        RNYMView *view = (RNYMView*) viewRegistry[reactTag];
         if (!view || ![view isKindOfClass:[RNYMView class]]) {
             RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
             return;
@@ -79,14 +79,14 @@ RCT_EXPORT_METHOD(findRoutes:(nonnull NSNumber*) reactTag json:(NSDictionary*) j
     }];
 }
 
-RCT_EXPORT_METHOD(setCenter:(nonnull NSNumber*) reactTag json:(NSDictionary*) json) {
+RCT_EXPORT_METHOD(setCenter:(nonnull NSNumber*) reactTag center:(NSDictionary*_Nonnull) center zoom:(NSNumber*_Nonnull) zoom azimuth:(NSNumber*_Nonnull) azimuth tilt:(NSNumber*_Nonnull) tilt duration: (NSNumber*_Nonnull) duration animation:(NSNumber*_Nonnull) animation) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
-        RNYMView *view = viewRegistry[reactTag];
+        RNYMView *view = (RNYMView*) viewRegistry[reactTag];
         if (!view || ![view isKindOfClass:[RNYMView class]]) {
             RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
             return;
         }
-        [self setCenterForMap: view center:json];
+        [self setCenterForMap: view center:center zoom: [zoom floatValue] azimuth: [azimuth floatValue] tilt: [tilt floatValue] duration: [duration floatValue] animation: [animation intValue]];
     }];
 }
 

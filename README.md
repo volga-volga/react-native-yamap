@@ -52,18 +52,25 @@ YaMap.init('API_KEY');
 import YaMap from 'react-native-yamap';
 
 const currentLocale = await YaMap.getLocale(); 
-YaMap.setLocale('en'); // 'ru'...
+YaMap.setLocale('en_US'); // 'ru_RU'...
 YaMap.resetLocale();
 
 ```
 - **getLocale(): Promise\<string\>** - возвращает используемый язык карт
-- **setLocale(locale: string): Promise\<void\>** - установить язык
+- **setLocale(locale: string): Promise\<void\>** - установить язык карт
 - **resetLocale(): Promise\<void\>** - использовать для карт язык системы
 
 Каждый метод возвращает Promise, который выполняется, при ответе нативного sdk. Promise может отклониться, если sdk вернет ошибку.
 
-Замечание: Изменение языка карт вступит в силу только после перезапуска приложения. См метод setLocale в [документации нативного sdk](https://tech.yandex.com/maps/mapkit/doc/3.x/concepts/android/runtime/ref/com/yandex/runtime/i18n/I18nManagerFactory-docpage/#method_detail__method_setLocale___NonNullString___NonNullString___NonNullLocaleUpdateListener).
-
+Замечания:
+ 1. Для **андроид** изменение языка карт вступит в силу только после перезапуска приложения. См метод setLocale в [документации нативного sdk](https://tech.yandex.com/maps/mapkit/doc/3.x/concepts/android/runtime/ref/com/yandex/runtime/i18n/I18nManagerFactory-docpage/#method_detail__method_setLocale___NonNullString___NonNullString___NonNullLocaleUpdateListener).
+ 2. Для **ios** методы изменения языка можно вызывать только до первого рендера карты. Также нельзя повторно вызывать метод, если язык уже изменялся (можно только после перезапуска приложения). Иначе изменения приняты не будут, а в терминал будет выведено сообщение с пердупреждением. В коде при этом не будет информации об ошибке. Ниже фрагмент комментария из кода в Mapkit SDK (Файл YRTI18nManagerFactory.h)
+ ```
+ Sets the application's locale. Useful only if MapKit is not used by
+  * the application. Also useless if someone else has already set
+  * the locale (produses warning and does nothing). Can be set to none,
+  * in this case system locale will be used.
+ ```
 ### Использование компонента
 ```typescript jsx
 import React from 'react';
@@ -150,7 +157,7 @@ interface Props extends ViewProps {
 - `fitAllMarkers` - подобрать положение камеры, чтобы вместить все маркеры
 (если возможно)
  
-- `setCenter(center: { lat, lon, zoom })` - устанавливает камеру в позицию, указанную в аргументе метода, с заданным zoom
+- `setCenter(center: { lon: number, lat: number }, zoom: number = 10, azimuth: number = 0, tilt: number = 0, duration: number = 0, animation: Animation = Animation.SMOOTH)` - устанавливает камеру в точку с заданным zoom, поворотом по азимуту и наклоном карты (`tilt`). Можно параметризовать анимацию: длительность и тип. Если длительность установить 0, то переход будет без анимации. Возможные типы анимаций `Animation.SMOOTH` и `Animation.LINEAR`
 
 - `findRoutes(points: Point[], vehicles: Vehicles[], callback: (event: RoutesFoundEvent) => void)` - запрос маршрутов через точки `points` с использованием транспорта `vehicles`. При получении маршрутов будет вызван `callback` с информацией обо всех маршрутах (подробнее в разделе **"Запрос маршрутов"**)
 - `findMasstransitRoutes(points: Point[], callback: (event: RoutesFoundEvent<MasstransitInfo>) => void): void` - запрос маршрутов на любом общественном транспорте
@@ -185,6 +192,31 @@ interface MarkerProps {
   children?: React.ReactElement; // рендер маркера как компонента (не рекомендуется) 
   onPress?: () => void;
   zIndex?: number;
+}
+```
+
+### Circle
+
+```
+import { Circle } from 'react-native-yamap';
+
+...
+<YaMap>
+    <Circle center={{lat: 50, lon: 50}} radius={300} />
+</YaMap>
+```
+
+#### Доступные props:
+
+```typescript
+interface CircleProps {
+  center: Point; // центр круга
+  radius: number; // радиус круга в метрах
+  fillColor?: string; // цвет заливки
+  strokeColor?: string; // цвет границы
+  strokeWidth?: number; // толщина границы
+  zIndex?: number;
+  onPress?: () => void;
 }
 ```
 

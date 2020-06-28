@@ -1,7 +1,5 @@
 package ru.vvdev.yamap;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.Callback;

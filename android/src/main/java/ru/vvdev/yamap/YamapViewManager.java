@@ -2,6 +2,8 @@ package ru.vvdev.yamap;
 
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
@@ -11,6 +13,7 @@ import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
 import com.yandex.mapkit.MapKitFactory;
 import com.yandex.mapkit.geometry.Point;
+import com.yandex.mapkit.map.CameraPosition;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -60,14 +63,14 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
 
     @Override
     public void receiveCommand(
-            YamapView view,
+            @NonNull YamapView view,
             String commandType,
             @Nullable ReadableArray args) {
         Assertions.assertNotNull(view);
         Assertions.assertNotNull(args);
         switch (commandType) {
             case "setCenter":
-                setCenter(view, args.getMap(0));
+                setCenter(castToYaMapView(view), args.getMap(0), (float) args.getDouble(1), (float) args.getDouble(2), (float) args.getDouble(3), (float) args.getDouble(4), args.getInt(5));
                 return;
             case "fitAllMarkers":
                 fitAllMarkers(view);
@@ -98,11 +101,11 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         return view;
     }
 
-    private void setCenter(View view, ReadableMap center) {
+    private void setCenter(YamapView view, ReadableMap center, float zoom, float azimuth, float tilt, float duration, int animation) {
         if (center != null) {
             Point centerPosition = new Point(center.getDouble("lat"), center.getDouble("lon"));
-            float zoom = (float) center.getDouble("zoom");
-            castToYaMapView(view).setCenter(centerPosition, zoom);
+            CameraPosition pos = new CameraPosition(centerPosition, zoom, azimuth, tilt);
+            view.setCenter(pos, duration, animation);
         }
     }
 

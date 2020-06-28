@@ -7,9 +7,7 @@ const NativePolygonComponent = requireNativeComponent('YamapPolygon');
 
 export interface PolygonProps {
   fillColor?: string;
-  fillOpacity?: number;
   strokeColor?: string;
-  strokeOpacity?: number;
   strokeWidth?: number;
   zIndex?: number;
   onPress?: () => void;
@@ -20,8 +18,6 @@ export interface PolygonProps {
 export class Polygon extends React.Component<PolygonProps> {
   static defaultProps = {
     innerRings: [],
-    fillOpacity: 1,
-    strokeOpacity: 1,
   };
 
   render() {
