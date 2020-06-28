@@ -195,6 +195,31 @@ interface MarkerProps {
 }
 ```
 
+### Circle
+
+```
+import { Circle } from 'react-native-yamap';
+
+...
+<YaMap>
+    <Circle center={{lat: 50, lon: 50}} radius={300} />
+</YaMap>
+```
+
+#### Доступные props:
+
+```typescript
+interface CircleProps {
+  center: Point; // центр круга
+  radius: number; // радиус круга в метрах
+  fillColor?: string; // цвет заливки
+  strokeColor?: string; // цвет границы
+  strokeWidth?: number; // толщина границы
+  zIndex?: number;
+  onPress?: () => void;
+}
+```
+
 ### Polyline
 ```
 import { Polyline } from 'react-native-yamap';

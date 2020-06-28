@@ -34,6 +34,7 @@
 #import "YamapPolygonView.h"
 #import "YamapPolylineView.h"
 #import "YamapMarkerView.h"
+#import "YamapCircleView.h"
 #import "RNYMView.h"
 
 
@@ -415,6 +416,11 @@
         YamapMarkerView* marker = (YamapMarkerView*) subview;
         YMKPlacemarkMapObject* obj = [objects addPlacemarkWithPoint:[marker getPoint]];
         [marker setMapObject:obj];
+    } else if ([subview isKindOfClass:[YamapCircleView class]]) {
+           YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+           YamapCircleView* circle = (YamapCircleView*) subview;
+           YMKCircleMapObject* obj = [objects addCircleWithCircle:[circle getCircle] strokeColor:UIColor.blackColor strokeWidth:0.f fillColor:UIColor.blackColor];
+           [circle setMapObject:obj];
     } else {
         NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
         for (int i = 0; i < childSubviews.count; i++) {
@@ -437,6 +443,10 @@
     } else if ([subview isKindOfClass:[YamapMarkerView class]]) {
         YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
         YamapMarkerView* marker = (YamapMarkerView*) subview;
+        [objects removeWithMapObject:[marker getMapObject]];
+    } else if ([subview isKindOfClass:[YamapCircleView class]]) {
+        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+        YamapCircleView* marker = (YamapCircleView*) subview;
         [objects removeWithMapObject:[marker getMapObject]];
     } else {
         NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];

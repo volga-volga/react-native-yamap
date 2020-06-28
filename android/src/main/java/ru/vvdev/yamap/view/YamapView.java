@@ -29,6 +29,7 @@ import com.yandex.mapkit.geometry.Polyline;
 import com.yandex.mapkit.geometry.SubpolylineHelper;
 import com.yandex.mapkit.layers.ObjectEvent;
 import com.yandex.mapkit.map.CameraPosition;
+import com.yandex.mapkit.map.CircleMapObject;
 import com.yandex.mapkit.map.PlacemarkMapObject;
 import com.yandex.mapkit.map.PolygonMapObject;
 import com.yandex.mapkit.map.PolylineMapObject;
@@ -394,6 +395,11 @@ public class YamapView extends MapView implements UserLocationObjectListener {
         } else if (child instanceof YamapMarker) {
             YamapMarker _child = (YamapMarker) child;
             PlacemarkMapObject obj = getMap().getMapObjects().addPlacemark(_child.point);
+            _child.setMapObject(obj);
+            childs.add(_child);
+        } else if (child instanceof YamapCircle) {
+            YamapCircle _child = (YamapCircle) child;
+            CircleMapObject obj = getMap().getMapObjects().addCircle(_child.circle, 0, 0.f, 0);
             _child.setMapObject(obj);
             childs.add(_child);
         }
