@@ -52,7 +52,7 @@ RCT_CUSTOM_VIEW_PROPERTY(showUserPosition, BOOL, RNYMView) {
 // ref
 RCT_EXPORT_METHOD(fitAllMarkers:(nonnull NSNumber*) reactTag) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
-        RNYMView *view = viewRegistry[reactTag];
+        RNYMView *view = (RNYMView*) viewRegistry[reactTag];
         if (!view || ![view isKindOfClass:[RNYMView class]]) {
             RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
             return;
@@ -63,7 +63,7 @@ RCT_EXPORT_METHOD(fitAllMarkers:(nonnull NSNumber*) reactTag) {
 
 RCT_EXPORT_METHOD(findRoutes:(nonnull NSNumber*) reactTag json:(NSDictionary*) json) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
-        RNYMView *view = viewRegistry[reactTag];
+        RNYMView *view = (RNYMView*) viewRegistry[reactTag];
         if (!view || ![view isKindOfClass:[RNYMView class]]) {
             RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
             return;
@@ -81,7 +81,7 @@ RCT_EXPORT_METHOD(findRoutes:(nonnull NSNumber*) reactTag json:(NSDictionary*) j
 
 RCT_EXPORT_METHOD(setCenter:(nonnull NSNumber*) reactTag json:(NSDictionary*) json) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
-        RNYMView *view = viewRegistry[reactTag];
+        RNYMView *view = (RNYMView*) viewRegistry[reactTag];
         if (!view || ![view isKindOfClass:[RNYMView class]]) {
             RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
             return;

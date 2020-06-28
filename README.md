@@ -52,18 +52,25 @@ YaMap.init('API_KEY');
 import YaMap from 'react-native-yamap';
 
 const currentLocale = await YaMap.getLocale(); 
-YaMap.setLocale('en'); // 'ru'...
+YaMap.setLocale('en_US'); // 'ru_RU'...
 YaMap.resetLocale();
 
 ```
 - **getLocale(): Promise\<string\>** - возвращает используемый язык карт
-- **setLocale(locale: string): Promise\<void\>** - установить язык
+- **setLocale(locale: string): Promise\<void\>** - установить язык карт
 - **resetLocale(): Promise\<void\>** - использовать для карт язык системы
 
 Каждый метод возвращает Promise, который выполняется, при ответе нативного sdk. Promise может отклониться, если sdk вернет ошибку.
 
-Замечание: Изменение языка карт вступит в силу только после перезапуска приложения. См метод setLocale в [документации нативного sdk](https://tech.yandex.com/maps/mapkit/doc/3.x/concepts/android/runtime/ref/com/yandex/runtime/i18n/I18nManagerFactory-docpage/#method_detail__method_setLocale___NonNullString___NonNullString___NonNullLocaleUpdateListener).
-
+Замечания:
+ 1. Для **андроид** изменение языка карт вступит в силу только после перезапуска приложения. См метод setLocale в [документации нативного sdk](https://tech.yandex.com/maps/mapkit/doc/3.x/concepts/android/runtime/ref/com/yandex/runtime/i18n/I18nManagerFactory-docpage/#method_detail__method_setLocale___NonNullString___NonNullString___NonNullLocaleUpdateListener).
+ 2. Для **ios** методы изменения языка можно вызывать только до первого рендера карты. Также нельзя повторно вызывать метод, если язык уже изменялся (можно только после перезапуска приложения). Иначе изменения приняты не будут, а в терминал будет выведено сообщение с пердупреждением. В коде при этом не будет информации об ошибке. Ниже фрагмент комментария из кода в Mapkit SDK (Файл YRTI18nManagerFactory.h)
+ ```
+ Sets the application's locale. Useful only if MapKit is not used by
+  * the application. Also useless if someone else has already set
+  * the locale (produses warning and does nothing). Can be set to none,
+  * in this case system locale will be used.
+ ```
 ### Использование компонента
 ```typescript jsx
 import React from 'react';

@@ -448,4 +448,6 @@
     [super removeReactSubview: subview];
 }
 
+@synthesize reactTag;
+
 @end

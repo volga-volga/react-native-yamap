@@ -2,6 +2,8 @@ package ru.vvdev.yamap;
 
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
@@ -60,7 +62,7 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
 
     @Override
     public void receiveCommand(
-            YamapView view,
+            @NonNull YamapView view,
             String commandType,
             @Nullable ReadableArray args) {
         Assertions.assertNotNull(view);

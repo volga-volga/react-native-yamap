@@ -32,7 +32,7 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
     private String iconSource;
     private View _childView;
     private PlacemarkMapObject mapObject;
-    private ArrayList<View> childs = new ArrayList();
+    private ArrayList<View> childs = new ArrayList<>();
 
     private OnLayoutChangeListener childLayoutListener = new OnLayoutChangeListener() {
         @Override

@@ -7,19 +7,16 @@
 
 @interface RNYMView: YMKMapView<YMKUserLocationObjectListener, RCTComponent>
 
-@property (nonatomic, copy) RCTBubblingEventBlock onRouteFound;
-
-@property (nonatomic) YMKUserLocationView* _Nullable userLocationView;
-@property (nonatomic) UIImage* _Nullable userLocationImage;
+@property (nonatomic, copy) RCTBubblingEventBlock _Nullable onRouteFound;
 
 // ref
--(void) setCenter:(YMKPoint*) center withZoom:(float) zoom;
+-(void) setCenter:(YMKPoint*_Nonnull) center withZoom:(float) zoom;
 -(void) fitAllMarkers;
--(void) findRoutes:(NSArray<YMKRequestPoint*>*) points vehicles:(NSArray<NSString*>*) vehicles withId:(NSString*)_id;
+-(void) findRoutes:(NSArray<YMKRequestPoint*>*_Nonnull) points vehicles:(NSArray<NSString*>*_Nonnull) vehicles withId:(NSString*_Nonnull)_id;
 
 // props
 -(void) setListenUserLocation:(BOOL)listen;
--(void) setUserLocationIcon:(NSString*) iconSource;
+-(void) setUserLocationIcon:(NSString*_Nullable) iconSource;
 
 @end
 

@@ -2,7 +2,6 @@ package ru.vvdev.yamap;
 
 import android.view.View;
 
-import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.ThemedReactContext;
@@ -15,7 +14,6 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 
 import ru.vvdev.yamap.view.YamapMarker;
-import ru.vvdev.yamap.view.YamapView;
 
 public class YamapMarkerManager extends ViewGroupManager<YamapMarker> {
     public static final String REACT_CLASS = "YamapMarker";
