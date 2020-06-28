@@ -294,8 +294,14 @@
 }
 
 // ref
--(void) setCenter:(YMKPoint*) center withZoom:(float) zoom {
-    [self.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:zoom azimuth:0 tilt:0]];
+-(void) setCenter:(YMKCameraPosition*) position withDuration:(float) duration withAnimation:(int) animation {
+    if (duration > 0) {
+        YMKAnimationType anim = animation == 0 ? YMKAnimationTypeSmooth : YMKAnimationTypeLinear;
+        [self.mapWindow.map moveWithCameraPosition:position animationType:[YMKAnimation animationWithType:anim duration: duration] cameraCallback: ^(BOOL completed) {
+         }];
+    } else {
+        [self.mapWindow.map moveWithCameraPosition:position];
+    }
 }
 
 -(void) setListenUserLocation:(BOOL)listen {

@@ -40,3 +40,8 @@ export interface RoutesFoundEvent<T extends (DrivingInfo | MasstransitInfo)> {
     routes: RouteInfo<T>[];
   };
 }
+
+export enum Animation {
+  SMOOTH,
+  LINEAR,
+}
