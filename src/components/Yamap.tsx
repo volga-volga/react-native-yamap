@@ -15,12 +15,12 @@ import { Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehic
 
 const { yamap: NativeYamapModule } = NativeModules;
 
-const YaMapNativeComponent = requireNativeComponent('YamapView');
-
 export interface YaMapProps extends ViewProps {
   userLocationIcon: ImageSourcePropType;
   showUserPosition?: boolean;
 }
+
+const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');
 
 export class YaMap extends React.Component<YaMapProps> {
   static defaultProps = {
