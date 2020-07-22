@@ -3,8 +3,6 @@ import { requireNativeComponent } from 'react-native';
 import { processColorProps } from '../utils';
 import { Point } from '../interfaces';
 
-const NativePolygonComponent = requireNativeComponent('YamapPolygon');
-
 export interface PolygonProps {
   fillColor?: string;
   strokeColor?: string;
@@ -13,7 +11,10 @@ export interface PolygonProps {
   onPress?: () => void;
   points: Point[];
   innerRings?: (Point[])[];
+  children: undefined;
 }
+
+const NativePolygonComponent = requireNativeComponent<PolygonProps>('YamapPolygon');
 
 export class Polygon extends React.Component<PolygonProps> {
   static defaultProps = {

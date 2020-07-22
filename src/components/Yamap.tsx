@@ -6,21 +6,28 @@ import {
   UIManager,
   findNodeHandle,
   ViewProps,
-  ImageSourcePropType,
+  ImageSourcePropType, NativeSyntheticEvent,
 } from 'react-native';
 // @ts-ignore
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 import CallbacksManager from '../utils/CallbacksManager';
-import { Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles } from '../interfaces';
+import { Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition } from '../interfaces';
+import { processColorProps } from '../utils';
 
 const { yamap: NativeYamapModule } = NativeModules;
 
-const YaMapNativeComponent = requireNativeComponent('YamapView');
-
 export interface YaMapProps extends ViewProps {
-  userLocationIcon: ImageSourcePropType;
+  userLocationIcon?: ImageSourcePropType;
   showUserPosition?: boolean;
+  nightMode?: boolean;
+  mapStyle?: string;
+  onCameraPositionChange?: (event: NativeSyntheticEvent<CameraPosition>) => void;
+  userLocationAccuracyFillColor?: string;
+  userLocationAccuracyStrokeColor?: string;
+  userLocationAccuracyStrokeWidth?: number;
 }
+
+const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');
 
 export class YaMap extends React.Component<YaMapProps> {
   static defaultProps = {
@@ -96,6 +103,23 @@ export class YaMap extends React.Component<YaMapProps> {
     );
   }
 
+  public setZoom(zoom: number, duration: number = 0, animation: Animation = Animation.SMOOTH) {
+    UIManager.dispatchViewManagerCommand(
+      findNodeHandle(this),
+      this.getCommand('setZoom'),
+      [zoom, duration, animation],
+    );
+  }
+
+  public getCameraPosition(callback: (position: CameraPosition) => void) {
+    const cbId = CallbacksManager.addCallback(callback);
+    UIManager.dispatchViewManagerCommand(
+      findNodeHandle(this),
+      this.getCommand('getCameraPosition'),
+      [cbId],
+    );
+  }
+
   private _findRoutes(points: Point[], vehicles: Vehicles[], callback: ((event: RoutesFoundEvent<DrivingInfo | MasstransitInfo>) => void) | ((event: RoutesFoundEvent<DrivingInfo>) => void) | ((event: RoutesFoundEvent<MasstransitInfo>) => void)) {
     const cbId = CallbacksManager.addCallback(callback);
     const args
@@ -121,18 +145,25 @@ export class YaMap extends React.Component<YaMapProps> {
     CallbacksManager.call(event.nativeEvent.id, event);
   }
 
+  private processCameraPosition(event: any) {
+    const { id, ...position } = event.nativeEvent;
+    CallbacksManager.call(id, position);
+  }
+
   private resolveImageUri(img: ImageSourcePropType) {
     return img ? resolveAssetSource(img).uri : '';
   }
 
   private getProps() {
-    return (
-      {
-        ...this.props,
-        onRouteFound: this.processRoute,
-        userLocationIcon: this.resolveImageUri(this.props.userLocationIcon),
-      }
-    );
+    const props = {
+      ...this.props,
+      onRouteFound: this.processRoute,
+      onCameraPositionReceived: this.processCameraPosition,
+      userLocationIcon: this.props.userLocationIcon ? this.resolveImageUri(this.props.userLocationIcon) : undefined,
+    };
+    processColorProps(props, 'userLocationAccuracyFillColor' as keyof YaMapProps);
+    processColorProps(props, 'userLocationAccuracyStrokeColor' as keyof YaMapProps);
+    return props;
   }
 
   render() {

@@ -42,6 +42,7 @@
     NSNumber* scale;
     NSString* source;
     NSString* lastSource;
+    NSValue* anchor;
     NSMutableArray<UIView*>* _reactSubviews;
     UIView* _childView;
 }
@@ -60,17 +61,20 @@
     if (mapObject != nil) {
         [mapObject setGeometry:_point];
         [mapObject setZIndex:[zIndex floatValue]];
+        YMKIconStyle* iconStyle = [[YMKIconStyle alloc] init];
+        [iconStyle setScale:scale];
+        if (anchor) {
+          [iconStyle setAnchor:anchor];
+        }
 		if ([_reactSubviews count] == 0) {
-			YMKIconStyle* iconStyle = [[YMKIconStyle alloc] init];
-			[iconStyle setScale:scale];
 			if (![source isEqual:@""]) {
 				if (![source isEqual:lastSource]) {
 					[mapObject setIconWithImage:[self resolveUIImage:source]];
 					lastSource = source;
 				}
 			}
-			[mapObject setIconStyleWithStyle:iconStyle];
 		}
+        [mapObject setIconStyleWithStyle:iconStyle];
 	}
 }
 
@@ -123,6 +127,10 @@
     return _point;
 }
 
+-(void) setAnchor:(NSValue*)_anchor {
+    anchor = _anchor;
+}
+
 -(YMKPlacemarkMapObject*) getMapObject {
     return mapObject;
 }
@@ -135,7 +143,8 @@
             YRTViewProvider* v = [[YRTViewProvider alloc] initWithUIView:_childView];
             if (v != nil) {
 				if (mapObject.isValid) {
-					 [mapObject setViewWithView:v];
+					[mapObject setViewWithView:v];
+                    [self updateMarker];
 				}
             }
         }

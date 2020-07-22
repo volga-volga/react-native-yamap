@@ -60,6 +60,9 @@
     UIImage* userLocationImage;
     NSArray *acceptVehicleTypes;
     YMKUserLocationLayer *userLayer;
+    UIColor* userLocationAccuracyFillColor;
+    UIColor* userLocationAccuracyStrokeColor;
+    float userLocationAccuracyStrokeWidth;
 }
 
 - (instancetype)init {
@@ -82,6 +85,10 @@
     [vehicleColors setObject:@"#BDCCDC" forKey:@"underground"];
     [vehicleColors setObject:@"#55CfDC" forKey:@"trolleybus"];
     [vehicleColors setObject:@"#2d9da8" forKey:@"walk"];
+    userLocationAccuracyFillColor = nil;
+    userLocationAccuracyStrokeColor = nil;
+    userLocationAccuracyStrokeWidth = 0.f;
+    [self.mapWindow.map addCameraListenerWithCameraListener:self];
     return self;
 }
 
@@ -304,6 +311,47 @@
     }
 }
 
+-(void) setZoom:(float) zoom withDuration:(float) duration withAnimation:(int) animation {
+    YMKCameraPosition* prevPosition = self.mapWindow.map.cameraPosition;
+    YMKCameraPosition* position = [YMKCameraPosition cameraPositionWithTarget:prevPosition.target zoom:zoom azimuth:prevPosition.azimuth tilt:prevPosition.tilt];
+    [self setCenter:position withDuration:duration withAnimation:animation];
+}
+
+-(NSDictionary*) cameraPositionToJSON:(YMKCameraPosition*) position {
+    return @{
+        @"azimuth": [NSNumber numberWithFloat:position.azimuth],
+        @"tilt": [NSNumber numberWithFloat:position.tilt],
+        @"zoom": [NSNumber numberWithFloat:position.zoom],
+        @"point": @{
+                @"lat": [NSNumber numberWithDouble:position.target.latitude],
+                @"lon": [NSNumber numberWithDouble:position.target.longitude],
+        }
+    };
+}
+
+-(void) emitCameraPositionToJS:(NSString*) _id {
+    YMKCameraPosition* position = self.mapWindow.map.cameraPosition;
+    NSDictionary* cameraPosition = [self cameraPositionToJSON:position];
+    [cameraPosition setValue:_id forKey:@"id"];
+    if (self.onCameraPositionReceived) {
+        self.onCameraPositionReceived(cameraPosition);
+    }
+}
+
+
+- (void)onCameraPositionChangedWithMap:(nonnull YMKMap *)map
+    cameraPosition:(nonnull YMKCameraPosition *)cameraPosition
+cameraUpdateSource:(YMKCameraUpdateSource)cameraUpdateSource
+                              finished:(BOOL)finished {
+    if (self.onCameraPositionChange) {
+        self.onCameraPositionChange([self cameraPositionToJSON:cameraPosition]);
+    }
+}
+
+-(void) setNightMode:(BOOL)nightMode {
+    [self.mapWindow.map setNightModeEnabled:nightMode];
+}
+
 -(void) setListenUserLocation:(BOOL)listen {
     YMKMapKit* inst = [YMKMapKit sharedInstance];
     if (userLayer == nil) {
@@ -365,10 +413,33 @@
     [self updateUserIcon];
 }
 
+-(void) setUserLocationAccuracyFillColor: (UIColor*) color {
+    userLocationAccuracyFillColor = color;
+}
+
+-(void) setUserLocationAccuracyStrokeColor: (UIColor*) color {
+    userLocationAccuracyStrokeColor = color;
+}
+
+-(void) setUserLocationAccuracyStrokeWidth: (float) width {
+    userLocationAccuracyStrokeWidth = width;
+    [self updateUserIcon];
+}
+
 -(void) updateUserIcon {
-    if (userLocationView != nil && userLocationImage) {
-        [userLocationView.pin setIconWithImage: userLocationImage];
-        [userLocationView.arrow setIconWithImage: userLocationImage];
+    if (userLocationView != nil) {
+        if (userLocationImage) {
+            [userLocationView.pin setIconWithImage: userLocationImage];
+            [userLocationView.arrow setIconWithImage: userLocationImage];
+        }
+        YMKCircleMapObject* circle = userLocationView.accuracyCircle;
+        if (userLocationAccuracyFillColor) {
+            [circle setFillColor:userLocationAccuracyFillColor];
+        }
+        if (userLocationAccuracyStrokeColor) {
+            [circle setStrokeColor:userLocationAccuracyStrokeColor];
+        }
+        [circle setStrokeWidth:userLocationAccuracyStrokeWidth];
     }
 }
 
@@ -382,6 +453,8 @@
 }
 
 - (void)onObjectUpdatedWithView:(nonnull YMKUserLocationView *)view event:(nonnull YMKObjectEvent *)event {
+    userLocationView = view;
+    [self updateUserIcon];
 }
 
 // utils

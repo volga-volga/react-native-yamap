@@ -15,6 +15,7 @@
 -(void) setScale:(NSNumber*) _scale;
 -(void) setSource:(NSString*) _source;
 -(void) setPoint:(YMKPoint*) _points;
+-(void) setAnchor:(NSValue*) _anchor;
 
 -(YMKPoint*) getPoint;
 -(YMKPlacemarkMapObject*) getMapObject;

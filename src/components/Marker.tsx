@@ -4,8 +4,6 @@ import { requireNativeComponent, Platform, ImageSourcePropType } from 'react-nat
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 import { Point } from '../interfaces';
 
-const NativeMarkerComponent = requireNativeComponent('YamapMarker');
-
 export interface MarkerProps {
   children?: React.ReactElement;
   zIndex?: number;
@@ -13,7 +11,10 @@ export interface MarkerProps {
   onPress?: () => void;
   point: Point;
   source?: ImageSourcePropType;
+  anchor?: { x: number, y: number };
 }
+
+const NativeMarkerComponent = requireNativeComponent<MarkerProps & { pointerEvents: 'none' }>('YamapMarker');
 
 interface State {
   recreateKey: boolean;
@@ -58,6 +59,7 @@ export class Marker extends React.Component<MarkerProps, State> {
       <NativeMarkerComponent
         {...this.getProps()}
         key={String(this.state.recreateKey)}
+        pointerEvents='none'
       />
     );
   }

@@ -28,7 +28,9 @@ import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.geometry.Polyline;
 import com.yandex.mapkit.geometry.SubpolylineHelper;
 import com.yandex.mapkit.layers.ObjectEvent;
+import com.yandex.mapkit.map.CameraListener;
 import com.yandex.mapkit.map.CameraPosition;
+import com.yandex.mapkit.map.CameraUpdateSource;
 import com.yandex.mapkit.map.CircleMapObject;
 import com.yandex.mapkit.map.PlacemarkMapObject;
 import com.yandex.mapkit.map.PolygonMapObject;
@@ -58,13 +60,14 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import ru.vvdev.yamap.models.ReactMapObject;
 import ru.vvdev.yamap.utils.Callback;
 import ru.vvdev.yamap.utils.ImageLoader;
 import ru.vvdev.yamap.utils.RouteManager;
 
-public class YamapView extends MapView implements UserLocationObjectListener {
+public class YamapView extends MapView implements UserLocationObjectListener, CameraListener {
     // default colors for known vehicles
     // "underground" actually get color considering with his own branch"s color
     private final static Map<String, String> DEFAULT_VEHICLE_COLORS = new HashMap<String, String>() {{
@@ -84,6 +87,9 @@ public class YamapView extends MapView implements UserLocationObjectListener {
     private DrivingRouter drivingRouter;
     private PedestrianRouter pedestrianRouter = TransportFactory.getInstance().createPedestrianRouter();
     private UserLocationLayer userLocationLayer = null;
+    private int userLocationAccuracyFillColor = 0;
+    private int userLocationAccuracyStrokeColor = 0;
+    private float userLocationAccuracyStrokeWidth = 0.f;
     private List<ReactMapObject> childs = new ArrayList<>();
 
     // location
@@ -93,6 +99,7 @@ public class YamapView extends MapView implements UserLocationObjectListener {
         super(context);
         DirectionsFactory.initialize(context);
         drivingRouter = DirectionsFactory.getInstance().createDrivingRouter();
+        getMap().addCameraListener(this);
     }
 
     // ref methods
@@ -103,6 +110,33 @@ public class YamapView extends MapView implements UserLocationObjectListener {
         } else {
             getMap().move(position);
         }
+    }
+
+    private WritableMap positionToJSON(CameraPosition position) {
+        WritableMap cameraPosition = Arguments.createMap();
+        Point point = position.getTarget();
+        cameraPosition.putDouble("azimuth", position.getAzimuth());
+        cameraPosition.putDouble("tilt", position.getTilt());
+        cameraPosition.putDouble("zoom", position.getZoom());
+        WritableMap target = Arguments.createMap();
+        target.putDouble("lat", point.getLatitude());
+        target.putDouble("lon", point.getLongitude());
+        cameraPosition.putMap("point", target);
+        return cameraPosition;
+    }
+
+    public void emitCameraPositionToJS(String id) {
+        CameraPosition position = getMap().getCameraPosition();
+        WritableMap cameraPosition = positionToJSON(position);
+        cameraPosition.putString("id", id);
+        ReactContext reactContext = (ReactContext) getContext();
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "cameraPosition", cameraPosition);
+    }
+
+    public void setZoom(Float zoom, float duration, int animation) {
+        CameraPosition prevPosition = getMap().getCameraPosition();
+        CameraPosition position = new CameraPosition(prevPosition.getTarget(), zoom, prevPosition.getAzimuth(), prevPosition.getTilt());
+        setCenter(position, duration, animation);
     }
 
     public void findRoutes(ArrayList<Point> points, final ArrayList<String> vehicles, final String id) {
@@ -240,6 +274,31 @@ public class YamapView extends MapView implements UserLocationObjectListener {
                 }
             }
         });
+    }
+
+    public void setUserLocationAccuracyFillColor(int color) {
+        userLocationAccuracyFillColor = color;
+        updateUserLocationIcon();
+    }
+
+    public void setUserLocationAccuracyStrokeColor(int color) {
+        userLocationAccuracyStrokeColor = color;
+        updateUserLocationIcon();
+    }
+
+    public void setUserLocationAccuracyStrokeWidth(float width) {
+        userLocationAccuracyStrokeWidth = width;
+        updateUserLocationIcon();
+    }
+
+    public void setMapStyle(@Nullable String style) {
+        if (style != null) {
+            getMap().setMapStyle(style);
+        }
+    }
+
+    public void setNightMode(Boolean nightMode) {
+        getMap().setNightModeEnabled(nightMode);
     }
 
     public void setShowUserPosition(Boolean show) {
@@ -434,13 +493,28 @@ public class YamapView extends MapView implements UserLocationObjectListener {
     }
 
     private void updateUserLocationIcon() {
-        if (userLocationView != null && userLocationBitmap != null) {
+        if (userLocationView != null) {
             PlacemarkMapObject pin = userLocationView.getPin();
             PlacemarkMapObject arrow = userLocationView.getArrow();
             if (userLocationBitmap != null) {
                 pin.setIcon(ImageProvider.fromBitmap(userLocationBitmap));
                 arrow.setIcon(ImageProvider.fromBitmap(userLocationBitmap));
             }
+            CircleMapObject circle = userLocationView.getAccuracyCircle();
+            if (userLocationAccuracyFillColor != 0) {
+                circle.setFillColor(userLocationAccuracyFillColor);
+            }
+            if (userLocationAccuracyStrokeColor != 0) {
+                circle.setStrokeColor(userLocationAccuracyStrokeColor);
+            }
+            circle.setStrokeWidth(userLocationAccuracyStrokeWidth);
         }
+    }
+
+    @Override
+    public void onCameraPositionChanged(@NonNull com.yandex.mapkit.map.Map map, @NonNull CameraPosition cameraPosition, @NonNull CameraUpdateSource cameraUpdateSource, boolean b) {
+        WritableMap position = positionToJSON(cameraPosition);
+        ReactContext reactContext = (ReactContext) getContext();
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "cameraPositionChanged", position);
     }
 }

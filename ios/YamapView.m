@@ -15,7 +15,7 @@
 RCT_EXPORT_MODULE()
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"onRouteFound"];
+    return @[@"onRouteFound", @"onCameraPositionReceived", @"onCameraPositionChange"];
 }
 
 - (instancetype)init {
@@ -36,6 +36,22 @@ RCT_EXPORT_MODULE()
 
 // props
 RCT_EXPORT_VIEW_PROPERTY(onRouteFound, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onCameraPositionReceived, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onCameraPositionChange, RCTBubblingEventBlock)
+
+RCT_CUSTOM_VIEW_PROPERTY(userLocationAccuracyFillColor, NSNumber, RNYMView) {
+    [view setUserLocationAccuracyFillColor: [RCTConvert UIColor:json]];
+}
+
+
+RCT_CUSTOM_VIEW_PROPERTY(userLocationAccuracyStrokeColor, NSNumber, RNYMView) {
+    [view setUserLocationAccuracyStrokeColor: [RCTConvert UIColor:json]];
+}
+
+
+RCT_CUSTOM_VIEW_PROPERTY(userLocationAccuracyStrokeWidth, NSNumber, RNYMView) {
+    [view setUserLocationAccuracyStrokeWidth: [json floatValue]];
+}
 
 RCT_CUSTOM_VIEW_PROPERTY(userLocationIcon, NSString, RNYMView) {
     if (json && view) {
@@ -44,9 +60,21 @@ RCT_CUSTOM_VIEW_PROPERTY(userLocationIcon, NSString, RNYMView) {
 }
 
 RCT_CUSTOM_VIEW_PROPERTY(showUserPosition, BOOL, RNYMView) {
-    if (json && view) {
-        [view setListenUserLocation: [json boolValue]];
+    if (view) {
+        [view setListenUserLocation: json ? [json boolValue] : NO];
     }
+}
+
+RCT_CUSTOM_VIEW_PROPERTY(nightMode, BOOL, RNYMView) {
+    if (view) {
+        [view setNightMode: json ? [json boolValue]: NO];
+    }
+}
+
+RCT_CUSTOM_VIEW_PROPERTY(mapStyle, NSString, RNYMView) {
+	if (json && view) {
+		[view.mapWindow.map setMapStyleWithStyle:json];
+	}
 }
 
 // ref
@@ -87,6 +115,28 @@ RCT_EXPORT_METHOD(setCenter:(nonnull NSNumber*) reactTag center:(NSDictionary*_N
             return;
         }
         [self setCenterForMap: view center:center zoom: [zoom floatValue] azimuth: [azimuth floatValue] tilt: [tilt floatValue] duration: [duration floatValue] animation: [animation intValue]];
+    }];
+}
+
+RCT_EXPORT_METHOD(setZoom:(nonnull NSNumber*) reactTag zoom:(NSNumber*_Nonnull) zoom duration:(NSNumber*_Nonnull) duration animation:(NSNumber*_Nonnull) animation) {
+    [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
+        RNYMView *view = (RNYMView*) viewRegistry[reactTag];
+        if (!view || ![view isKindOfClass:[RNYMView class]]) {
+            RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
+            return;
+        }
+        [view setZoom: [zoom floatValue] withDuration:[duration floatValue] withAnimation:[animation intValue]];
+    }];
+}
+
+RCT_EXPORT_METHOD(getCameraPosition:(nonnull NSNumber*) reactTag _id:(NSString*_Nonnull) _id ) {
+    [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
+        RNYMView *view = (RNYMView*) viewRegistry[reactTag];
+        if (!view || ![view isKindOfClass:[RNYMView class]]) {
+            RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
+            return;
+        }
+        [view emitCameraPositionToJS:_id];
     }];
 }
 

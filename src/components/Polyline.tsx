@@ -3,8 +3,6 @@ import { requireNativeComponent } from 'react-native';
 import { processColorProps } from '../utils';
 import { Point } from '../interfaces';
 
-const NativePolylineComponent = requireNativeComponent('YamapPolyline');
-
 export interface PolylineProps {
   strokeColor?: string;
   outlineColor?: string;
@@ -16,7 +14,10 @@ export interface PolylineProps {
   zIndex?: number;
   onPress?: () => void;
   points: Point[];
+  children: undefined;
 }
+
+const NativePolylineComponent = requireNativeComponent<PolylineProps>('YamapPolyline');
 
 export class Polyline extends React.Component<PolylineProps> {
   render() {

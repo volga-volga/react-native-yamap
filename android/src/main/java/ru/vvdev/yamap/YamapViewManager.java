@@ -29,6 +29,8 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     private static final int SET_CENTER = 1;
     private static final int FIT_ALL_MARKERS = 2;
     private static final int FIND_ROUTES = 3;
+    private static final int SET_ZOOM = 4;
+    private static final int GET_CAMERA_POSITION = 5;
 
     YamapViewManager() {
     }
@@ -47,6 +49,8 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     public Map getExportedCustomBubblingEventTypeConstants() {
         return MapBuilder.builder()
                 .put("routes", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onRouteFound")))
+                .put("cameraPosition", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionReceived")))
+                .put("cameraPositionChanged", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionChange")))
                 .build();
     }
 
@@ -58,7 +62,11 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
                 "fitAllMarkers",
                 FIT_ALL_MARKERS,
                 "findRoutes",
-                FIND_ROUTES);
+                FIND_ROUTES,
+                "setZoom",
+                SET_ZOOM,
+                "getCameraPosition",
+                GET_CAMERA_POSITION);
     }
 
     @Override
@@ -78,6 +86,16 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
             case "findRoutes":
                 if (args != null) {
                     findRoutes(view, args.getArray(0), args.getArray(1), args.getString(2));
+                }
+                return;
+            case "setZoom":
+                if (args != null) {
+                    view.setZoom((float)args.getDouble(0), (float)args.getDouble(1), args.getInt(2));
+                }
+                return;
+            case "getCameraPosition":
+                if (args != null) {
+                    view.emitCameraPositionToJS(args.getString(0));
                 }
                 return;
             default:
@@ -140,9 +158,36 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         }
     }
 
+    @ReactProp(name = "userLocationAccuracyFillColor")
+    public void setUserLocationAccuracyFillColor(View view, int color) {
+        castToYaMapView(view).setUserLocationAccuracyFillColor(color);
+    }
+
+    @ReactProp(name = "userLocationAccuracyStrokeColor")
+    public void setUserLocationAccuracyStrokeColor(View view, int color) {
+        castToYaMapView(view).setUserLocationAccuracyStrokeColor(color);
+    }
+
+    @ReactProp(name = "userLocationAccuracyStrokeWidth")
+    public void setUserLocationAccuracyStrokeWidth(View view, float width) {
+        castToYaMapView(view).setUserLocationAccuracyStrokeWidth(width);
+    }
+
     @ReactProp(name = "showUserPosition")
     public void setShowUserPosition(View view, Boolean show) {
         castToYaMapView(view).setShowUserPosition(show);
+    }
+
+    @ReactProp(name = "nightMode")
+    public void setNightMode(View view, Boolean nightMode) {
+        castToYaMapView(view).setNightMode(nightMode != null ? nightMode : false);
+    }
+
+    @ReactProp(name = "mapStyle")
+    public void setMapStyle(View view, String style) {
+        if (style != null) {
+            castToYaMapView(view).setMapStyle(style);
+        }
     }
 
     @Override

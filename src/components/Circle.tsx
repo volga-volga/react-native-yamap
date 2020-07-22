@@ -3,8 +3,6 @@ import { requireNativeComponent } from 'react-native';
 import { processColorProps } from '../utils';
 import { Point } from '../interfaces';
 
-const NativeCircleComponent = requireNativeComponent('YamapCircle');
-
 export interface CircleProps {
   fillColor?: string;
   strokeColor?: string;
@@ -13,7 +11,10 @@ export interface CircleProps {
   onPress?: () => void;
   center: Point;
   radius: number;
+  children: undefined;
 }
+
+const NativeCircleComponent = requireNativeComponent<CircleProps>('YamapCircle');
 
 export class Circle extends React.Component<CircleProps> {
   static defaultProps = {
