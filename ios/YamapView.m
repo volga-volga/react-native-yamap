@@ -15,7 +15,7 @@
 RCT_EXPORT_MODULE()
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"onRouteFound", @"onCameraPositionReceived", @"onCameraPositionChanged"];
+    return @[@"onRouteFound", @"onCameraPositionReceived", @"onCameraPositionChange"];
 }
 
 - (instancetype)init {
@@ -37,7 +37,7 @@ RCT_EXPORT_MODULE()
 // props
 RCT_EXPORT_VIEW_PROPERTY(onRouteFound, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onCameraPositionReceived, RCTBubblingEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(onCameraPositionChanged, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onCameraPositionChange, RCTBubblingEventBlock)
 
 RCT_CUSTOM_VIEW_PROPERTY(userLocationIcon, NSString, RNYMView) {
     if (json && view) {

@@ -9,7 +9,7 @@
 
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onRouteFound;
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onCameraPositionReceived;
-@property (nonatomic, copy) RCTBubblingEventBlock _Nullable onCameraPositionChanged;
+@property (nonatomic, copy) RCTBubblingEventBlock _Nullable onCameraPositionChange;
 
 // ref
 -(void) emitCameraPositionToJS:(NSString*_Nonnull) _id;

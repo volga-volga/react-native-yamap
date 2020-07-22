@@ -337,8 +337,8 @@
     cameraPosition:(nonnull YMKCameraPosition *)cameraPosition
 cameraUpdateSource:(YMKCameraUpdateSource)cameraUpdateSource
                               finished:(BOOL)finished {
-    if (self.onCameraPositionChanged) {
-        self.onCameraPositionChanged([self cameraPositionToJSON:cameraPosition]);
+    if (self.onCameraPositionChange) {
+        self.onCameraPositionChange([self cameraPositionToJSON:cameraPosition]);
     }
 }
 

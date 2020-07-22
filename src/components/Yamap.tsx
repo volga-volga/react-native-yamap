@@ -20,7 +20,7 @@ export interface YaMapProps extends ViewProps {
   showUserPosition?: boolean;
   nightMode?: boolean;
   mapStyle?: string;
-  onCameraPositionChanged?: (event: NativeSyntheticEvent<CameraPosition>) => void;
+  onCameraPositionChange?: (event: NativeSyntheticEvent<CameraPosition>) => void;
 }
 
 const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');
