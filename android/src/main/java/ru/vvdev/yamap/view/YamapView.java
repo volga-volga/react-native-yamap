@@ -87,6 +87,9 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     private DrivingRouter drivingRouter;
     private PedestrianRouter pedestrianRouter = TransportFactory.getInstance().createPedestrianRouter();
     private UserLocationLayer userLocationLayer = null;
+    private int userLocationAccuracyFillColor = 0;
+    private int userLocationAccuracyStrokeColor = 0;
+    private float userLocationAccuracyStrokeWidth = 0.f;
     private List<ReactMapObject> childs = new ArrayList<>();
 
     // location
@@ -273,6 +276,21 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         });
     }
 
+    public void setUserLocationAccuracyFillColor(int color) {
+        userLocationAccuracyFillColor = color;
+        updateUserLocationIcon();
+    }
+
+    public void setUserLocationAccuracyStrokeColor(int color) {
+        userLocationAccuracyStrokeColor = color;
+        updateUserLocationIcon();
+    }
+
+    public void setUserLocationAccuracyStrokeWidth(float width) {
+        userLocationAccuracyStrokeWidth = width;
+        updateUserLocationIcon();
+    }
+
     public void setMapStyle(@Nullable String style) {
         if (style != null) {
             getMap().setMapStyle(style);
@@ -282,6 +300,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     public void setNightMode(Boolean nightMode) {
         getMap().setNightModeEnabled(nightMode);
     }
+
     public void setShowUserPosition(Boolean show) {
         if (userLocationLayer == null) {
             userLocationLayer = getMap().getUserLocationLayer();
@@ -474,13 +493,21 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     }
 
     private void updateUserLocationIcon() {
-        if (userLocationView != null && userLocationBitmap != null) {
+        if (userLocationView != null) {
             PlacemarkMapObject pin = userLocationView.getPin();
             PlacemarkMapObject arrow = userLocationView.getArrow();
             if (userLocationBitmap != null) {
                 pin.setIcon(ImageProvider.fromBitmap(userLocationBitmap));
                 arrow.setIcon(ImageProvider.fromBitmap(userLocationBitmap));
             }
+            CircleMapObject circle = userLocationView.getAccuracyCircle();
+            if (userLocationAccuracyFillColor != 0) {
+                circle.setFillColor(userLocationAccuracyFillColor);
+            }
+            if (userLocationAccuracyStrokeColor != 0) {
+                circle.setStrokeColor(userLocationAccuracyStrokeColor);
+            }
+            circle.setStrokeWidth(userLocationAccuracyStrokeWidth);
         }
     }
 

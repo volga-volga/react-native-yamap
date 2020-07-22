@@ -158,6 +158,9 @@ export interface CameraPosition {
 - `userLocationIcon: ImageSource` - иконка позиции пользователя. Доступны те же значения что и у компонента Image из react native
 - `onCameraPositionChange?: (event: NativeSyntheticEvent<CameraPosition>) => void` - колбек на изменение положения камеры
 - `children: Marker | Polygon | Polyline | Circle` - см раздел "Отображение - примитивов"
+- `userLocationAccuracyFillColor?: string` - цвет фона зоны точности определения позиции пользователя
+- `userLocationAccuracyStrokeColor?: string` - цвет границы зоны точности определения позиции пользователя
+- `userLocationAccuracyStrokeWidth?: number` - толщина зоны точности определения позиции пользователя
 
 #### Методы
 - `fitAllMarkers` - подобрать положение камеры, чтобы вместить все маркеры

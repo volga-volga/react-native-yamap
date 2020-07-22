@@ -23,6 +23,10 @@
 -(void) setListenUserLocation:(BOOL)listen;
 -(void) setUserLocationIcon:(NSString*_Nullable) iconSource;
 
+-(void) setUserLocationAccuracyFillColor: (UIColor*) color;
+-(void) setUserLocationAccuracyStrokeColor: (UIColor*) color;
+-(void) setUserLocationAccuracyStrokeWidth: (float) width;
+
 @end
 
 #endif /* RNYMView_h */

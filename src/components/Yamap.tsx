@@ -12,15 +12,19 @@ import {
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 import CallbacksManager from '../utils/CallbacksManager';
 import { Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition } from '../interfaces';
+import { processColorProps } from '../utils';
 
 const { yamap: NativeYamapModule } = NativeModules;
 
 export interface YaMapProps extends ViewProps {
-  userLocationIcon: ImageSourcePropType;
+  userLocationIcon?: ImageSourcePropType;
   showUserPosition?: boolean;
   nightMode?: boolean;
   mapStyle?: string;
   onCameraPositionChange?: (event: NativeSyntheticEvent<CameraPosition>) => void;
+  userLocationAccuracyFillColor?: string;
+  userLocationAccuracyStrokeColor?: string;
+  userLocationAccuracyStrokeWidth?: number;
 }
 
 const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');
@@ -151,14 +155,15 @@ export class YaMap extends React.Component<YaMapProps> {
   }
 
   private getProps() {
-    return (
-      {
-        ...this.props,
-        onRouteFound: this.processRoute,
-        onCameraPositionReceived: this.processCameraPosition,
-        userLocationIcon: this.resolveImageUri(this.props.userLocationIcon),
-      }
-    );
+    const props = {
+      ...this.props,
+      onRouteFound: this.processRoute,
+      onCameraPositionReceived: this.processCameraPosition,
+      userLocationIcon: this.props.userLocationIcon ? this.resolveImageUri(this.props.userLocationIcon) : undefined,
+    };
+    processColorProps(props, 'userLocationAccuracyFillColor' as keyof YaMapProps);
+    processColorProps(props, 'userLocationAccuracyStrokeColor' as keyof YaMapProps);
+    return props;
   }
 
   render() {

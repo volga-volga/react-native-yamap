@@ -60,6 +60,9 @@
     UIImage* userLocationImage;
     NSArray *acceptVehicleTypes;
     YMKUserLocationLayer *userLayer;
+    UIColor* userLocationAccuracyFillColor;
+    UIColor* userLocationAccuracyStrokeColor;
+    float userLocationAccuracyStrokeWidth;
 }
 
 - (instancetype)init {
@@ -82,6 +85,9 @@
     [vehicleColors setObject:@"#BDCCDC" forKey:@"underground"];
     [vehicleColors setObject:@"#55CfDC" forKey:@"trolleybus"];
     [vehicleColors setObject:@"#2d9da8" forKey:@"walk"];
+    userLocationAccuracyFillColor = nil;
+    userLocationAccuracyStrokeColor = nil;
+    userLocationAccuracyStrokeWidth = 0.f;
     [self.mapWindow.map addCameraListenerWithCameraListener:self];
     return self;
 }
@@ -407,10 +413,33 @@ cameraUpdateSource:(YMKCameraUpdateSource)cameraUpdateSource
     [self updateUserIcon];
 }
 
+-(void) setUserLocationAccuracyFillColor: (UIColor*) color {
+    userLocationAccuracyFillColor = color;
+}
+
+-(void) setUserLocationAccuracyStrokeColor: (UIColor*) color {
+    userLocationAccuracyStrokeColor = color;
+}
+
+-(void) setUserLocationAccuracyStrokeWidth: (float) width {
+    userLocationAccuracyStrokeWidth = width;
+    [self updateUserIcon];
+}
+
 -(void) updateUserIcon {
-    if (userLocationView != nil && userLocationImage) {
-        [userLocationView.pin setIconWithImage: userLocationImage];
-        [userLocationView.arrow setIconWithImage: userLocationImage];
+    if (userLocationView != nil) {
+        if (userLocationImage) {
+            [userLocationView.pin setIconWithImage: userLocationImage];
+            [userLocationView.arrow setIconWithImage: userLocationImage];
+        }
+        YMKCircleMapObject* circle = userLocationView.accuracyCircle;
+        if (userLocationAccuracyFillColor) {
+            [circle setFillColor:userLocationAccuracyFillColor];
+        }
+        if (userLocationAccuracyStrokeColor) {
+            [circle setStrokeColor:userLocationAccuracyStrokeColor];
+        }
+        [circle setStrokeWidth:userLocationAccuracyStrokeWidth];
     }
 }
 
@@ -424,6 +453,8 @@ cameraUpdateSource:(YMKCameraUpdateSource)cameraUpdateSource
 }
 
 - (void)onObjectUpdatedWithView:(nonnull YMKUserLocationView *)view event:(nonnull YMKObjectEvent *)event {
+    userLocationView = view;
+    [self updateUserIcon];
 }
 
 // utils

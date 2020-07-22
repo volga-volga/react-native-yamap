@@ -158,6 +158,21 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         }
     }
 
+    @ReactProp(name = "userLocationAccuracyFillColor")
+    public void setUserLocationAccuracyFillColor(View view, int color) {
+        castToYaMapView(view).setUserLocationAccuracyFillColor(color);
+    }
+
+    @ReactProp(name = "userLocationAccuracyStrokeColor")
+    public void setUserLocationAccuracyStrokeColor(View view, int color) {
+        castToYaMapView(view).setUserLocationAccuracyStrokeColor(color);
+    }
+
+    @ReactProp(name = "userLocationAccuracyStrokeWidth")
+    public void setUserLocationAccuracyStrokeWidth(View view, float width) {
+        castToYaMapView(view).setUserLocationAccuracyStrokeWidth(width);
+    }
+
     @ReactProp(name = "showUserPosition")
     public void setShowUserPosition(View view, Boolean show) {
         castToYaMapView(view).setShowUserPosition(show);

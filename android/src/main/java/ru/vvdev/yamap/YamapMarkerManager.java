@@ -19,7 +19,7 @@ import ru.vvdev.yamap.view.YamapMarker;
 public class YamapMarkerManager extends ViewGroupManager<YamapMarker> {
     public static final String REACT_CLASS = "YamapMarker";
 
-    YamapMarkerManager() { }
+    YamapMarkerManager() {}
 
     @Override
     public String getName() {
@@ -78,7 +78,7 @@ public class YamapMarkerManager extends ViewGroupManager<YamapMarker> {
 
     @ReactProp(name = "anchor")
     public void setAnchor(View view, ReadableMap anchor) {
-        castToMarkerView(view).setAnchor(anchor != null ? new PointF((float)anchor.getDouble("x"), (float)anchor.getDouble("y")) : null);
+        castToMarkerView(view).setAnchor(anchor != null ? new PointF((float) anchor.getDouble("x"), (float) anchor.getDouble("y")) : null);
     }
 
     @Override
