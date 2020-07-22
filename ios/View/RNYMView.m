@@ -310,6 +310,24 @@
     [self setCenter:position withDuration:duration withAnimation:animation];
 }
 
+
+-(void) emitCameraPositionToJS:(NSString*) _id {
+    YMKCameraPosition* position = self.mapWindow.map.cameraPosition;
+    NSDictionary* cameraPosition = @{
+        @"id": _id,
+        @"azimuth": [NSNumber numberWithFloat:position.azimuth],
+        @"tilt": [NSNumber numberWithFloat:position.tilt],
+        @"zoom": [NSNumber numberWithFloat:position.zoom],
+        @"point": @{
+                @"lat": [NSNumber numberWithDouble:position.target.latitude],
+                @"lon": [NSNumber numberWithDouble:position.target.longitude],
+        }
+    };
+    if (self.onCameraPositionReceived) {
+        self.onCameraPositionReceived(cameraPosition);
+    }
+}
+
 -(void) setNightMode:(BOOL)nightMode {
     [self.mapWindow.map setNightModeEnabled:nightMode];
 }

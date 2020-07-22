@@ -30,6 +30,7 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     private static final int FIT_ALL_MARKERS = 2;
     private static final int FIND_ROUTES = 3;
     private static final int SET_ZOOM = 4;
+    private static final int GET_CAMERA_POSITION = 5;
 
     YamapViewManager() {
     }
@@ -48,6 +49,7 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     public Map getExportedCustomBubblingEventTypeConstants() {
         return MapBuilder.builder()
                 .put("routes", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onRouteFound")))
+                .put("cameraPosition", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionReceived")))
                 .build();
     }
 
@@ -61,7 +63,9 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
                 "findRoutes",
                 FIND_ROUTES,
                 "setZoom",
-                SET_ZOOM);
+                SET_ZOOM,
+                "getCameraPosition",
+                GET_CAMERA_POSITION);
     }
 
     @Override
@@ -86,6 +90,11 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
             case "setZoom":
                 if (args != null) {
                     view.setZoom((float)args.getDouble(0), (float)args.getDouble(1), args.getInt(2));
+                }
+                return;
+            case "getCameraPosition":
+                if (args != null) {
+                    view.emitCameraPositionToJS(args.getString(0));
                 }
                 return;
             default:

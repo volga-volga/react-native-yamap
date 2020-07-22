@@ -11,7 +11,7 @@ import {
 // @ts-ignore
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 import CallbacksManager from '../utils/CallbacksManager';
-import { Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles } from '../interfaces';
+import { Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition } from '../interfaces';
 
 const { yamap: NativeYamapModule } = NativeModules;
 
@@ -106,6 +106,15 @@ export class YaMap extends React.Component<YaMapProps> {
     );
   }
 
+  public getCameraPosition(callback: (position: CameraPosition) => void) {
+    const cbId = CallbacksManager.addCallback(callback);
+    UIManager.dispatchViewManagerCommand(
+      findNodeHandle(this),
+      this.getCommand('getCameraPosition'),
+      [cbId],
+    );
+  }
+
   private _findRoutes(points: Point[], vehicles: Vehicles[], callback: ((event: RoutesFoundEvent<DrivingInfo | MasstransitInfo>) => void) | ((event: RoutesFoundEvent<DrivingInfo>) => void) | ((event: RoutesFoundEvent<MasstransitInfo>) => void)) {
     const cbId = CallbacksManager.addCallback(callback);
     const args
@@ -131,6 +140,11 @@ export class YaMap extends React.Component<YaMapProps> {
     CallbacksManager.call(event.nativeEvent.id, event);
   }
 
+  private processCameraPosition(event: any) {
+    const { id, target, ...position } = event.nativeEvent;
+    CallbacksManager.call(id, position);
+  }
+
   private resolveImageUri(img: ImageSourcePropType) {
     return img ? resolveAssetSource(img).uri : '';
   }
@@ -140,6 +154,7 @@ export class YaMap extends React.Component<YaMapProps> {
       {
         ...this.props,
         onRouteFound: this.processRoute,
+        onCameraPositionReceived: this.processCameraPosition,
         userLocationIcon: this.resolveImageUri(this.props.userLocationIcon),
       }
     );

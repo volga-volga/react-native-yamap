@@ -106,6 +106,22 @@ public class YamapView extends MapView implements UserLocationObjectListener {
         }
     }
 
+    public void emitCameraPositionToJS(String id) {
+        CameraPosition position = getMap().getCameraPosition();
+        Point point = position.getTarget();
+        WritableMap cameraPosition = Arguments.createMap();
+        cameraPosition.putString("id", id);
+        cameraPosition.putDouble("azimuth", position.getAzimuth());
+        cameraPosition.putDouble("tilt", position.getTilt());
+        cameraPosition.putDouble("zoom", position.getZoom());
+        WritableMap target = Arguments.createMap();
+        target.putDouble("lat", point.getLatitude());
+        target.putDouble("lon", point.getLongitude());
+        cameraPosition.putMap("point", target);
+        ReactContext reactContext = (ReactContext) getContext();
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "cameraPosition", cameraPosition);
+    }
+
     public void setZoom(Float zoom, float duration, int animation) {
         CameraPosition prevPosition = getMap().getCameraPosition();
         CameraPosition position = new CameraPosition(prevPosition.getTarget(), zoom, prevPosition.getAzimuth(), prevPosition.getTilt());

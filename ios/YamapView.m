@@ -15,7 +15,7 @@
 RCT_EXPORT_MODULE()
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"onRouteFound"];
+    return @[@"onRouteFound", @"onCameraPositionReceived"];
 }
 
 - (instancetype)init {
@@ -36,6 +36,7 @@ RCT_EXPORT_MODULE()
 
 // props
 RCT_EXPORT_VIEW_PROPERTY(onRouteFound, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onCameraPositionReceived, RCTBubblingEventBlock)
 
 RCT_CUSTOM_VIEW_PROPERTY(userLocationIcon, NSString, RNYMView) {
     if (json && view) {
@@ -110,6 +111,17 @@ RCT_EXPORT_METHOD(setZoom:(nonnull NSNumber*) reactTag zoom:(NSNumber*_Nonnull) 
             return;
         }
         [view setZoom: [zoom floatValue] withDuration:[duration floatValue] withAnimation:[animation intValue]];
+    }];
+}
+
+RCT_EXPORT_METHOD(getCameraPosition:(nonnull NSNumber*) reactTag _id:(NSString*_Nonnull) _id ) {
+    [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
+        RNYMView *view = (RNYMView*) viewRegistry[reactTag];
+        if (!view || ![view isKindOfClass:[RNYMView class]]) {
+            RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
+            return;
+        }
+        [view emitCameraPositionToJS:_id];
     }];
 }
 

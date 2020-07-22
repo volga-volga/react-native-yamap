@@ -45,3 +45,10 @@ export enum Animation {
   SMOOTH,
   LINEAR,
 }
+
+export interface CameraPosition {
+  zoom: number;
+  tilt: number;
+  azimuth: number;
+  point: Point;
+}
