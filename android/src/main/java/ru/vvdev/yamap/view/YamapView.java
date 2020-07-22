@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import ru.vvdev.yamap.models.ReactMapObject;
 import ru.vvdev.yamap.utils.Callback;
@@ -242,6 +243,15 @@ public class YamapView extends MapView implements UserLocationObjectListener {
         });
     }
 
+    public void setMapStyle(@Nullable String style) {
+        if (style != null) {
+            getMap().setMapStyle(style);
+        }
+    }
+
+    public void setNightMode(Boolean nightMode) {
+        getMap().setNightModeEnabled(nightMode);
+    }
     public void setShowUserPosition(Boolean show) {
         if (userLocationLayer == null) {
             userLocationLayer = getMap().getUserLocationLayer();

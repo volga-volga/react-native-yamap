@@ -145,6 +145,11 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         castToYaMapView(view).setShowUserPosition(show);
     }
 
+    @ReactProp(name = "nightMode")
+    public void setNightMode(View view, Boolean nightMode) {
+        castToYaMapView(view).setNightMode(nightMode != null ? nightMode : false);
+    }
+
     @ReactProp(name = "mapStyle")
     public void setMapStyle(View view, String style) {
         if (style != null) {

@@ -44,8 +44,14 @@ RCT_CUSTOM_VIEW_PROPERTY(userLocationIcon, NSString, RNYMView) {
 }
 
 RCT_CUSTOM_VIEW_PROPERTY(showUserPosition, BOOL, RNYMView) {
-    if (json && view) {
-        [view setListenUserLocation: [json boolValue]];
+    if (view) {
+        [view setListenUserLocation: json ? [json boolValue] : NO];
+    }
+}
+
+RCT_CUSTOM_VIEW_PROPERTY(nightMode, BOOL, RNYMView) {
+    if (view) {
+        [view setNightMode: json ? [json boolValue]: NO];
     }
 }
 

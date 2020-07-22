@@ -18,6 +18,8 @@ const { yamap: NativeYamapModule } = NativeModules;
 export interface YaMapProps extends ViewProps {
   userLocationIcon: ImageSourcePropType;
   showUserPosition?: boolean;
+  nightMode?: boolean;
+  mapStyle?: string;
 }
 
 const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');

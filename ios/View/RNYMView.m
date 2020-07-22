@@ -304,6 +304,10 @@
     }
 }
 
+-(void) setNightMode:(BOOL)nightMode {
+    [self.mapWindow.map setNightModeEnabled:nightMode];
+}
+
 -(void) setListenUserLocation:(BOOL)listen {
     YMKMapKit* inst = [YMKMapKit sharedInstance];
     if (userLayer == nil) {
