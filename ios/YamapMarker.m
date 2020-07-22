@@ -43,6 +43,18 @@ RCT_CUSTOM_VIEW_PROPERTY(scale, NSNumber, YamapMarkerView) {
     [view setScale: json];
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(anchor, NSDictionary, YamapMarkerView) {
+    CGPoint point;
+    if (json) {
+        CGFloat x = [[json valueForKey:@"x"] doubleValue];
+        CGFloat y = [[json valueForKey:@"y"] doubleValue];
+        point = CGPointMake(x, y);
+    } else {
+        point = CGPointMake(0.5, 0.5);
+    }
+    [view setAnchor: [NSValue valueWithCGPoint:point]];
+}
+
 RCT_CUSTOM_VIEW_PROPERTY(zIndex, NSNumber, YamapMarkerView) {
     [view setZIndex: json];
 }
