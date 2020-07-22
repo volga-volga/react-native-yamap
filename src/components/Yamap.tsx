@@ -6,7 +6,7 @@ import {
   UIManager,
   findNodeHandle,
   ViewProps,
-  ImageSourcePropType,
+  ImageSourcePropType, NativeSyntheticEvent,
 } from 'react-native';
 // @ts-ignore
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
@@ -20,6 +20,7 @@ export interface YaMapProps extends ViewProps {
   showUserPosition?: boolean;
   nightMode?: boolean;
   mapStyle?: string;
+  onCameraPositionChanged?: (event: NativeSyntheticEvent<CameraPosition>) => void;
 }
 
 const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');
@@ -141,7 +142,7 @@ export class YaMap extends React.Component<YaMapProps> {
   }
 
   private processCameraPosition(event: any) {
-    const { id, target, ...position } = event.nativeEvent;
+    const { id, ...position } = event.nativeEvent;
     CallbacksManager.call(id, position);
   }
 

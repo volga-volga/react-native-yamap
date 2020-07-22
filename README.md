@@ -152,14 +152,12 @@ export interface CameraPosition {
 ```
 
 #### Доступные `props` для компонента **MapView**
-```typescript
-interface Props extends ViewProps {
-  showUserPosition?: boolean; // если false, то не будут отслеживаться и отображаться геоданные пользователя. Значение по умолчанию true
-  nightMode: boolean; // использовать ночной режим. По умолчанию - false
-  userLocationIcon: ImageSource; // иконка позиции пользователя. Доступны те же значения что и у компонента Image из react native
-  children: Marker | Polygon | Polyline; // см раздел "Отображение примитивов"
-}
-```
+
+- `showUserPosition?: boolean` - если false, то не будут отслеживаться и отображаться геоданные пользователя. Значение по умолчанию true
+- `nightMode: boolean` - использовать ночной режим. По умолчанию - false
+- `userLocationIcon: ImageSource` - иконка позиции пользователя. Доступны те же значения что и у компонента Image из react native
+- `onCameraPositionChanged?: (event: NativeSyntheticEvent<CameraPosition>) => void` - колбек на изменение положения камеры
+- `children: Marker | Polygon | Polyline | Circle` - см раздел "Отображение - примитивов"
 
 #### Методы
 - `fitAllMarkers` - подобрать положение камеры, чтобы вместить все маркеры

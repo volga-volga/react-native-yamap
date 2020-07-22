@@ -82,6 +82,7 @@
     [vehicleColors setObject:@"#BDCCDC" forKey:@"underground"];
     [vehicleColors setObject:@"#55CfDC" forKey:@"trolleybus"];
     [vehicleColors setObject:@"#2d9da8" forKey:@"walk"];
+    [self.mapWindow.map addCameraListenerWithCameraListener:self];
     return self;
 }
 
@@ -310,11 +311,8 @@
     [self setCenter:position withDuration:duration withAnimation:animation];
 }
 
-
--(void) emitCameraPositionToJS:(NSString*) _id {
-    YMKCameraPosition* position = self.mapWindow.map.cameraPosition;
-    NSDictionary* cameraPosition = @{
-        @"id": _id,
+-(NSDictionary*) cameraPositionToJSON:(YMKCameraPosition*) position {
+    return @{
         @"azimuth": [NSNumber numberWithFloat:position.azimuth],
         @"tilt": [NSNumber numberWithFloat:position.tilt],
         @"zoom": [NSNumber numberWithFloat:position.zoom],
@@ -323,8 +321,24 @@
                 @"lon": [NSNumber numberWithDouble:position.target.longitude],
         }
     };
+}
+
+-(void) emitCameraPositionToJS:(NSString*) _id {
+    YMKCameraPosition* position = self.mapWindow.map.cameraPosition;
+    NSDictionary* cameraPosition = [self cameraPositionToJSON:position];
+    [cameraPosition setValue:_id forKey:@"id"];
     if (self.onCameraPositionReceived) {
         self.onCameraPositionReceived(cameraPosition);
+    }
+}
+
+
+- (void)onCameraPositionChangedWithMap:(nonnull YMKMap *)map
+    cameraPosition:(nonnull YMKCameraPosition *)cameraPosition
+cameraUpdateSource:(YMKCameraUpdateSource)cameraUpdateSource
+                              finished:(BOOL)finished {
+    if (self.onCameraPositionChanged) {
+        self.onCameraPositionChanged([self cameraPositionToJSON:cameraPosition]);
     }
 }
 

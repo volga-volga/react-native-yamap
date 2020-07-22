@@ -5,13 +5,14 @@
 
 @class RCTBridge;
 
-@interface RNYMView: YMKMapView<YMKUserLocationObjectListener, RCTComponent>
+@interface RNYMView: YMKMapView<YMKUserLocationObjectListener, YMKMapCameraListener, RCTComponent>
 
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onRouteFound;
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onCameraPositionReceived;
+@property (nonatomic, copy) RCTBubblingEventBlock _Nullable onCameraPositionChanged;
 
 // ref
--(void) emitCameraPositionToJS:(NSString*) _id;
+-(void) emitCameraPositionToJS:(NSString*_Nonnull) _id;
 -(void) setCenter:(YMKCameraPosition*_Nonnull) position withDuration:(float) duration withAnimation:(int) animation;
 -(void) setZoom:(float) zoom withDuration:(float) duration withAnimation:(int) animation;
 -(void) fitAllMarkers;
