@@ -98,6 +98,14 @@ export class YaMap extends React.Component<YaMapProps> {
     );
   }
 
+  public setZoom(zoom: number, duration: number = 0, animation: Animation = Animation.SMOOTH) {
+    UIManager.dispatchViewManagerCommand(
+      findNodeHandle(this),
+      this.getCommand('setZoom'),
+      [zoom, duration, animation],
+    );
+  }
+
   private _findRoutes(points: Point[], vehicles: Vehicles[], callback: ((event: RoutesFoundEvent<DrivingInfo | MasstransitInfo>) => void) | ((event: RoutesFoundEvent<DrivingInfo>) => void) | ((event: RoutesFoundEvent<MasstransitInfo>) => void)) {
     const cbId = CallbacksManager.addCallback(callback);
     const args

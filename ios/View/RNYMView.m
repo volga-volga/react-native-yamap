@@ -304,6 +304,12 @@
     }
 }
 
+-(void) setZoom:(float) zoom withDuration:(float) duration withAnimation:(int) animation {
+    YMKCameraPosition* prevPosition = self.mapWindow.map.cameraPosition;
+    YMKCameraPosition* position = [YMKCameraPosition cameraPositionWithTarget:prevPosition.target zoom:zoom azimuth:prevPosition.azimuth tilt:prevPosition.tilt];
+    [self setCenter:position withDuration:duration withAnimation:animation];
+}
+
 -(void) setNightMode:(BOOL)nightMode {
     [self.mapWindow.map setNightModeEnabled:nightMode];
 }

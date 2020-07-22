@@ -29,6 +29,7 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     private static final int SET_CENTER = 1;
     private static final int FIT_ALL_MARKERS = 2;
     private static final int FIND_ROUTES = 3;
+    private static final int SET_ZOOM = 4;
 
     YamapViewManager() {
     }
@@ -58,7 +59,9 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
                 "fitAllMarkers",
                 FIT_ALL_MARKERS,
                 "findRoutes",
-                FIND_ROUTES);
+                FIND_ROUTES,
+                "setZoom",
+                SET_ZOOM);
     }
 
     @Override
@@ -78,6 +81,11 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
             case "findRoutes":
                 if (args != null) {
                     findRoutes(view, args.getArray(0), args.getArray(1), args.getString(2));
+                }
+                return;
+            case "setZoom":
+                if (args != null) {
+                    view.setZoom((float)args.getDouble(0), (float)args.getDouble(1), args.getInt(2));
                 }
                 return;
             default:

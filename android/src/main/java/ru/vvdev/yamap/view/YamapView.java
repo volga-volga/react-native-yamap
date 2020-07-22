@@ -106,6 +106,12 @@ public class YamapView extends MapView implements UserLocationObjectListener {
         }
     }
 
+    public void setZoom(Float zoom, float duration, int animation) {
+        CameraPosition prevPosition = getMap().getCameraPosition();
+        CameraPosition position = new CameraPosition(prevPosition.getTarget(), zoom, prevPosition.getAzimuth(), prevPosition.getTilt());
+        setCenter(position, duration, animation);
+    }
+
     public void findRoutes(ArrayList<Point> points, final ArrayList<String> vehicles, final String id) {
         final YamapView self = this;
         if (vehicles.size() == 1 && vehicles.get(0).equals("car")) {
