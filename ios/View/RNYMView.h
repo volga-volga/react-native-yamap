@@ -10,6 +10,8 @@
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onRouteFound;
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onCameraPositionReceived;
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onCameraPositionChange;
+@property (nonatomic, copy) RCTBubblingEventBlock _Nullable onMapPress;
+@property (nonatomic, copy) RCTBubblingEventBlock _Nullable onMapLongPress;
 
 // ref
 -(void) emitCameraPositionToJS:(NSString*_Nonnull) _id;
@@ -23,8 +25,8 @@
 -(void) setListenUserLocation:(BOOL)listen;
 -(void) setUserLocationIcon:(NSString*_Nullable) iconSource;
 
--(void) setUserLocationAccuracyFillColor: (UIColor*) color;
--(void) setUserLocationAccuracyStrokeColor: (UIColor*) color;
+-(void) setUserLocationAccuracyFillColor: (UIColor*_Nullable) color;
+-(void) setUserLocationAccuracyStrokeColor: (UIColor*_Nullable) color;
 -(void) setUserLocationAccuracyStrokeWidth: (float) width;
 
 @end

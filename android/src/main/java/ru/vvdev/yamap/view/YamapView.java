@@ -32,6 +32,7 @@ import com.yandex.mapkit.map.CameraListener;
 import com.yandex.mapkit.map.CameraPosition;
 import com.yandex.mapkit.map.CameraUpdateSource;
 import com.yandex.mapkit.map.CircleMapObject;
+import com.yandex.mapkit.map.InputListener;
 import com.yandex.mapkit.map.PlacemarkMapObject;
 import com.yandex.mapkit.map.PolygonMapObject;
 import com.yandex.mapkit.map.PolylineMapObject;
@@ -67,7 +68,7 @@ import ru.vvdev.yamap.utils.Callback;
 import ru.vvdev.yamap.utils.ImageLoader;
 import ru.vvdev.yamap.utils.RouteManager;
 
-public class YamapView extends MapView implements UserLocationObjectListener, CameraListener {
+public class YamapView extends MapView implements UserLocationObjectListener, CameraListener, InputListener {
     // default colors for known vehicles
     // "underground" actually get color considering with his own branch"s color
     private final static Map<String, String> DEFAULT_VEHICLE_COLORS = new HashMap<String, String>() {{
@@ -100,6 +101,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         DirectionsFactory.initialize(context);
         drivingRouter = DirectionsFactory.getInstance().createDrivingRouter();
         getMap().addCameraListener(this);
+        getMap().addInputListener(this);
     }
 
     // ref methods
@@ -516,5 +518,23 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         WritableMap position = positionToJSON(cameraPosition);
         ReactContext reactContext = (ReactContext) getContext();
         reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "cameraPositionChanged", position);
+    }
+
+    @Override
+    public void onMapTap(@NonNull com.yandex.mapkit.map.Map map, @NonNull Point point) {
+        WritableMap data = Arguments.createMap();
+        data.putDouble("lat", point.getLatitude());
+        data.putDouble("lon", point.getLongitude());
+        ReactContext reactContext = (ReactContext) getContext();
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onMapPress", data);
+    }
+
+    @Override
+    public void onMapLongTap(@NonNull com.yandex.mapkit.map.Map map, @NonNull Point point) {
+        WritableMap data = Arguments.createMap();
+        data.putDouble("lat", point.getLatitude());
+        data.putDouble("lon", point.getLongitude());
+        ReactContext reactContext = (ReactContext) getContext();
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onMapLongPress", data);
     }
 }

@@ -22,6 +22,8 @@ export interface YaMapProps extends ViewProps {
   nightMode?: boolean;
   mapStyle?: string;
   onCameraPositionChange?: (event: NativeSyntheticEvent<CameraPosition>) => void;
+  onMapPress?: (event: NativeSyntheticEvent<Point>) => void;
+  onMapLongPress?: (event: NativeSyntheticEvent<Point>) => void;
   userLocationAccuracyFillColor?: string;
   userLocationAccuracyStrokeColor?: string;
   userLocationAccuracyStrokeWidth?: number;

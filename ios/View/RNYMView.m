@@ -89,6 +89,7 @@
     userLocationAccuracyStrokeColor = nil;
     userLocationAccuracyStrokeWidth = 0.f;
     [self.mapWindow.map addCameraListenerWithCameraListener:self];
+    [self.mapWindow.map addInputListenerWithInputListener:(id<YMKMapInputListener>) self];
     return self;
 }
 
@@ -415,10 +416,12 @@ cameraUpdateSource:(YMKCameraUpdateSource)cameraUpdateSource
 
 -(void) setUserLocationAccuracyFillColor: (UIColor*) color {
     userLocationAccuracyFillColor = color;
+    [self updateUserIcon];
 }
 
 -(void) setUserLocationAccuracyStrokeColor: (UIColor*) color {
     userLocationAccuracyStrokeColor = color;
+    [self updateUserIcon];
 }
 
 -(void) setUserLocationAccuracyStrokeWidth: (float) width {
@@ -455,6 +458,28 @@ cameraUpdateSource:(YMKCameraUpdateSource)cameraUpdateSource
 - (void)onObjectUpdatedWithView:(nonnull YMKUserLocationView *)view event:(nonnull YMKObjectEvent *)event {
     userLocationView = view;
     [self updateUserIcon];
+}
+
+- (void)onMapTapWithMap:(nonnull YMKMap *)map
+                  point:(nonnull YMKPoint *)point {
+    if (self.onMapLongPress) {
+        NSDictionary* data = @{
+            @"lat": [NSNumber numberWithDouble:point.latitude],
+            @"lon": [NSNumber numberWithDouble:point.longitude],
+        };
+        self.onMapLongPress(data);
+    }
+}
+
+- (void)onMapLongTapWithMap:(nonnull YMKMap *)map
+                      point:(nonnull YMKPoint *)point {
+    if (self.onMapLongPress) {
+        NSDictionary* data = @{
+            @"lat": [NSNumber numberWithDouble:point.latitude],
+            @"lon": [NSNumber numberWithDouble:point.longitude],
+        };
+        self.onMapLongPress(data);
+    }
 }
 
 // utils
