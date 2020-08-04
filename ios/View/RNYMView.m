@@ -462,12 +462,12 @@ cameraUpdateSource:(YMKCameraUpdateSource)cameraUpdateSource
 
 - (void)onMapTapWithMap:(nonnull YMKMap *)map
                   point:(nonnull YMKPoint *)point {
-    if (self.onMapLongPress) {
+    if (self.onMapPress) {
         NSDictionary* data = @{
             @"lat": [NSNumber numberWithDouble:point.latitude],
             @"lon": [NSNumber numberWithDouble:point.longitude],
         };
-        self.onMapLongPress(data);
+        self.onMapPress(data);
     }
 }
 
