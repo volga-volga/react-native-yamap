@@ -157,6 +157,8 @@ export interface CameraPosition {
 - `nightMode: boolean` - использовать ночной режим. По умолчанию - false
 - `userLocationIcon: ImageSource` - иконка позиции пользователя. Доступны те же значения что и у компонента Image из react native
 - `onCameraPositionChange?: (event: NativeSyntheticEvent<CameraPosition>) => void` - колбек на изменение положения камеры
+- `onMapPress?: (event: NativeSyntheticEvent<Point>) => void` - событие нажития на карту. Передает координаты точки на которую нажали
+- `onMapLongPress?: (event: NativeSyntheticEvent<Point>) => void` - событие долгого нажития на карту. Передает координаты точки на которую нажали
 - `children: Marker | Polygon | Polyline | Circle` - см раздел "Отображение - примитивов"
 - `userLocationAccuracyFillColor?: string` - цвет фона зоны точности определения позиции пользователя
 - `userLocationAccuracyStrokeColor?: string` - цвет границы зоны точности определения позиции пользователя
