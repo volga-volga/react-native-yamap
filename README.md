@@ -1,3 +1,7 @@
+## Пример
+
+[Пример использования библиотеки](https://github.com/ownikss/rn-yamaps-example)
+
 ## Установка
 
 ```
