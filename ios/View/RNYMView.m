@@ -333,9 +333,10 @@
 -(void) emitCameraPositionToJS:(NSString*) _id {
     YMKCameraPosition* position = self.mapWindow.map.cameraPosition;
     NSDictionary* cameraPosition = [self cameraPositionToJSON:position];
-    [cameraPosition setValue:_id forKey:@"id"];
+    NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:cameraPosition];
+    [response setValue:_id forKey:@"id"];
     if (self.onCameraPositionReceived) {
-        self.onCameraPositionReceived(cameraPosition);
+        self.onCameraPositionReceived(response);
     }
 }
 
@@ -359,8 +360,6 @@ cameraUpdateSource:(YMKCameraUpdateSource)cameraUpdateSource
         userLayer = [inst createUserLocationLayerWithMapWindow: self.mapWindow];
     }
     if (listen) {
-        userLocationView = nil;
-        userLocationImage = nil;
         [userLayer setVisibleWithOn:YES];
         [userLayer setObjectListenerWithObjectListener: self];
     } else {
