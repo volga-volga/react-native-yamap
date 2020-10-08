@@ -1,5 +1,6 @@
 #import <React/RCTComponent.h>
 #import <React/UIView+React.h>
+#import <React/RCTConvert.h>
 
 #import <MapKit/MapKit.h>
 #import <YandexMapKit/YMKMapKitFactory.h>
@@ -66,14 +67,17 @@
         if (anchor) {
           [iconStyle setAnchor:anchor];
         }
-		if ([_reactSubviews count] == 0) {
-			if (![source isEqual:@""]) {
-				if (![source isEqual:lastSource]) {
-					[mapObject setIconWithImage:[self resolveUIImage:source]];
-					lastSource = source;
-				}
-			}
-		}
+        if ([_reactSubviews count] == 0) {
+            if (![source isEqual:@""]) {
+                if (![source isEqual:lastSource]) {
+                    UIImage *icon = [self resolveUIImage:source];
+                    if (icon != nil) {
+                        [mapObject setIconWithImage:icon];
+                        lastSource = source;
+                    }
+                }
+            }
+        }
         [mapObject setIconStyleWithStyle:iconStyle];
 	}
 }
@@ -96,8 +100,7 @@
     UIImage *icon;
     if ([uri rangeOfString:@"http://"].location == NSNotFound && [uri rangeOfString:@"https://"].location == NSNotFound) {
         if ([uri rangeOfString:@"file://"].location != NSNotFound){
-            NSString *file = [uri substringFromIndex:8];
-            icon = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL fileURLWithPath:file]]];
+            icon = [RCTConvert UIImage:uri];
         } else {
             icon = [UIImage imageNamed:uri];
         }

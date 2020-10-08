@@ -1,5 +1,6 @@
 #import <React/RCTComponent.h>
 #import <React/UIView+React.h>
+#import <React/RCTConvert.h>
 
 #import <MapKit/MapKit.h>
 #import <YandexMapKit/YMKMapKitFactory.h>
@@ -282,8 +283,7 @@
     UIImage *icon;
     if ([uri rangeOfString:@"http://"].location == NSNotFound && [uri rangeOfString:@"https://"].location == NSNotFound) {
         if ([uri rangeOfString:@"file://"].location != NSNotFound){
-            NSString *file = [uri substringFromIndex:8];
-            icon = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL fileURLWithPath:file]]];
+            icon = icon = [RCTConvert UIImage:uri];
         } else {
             icon = [UIImage imageNamed:uri];
         }
