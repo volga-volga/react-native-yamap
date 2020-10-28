@@ -1,7 +1,7 @@
 package ru.vvdev.yamap;
 
 import android.view.View;
-import android.view.LayoutInflater
+import android.view.LayoutInflater;
 import androidx.annotation.NonNull;
 
 import com.facebook.infer.annotation.Assertions;
