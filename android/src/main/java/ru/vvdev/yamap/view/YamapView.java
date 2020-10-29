@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.view.View;
+import android.util.AttributeSet;
 
 import androidx.annotation.NonNull;
 
@@ -98,6 +99,19 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     public YamapView(Context context) {
         super(context);
+        init(context);
+    }
+
+    public YamapView(Context context, AttributeSet attrs) {
+        this(context, attrs, 0);
+    }
+
+    public YamapView(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+        init(context);
+    }
+
+    private void init(Context context) {
         DirectionsFactory.initialize(context);
         drivingRouter = DirectionsFactory.getInstance().createDrivingRouter();
         getMap().addCameraListener(this);
@@ -380,7 +394,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         Polyline subpolyline = SubpolylineHelper.subpolyline(route.getGeometry(), section.getGeometry());
         List<Point> linePoints = subpolyline.getPoints();
         WritableArray jsonPoints = Arguments.createArray();
-        for (Point point: linePoints) {
+        for (Point point : linePoints) {
             WritableMap jsonPoint = Arguments.createMap();
             jsonPoint.putDouble("lat", point.getLatitude());
             jsonPoint.putDouble("lon", point.getLongitude());
@@ -418,7 +432,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         Polyline subpolyline = SubpolylineHelper.subpolyline(route.getGeometry(), section.getGeometry());
         List<Point> linePoints = subpolyline.getPoints();
         WritableArray jsonPoints = Arguments.createArray();
-        for (Point point: linePoints) {
+        for (Point point : linePoints) {
             WritableMap jsonPoint = Arguments.createMap();
             jsonPoint.putDouble("lat", point.getLatitude());
             jsonPoint.putDouble("lon", point.getLongitude());

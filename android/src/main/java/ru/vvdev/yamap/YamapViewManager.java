@@ -1,7 +1,7 @@
 package ru.vvdev.yamap;
 
 import android.view.View;
-
+import android.view.LayoutInflater;
 import androidx.annotation.NonNull;
 
 import com.facebook.infer.annotation.Assertions;
@@ -115,7 +115,7 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     @Nonnull
     @Override
     public YamapView createViewInstance(@Nonnull ThemedReactContext context) {
-        YamapView view = new YamapView(context);
+        YamapView view = (YamapView) LayoutInflater.from(context).inflate(R.layout.map_layout, null);
         MapKitFactory.getInstance().onStart();
         view.onStart();
         return view;
