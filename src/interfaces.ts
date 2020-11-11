@@ -52,3 +52,10 @@ export interface CameraPosition {
   azimuth: number;
   point: Point;
 }
+
+export interface VisibleRegion  {
+  zoom: number;
+  tilt: number;
+  azimuth: number;
+  point: Point;
+}

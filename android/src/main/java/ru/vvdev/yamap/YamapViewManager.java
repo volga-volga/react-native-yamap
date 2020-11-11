@@ -1,8 +1,7 @@
 package ru.vvdev.yamap;
 
-import android.view.View;
 import android.view.LayoutInflater;
-import androidx.annotation.NonNull;
+import android.view.View;
 
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.react.bridge.ReadableArray;
@@ -14,6 +13,7 @@ import com.facebook.react.uimanager.annotations.ReactProp;
 import com.yandex.mapkit.MapKitFactory;
 import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.map.CameraPosition;
+import com.yandex.mapkit.map.VisibleRegion;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -21,6 +21,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import androidx.annotation.NonNull;
 import ru.vvdev.yamap.view.YamapView;
 
 public class YamapViewManager extends ViewGroupManager<YamapView> {
@@ -92,7 +93,7 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
                 return;
             case "setZoom":
                 if (args != null) {
-                    view.setZoom((float)args.getDouble(0), (float)args.getDouble(1), args.getInt(2));
+                    view.setZoom((float) args.getDouble(0), (float) args.getDouble(1), args.getInt(2));
                 }
                 return;
             case "getCameraPosition":
@@ -131,6 +132,11 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
 
     private void fitAllMarkers(View view) {
         castToYaMapView(view).fitAllMarkers();
+    }
+
+    @Nonnull
+    private VisibleRegion getVisibleRegion(View view) {
+        return castToYaMapView(view).getMap().getVisibleRegion();
     }
 
     private void findRoutes(View view, ReadableArray jsPoints, ReadableArray jsVehicles, String id) {

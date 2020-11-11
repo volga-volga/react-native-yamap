@@ -37,6 +37,7 @@ import com.yandex.mapkit.map.InputListener;
 import com.yandex.mapkit.map.PlacemarkMapObject;
 import com.yandex.mapkit.map.PolygonMapObject;
 import com.yandex.mapkit.map.PolylineMapObject;
+import com.yandex.mapkit.map.VisibleRegion;
 import com.yandex.mapkit.mapview.MapView;
 import com.yandex.mapkit.transport.TransportFactory;
 import com.yandex.mapkit.transport.masstransit.MasstransitOptions;
@@ -140,6 +141,31 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         cameraPosition.putMap("point", target);
         cameraPosition.putBoolean("isFinished", isFinished);
         return cameraPosition;
+    }
+
+    private WritableMap regionToJSON(VisibleRegion region) {
+        Point pointTopLeft = region.getTopLeft();
+        Point pointTopRight = region.getTopRight();
+        Point pointBottomLeft = region.getBottomLeft();
+        Point pointBottomRight = region.getBottomRight();
+        WritableMap visibleRegion = Arguments.createMap();
+        WritableMap topLeft = Arguments.createMap();
+        WritableMap topRight = Arguments.createMap();
+        WritableMap bottomLeft = Arguments.createMap();
+        WritableMap bottomRight = Arguments.createMap();
+        topLeft.putDouble("lat", pointTopLeft.getLatitude());
+        topLeft.putDouble("lon", pointTopLeft.getLongitude());
+        topRight.putDouble("lat", pointTopRight.getLatitude());
+        topRight.putDouble("lon", pointTopRight.getLongitude());
+        bottomLeft.putDouble("lat", pointBottomLeft.getLatitude());
+        bottomLeft.putDouble("lon", pointBottomLeft.getLongitude());
+        bottomRight.putDouble("lat", pointBottomRight.getLatitude());
+        bottomRight.putDouble("lon", pointBottomRight.getLongitude());
+        visibleRegion.putMap("topLeft", topLeft);
+        visibleRegion.putMap("topRight", topRight);
+        visibleRegion.putMap("bottomLeft", bottomLeft);
+        visibleRegion.putMap("bottomRight", bottomRight);
+        return visibleRegion;
     }
 
     public void emitCameraPositionToJS(String id) {
