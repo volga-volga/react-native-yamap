@@ -11,7 +11,7 @@ import {
 // @ts-ignore
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 import CallbacksManager from '../utils/CallbacksManager';
-import { Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition } from '../interfaces';
+import { Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition, VisibleRegion } from '../interfaces';
 import { processColorProps } from '../utils';
 
 const { yamap: NativeYamapModule } = NativeModules;
@@ -118,6 +118,15 @@ export class YaMap extends React.Component<YaMapProps> {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('getCameraPosition'),
+      [cbId],
+    );
+  }
+
+  public getVisibleRegion(callback: (region: VisibleRegion) => void) {
+    const cbId = CallbacksManager.addCallback(callback);
+    UIManager.dispatchViewManagerCommand(
+      findNodeHandle(this),
+      this.getCommand('getVisibleRegion'),
       [cbId],
     );
   }
