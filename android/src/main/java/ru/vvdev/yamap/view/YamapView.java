@@ -181,7 +181,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         WritableMap visibleRegion = regionToJSON(region);
         visibleRegion.putString("id", id);
         ReactContext reactContext = (ReactContext) getContext();
-        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "visibleRegion", region);
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "visibleRegion", visibleRegion);
     }
 
     public void setZoom(Float zoom, float duration, int animation) {
