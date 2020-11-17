@@ -161,6 +161,11 @@ export class YaMap extends React.Component<YaMapProps> {
     CallbacksManager.call(id, position);
   }
 
+  private processVisibleRegion(event: any) {
+    const { id, ...region } = event.nativeEvent;
+    CallbacksManager.call(id, region);
+  }
+
   private resolveImageUri(img: ImageSourcePropType) {
     return img ? resolveAssetSource(img).uri : '';
   }
@@ -170,6 +175,7 @@ export class YaMap extends React.Component<YaMapProps> {
       ...this.props,
       onRouteFound: this.processRoute,
       onCameraPositionReceived: this.processCameraPosition,
+      onVisibleRegionReceived: this.processVisibleRegion,
       userLocationIcon: this.props.userLocationIcon ? this.resolveImageUri(this.props.userLocationIcon) : undefined,
     };
     processColorProps(props, 'userLocationAccuracyFillColor' as keyof YaMapProps);
