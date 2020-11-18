@@ -1,8 +1,7 @@
 package ru.vvdev.yamap;
 
-import android.view.View;
 import android.view.LayoutInflater;
-import androidx.annotation.NonNull;
+import android.view.View;
 
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.react.bridge.ReadableArray;
@@ -14,6 +13,7 @@ import com.facebook.react.uimanager.annotations.ReactProp;
 import com.yandex.mapkit.MapKitFactory;
 import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.map.CameraPosition;
+import com.yandex.mapkit.map.VisibleRegion;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -21,6 +21,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import androidx.annotation.NonNull;
 import ru.vvdev.yamap.view.YamapView;
 
 public class YamapViewManager extends ViewGroupManager<YamapView> {
@@ -31,6 +32,7 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     private static final int FIND_ROUTES = 3;
     private static final int SET_ZOOM = 4;
     private static final int GET_CAMERA_POSITION = 5;
+    private static final int GET_VISIBLE_REGION = 6;
 
     YamapViewManager() {
     }
@@ -53,6 +55,7 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
                 .put("cameraPositionChanged", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionChange")))
                 .put("onMapPress", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapPress")))
                 .put("onMapLongPress", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapLongPress")))
+                .put("visibleRegion", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onVisibleRegionReceived")))
                 .build();
     }
 
@@ -68,7 +71,9 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
                 "setZoom",
                 SET_ZOOM,
                 "getCameraPosition",
-                GET_CAMERA_POSITION);
+                GET_CAMERA_POSITION,
+                "getVisibleRegion",
+                GET_VISIBLE_REGION);
     }
 
     @Override
@@ -92,12 +97,17 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
                 return;
             case "setZoom":
                 if (args != null) {
-                    view.setZoom((float)args.getDouble(0), (float)args.getDouble(1), args.getInt(2));
+                    view.setZoom((float) args.getDouble(0), (float) args.getDouble(1), args.getInt(2));
                 }
                 return;
             case "getCameraPosition":
                 if (args != null) {
                     view.emitCameraPositionToJS(args.getString(0));
+                }
+                return;
+            case "getVisibleRegion":
+                if (args != null) {
+                    view.emitVisibleRegionToJS(args.getString(0));
                 }
                 return;
             default:

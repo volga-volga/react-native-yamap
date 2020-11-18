@@ -5,7 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.view.View;
-
+import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.Arguments;
@@ -81,6 +81,7 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
         if (mapObject != null) {
             final IconStyle iconStyle = new IconStyle();
             iconStyle.setScale(scale);
+            Log.e("aaaaaaaa", String.valueOf(scale));
             if (markerAnchor != null) {
                 iconStyle.setAnchor(markerAnchor);
             }
