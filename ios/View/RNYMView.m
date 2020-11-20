@@ -370,7 +370,13 @@ cameraUpdateSource:(YMKCameraUpdateSource)cameraUpdateSource
 
 -(void) fitAllMarkers {
     NSMutableArray<YMKPoint*>* lastKnownMarkers = [[NSMutableArray alloc] init];
-    for (int i = 0; i < [_reactSubviews count]; ++i) {
+    int count = 20;
+
+    if ([_reactSubviews count] < count) {
+        count = [_reactSubviews count];
+    }
+
+    for (int i = 0; i < count; ++i) {
         UIView* view = [_reactSubviews objectAtIndex:i];
         if ([view isKindOfClass:[YamapMarkerView class]]) {
             YamapMarkerView* marker = (YamapMarkerView*) view;
@@ -400,7 +406,7 @@ cameraUpdateSource:(YMKCameraUpdateSource)cameraUpdateSource
     CLLocation *edgeP = [[CLLocation alloc] initWithLatitude:rectCenter.latitude longitude:rectCenter.longitude];
     CLLocationDistance distance = [centerP distanceFromLocation:edgeP];
     double scale = (distance/2)/140;
-    int zoom = (int) (16 - log(scale) / log(2));
+    int zoom = (int) (17 - log(scale) / log(2));
     YMKBoundingBox *boundingBox = [YMKBoundingBox boundingBoxWithSouthWest:southWest northEast:northEast];
     YMKCameraPosition *cameraPosition = [self.mapWindow.map cameraPositionWithBoundingBox:boundingBox];
     cameraPosition = [YMKCameraPosition cameraPositionWithTarget:cameraPosition.target zoom:zoom azimuth:cameraPosition.azimuth tilt:cameraPosition.tilt];
