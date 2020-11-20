@@ -406,7 +406,7 @@ cameraUpdateSource:(YMKCameraUpdateSource)cameraUpdateSource
     CLLocation *edgeP = [[CLLocation alloc] initWithLatitude:rectCenter.latitude longitude:rectCenter.longitude];
     CLLocationDistance distance = [centerP distanceFromLocation:edgeP];
     double scale = (distance/2)/140;
-    int zoom = (int) (17 - log(scale) / log(2));
+    int zoom = (int) (16 - log(scale) / log(2));
     YMKBoundingBox *boundingBox = [YMKBoundingBox boundingBoxWithSouthWest:southWest northEast:northEast];
     YMKCameraPosition *cameraPosition = [self.mapWindow.map cameraPositionWithBoundingBox:boundingBox];
     cameraPosition = [YMKCameraPosition cameraPositionWithTarget:cameraPosition.target zoom:zoom azimuth:cameraPosition.azimuth tilt:cameraPosition.tilt];
