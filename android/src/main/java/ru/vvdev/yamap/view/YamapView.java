@@ -268,8 +268,14 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     }
 
     public void fitAllMarkers() {
+        int count = 20;
+
+        if (childs.size() < count) {
+            count = childs.size();
+        }
+
         ArrayList<Point> lastKnownMarkers = new ArrayList<>();
-        for (int i = 0; i < childs.size(); ++i) {
+        for (int i = 0; i < count; ++i) {
             ReactMapObject obj = childs.get(i);
             if (obj instanceof YamapMarker) {
                 YamapMarker marker = (YamapMarker) obj;
@@ -308,7 +314,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
         BoundingBox boundingBox = new BoundingBox(southWest, northEast);
         CameraPosition cameraPosition = getMap().cameraPosition(boundingBox);
-        cameraPosition = new CameraPosition(cameraPosition.getTarget(), cameraPosition.getZoom() - 0.8f, cameraPosition.getAzimuth(), cameraPosition.getTilt());
+        cameraPosition = new CameraPosition(cameraPosition.getTarget(), cameraPosition.getZoom() - 0.2f, cameraPosition.getAzimuth(), cameraPosition.getTilt());
         getMap().move(cameraPosition, new Animation(Animation.Type.SMOOTH, 0.7f), null);
     }
 
