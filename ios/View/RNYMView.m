@@ -336,15 +336,15 @@
         @"topLeft": @{
                 @"lat": [NSNumber numberWithDouble:region.topLeft.latitude],
                 @"lon": [NSNumber numberWithDouble:region.topLeft.longitude],
-        }
+        },
         @"topRight": @{
                 @"lat": [NSNumber numberWithDouble:region.topRight.latitude],
                 @"lon": [NSNumber numberWithDouble:region.topRight.longitude],
-        }
+        },
         @"bottomLeft": @{
                 @"lat": [NSNumber numberWithDouble:region.bottomLeft.latitude],
                 @"lon": [NSNumber numberWithDouble:region.bottomLeft.longitude],
-        }
+        },
         @"bottomRight": @{
                 @"lat": [NSNumber numberWithDouble:region.bottomRight.latitude],
                 @"lon": [NSNumber numberWithDouble:region.bottomRight.longitude],
