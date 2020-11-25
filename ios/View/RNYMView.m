@@ -319,11 +319,12 @@
     [self setCenter:position withDuration:duration withAnimation:animation];
 }
 
--(NSDictionary*) cameraPositionToJSON:(YMKCameraPosition*) position {
+-(NSDictionary*) cameraPositionToJSON:(YMKCameraPosition*) position finished:(BOOL) finished {
     return @{
         @"azimuth": [NSNumber numberWithFloat:position.azimuth],
         @"tilt": [NSNumber numberWithFloat:position.tilt],
         @"zoom": [NSNumber numberWithFloat:position.zoom],
+        @"isFinished": [NSNumber numberWithBool:finished],
         @"point": @{
                 @"lat": [NSNumber numberWithDouble:position.target.latitude],
                 @"lon": [NSNumber numberWithDouble:position.target.longitude],
@@ -354,7 +355,7 @@
 
 -(void) emitCameraPositionToJS:(NSString*) _id {
     YMKCameraPosition* position = self.mapWindow.map.cameraPosition;
-    NSDictionary* cameraPosition = [self cameraPositionToJSON:position];
+    NSDictionary* cameraPosition = [self cameraPositionToJSON:position finished:YES];
     NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:cameraPosition];
     [response setValue:_id forKey:@"id"];
     if (self.onCameraPositionReceived) {
@@ -377,8 +378,10 @@
     cameraPosition:(nonnull YMKCameraPosition *)cameraPosition
 cameraUpdateSource:(YMKCameraUpdateSource)cameraUpdateSource
                               finished:(BOOL)finished {
+    NSDictionary* position = [self cameraPositionToJSON:cameraPosition finished:finished];
+    NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:position];
     if (self.onCameraPositionChange) {
-        self.onCameraPositionChange([self cameraPositionToJSON:cameraPosition]);
+        self.onCameraPositionChange(response);
     }
 }
 
