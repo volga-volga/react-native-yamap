@@ -7,6 +7,7 @@ import android.graphics.PointF;
 import android.view.View;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import android.graphics.BitmapFactory;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
@@ -32,6 +33,7 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
     private float scale = 1;
     private PointF markerAnchor = null;
     private String iconSource;
+    private String lastIconSource;
     private View _childView;
     private PlacemarkMapObject mapObject;
     private ArrayList<View> childs = new ArrayList<>();
@@ -81,7 +83,6 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
         if (mapObject != null) {
             final IconStyle iconStyle = new IconStyle();
             iconStyle.setScale(scale);
-            Log.e("aaaaaaaa", String.valueOf(scale));
             if (markerAnchor != null) {
                 iconStyle.setAnchor(markerAnchor);
             }
@@ -100,13 +101,24 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
                     e.printStackTrace();
                 }
             }
-            if (childs.size() == 0) {
-                if (!iconSource.equals("")) {
+            if (childs.size() == 0 && !iconSource.equals("") && !iconSource.equals(lastIconSource)) {
+                if (!iconSource.contains("http://") && !iconSource.contains("https://")) {
+                    try {
+                        lastIconSource = iconSource;
+                        int id = getContext().getResources().getIdentifier(iconSource, "drawable", getContext().getPackageName());
+                        Bitmap bitmap = BitmapFactory.decodeResource(getContext().getResources(), id);
+                        mapObject.setIcon(ImageProvider.fromBitmap(bitmap));
+                        mapObject.setIconStyle(iconStyle);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
                     ImageLoader.DownloadImageBitmap(getContext(), iconSource, new Callback<Bitmap>() {
                         @Override
                         public void invoke(Bitmap bitmap) {
                             try {
                                 if (mapObject != null) {
+                                    lastIconSource = iconSource;
                                     mapObject.setIcon(ImageProvider.fromBitmap(bitmap));
                                     mapObject.setIconStyle(iconStyle);
                                 }
