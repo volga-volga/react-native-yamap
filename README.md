@@ -1,3 +1,18 @@
+# ⚠️⚠️⚠️ Замечание ⚠️⚠️⚠️
+
+**Невозможно** использовать последнюю версию Mapkit sdk для андроид.
+[Issue в репозитории Яндекс.](https://github.com/yandex/mapkit-android-demo/issues/116)
+
+Версии SDK:
+
+| Платформа     | react-native  | Последняя  |
+| ------------- |:-------------:| ----------:|
+| iOS           | right-aligned | $1600 |
+| android       | centered      |   $12 |
+| zebra stripes | are neat      |    $1 |
+
+
+
 ## Пример
 
 [Пример использования библиотеки](https://github.com/ownikss/rn-yamaps-example)

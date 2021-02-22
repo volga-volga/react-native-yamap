@@ -23,11 +23,7 @@ public class RNYamapPackage implements ReactPackage {
     @NonNull
     public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactContext) {
         return Arrays.<ViewManager>asList(
-                new YamapViewManager(),
-                new YamapPolygonManager(),
-                new YamapPolylineManager(),
-                new YamapMarkerManager(),
-                new YamapCircleManager()
+                new YamapViewManager()
         );
     }
 }
