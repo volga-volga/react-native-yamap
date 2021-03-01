@@ -56,8 +56,8 @@ export class YaMap extends React.Component<YaMapProps> {
   }
 
   public static setLocale(locale: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      NativeYamapModule.setLocale(locale, () => resolve(), (err: string) => reject(new Error(err)));
+    return new Promise(() => {
+      NativeYamapModule.setLocale(locale);
     });
   }
 
@@ -68,8 +68,8 @@ export class YaMap extends React.Component<YaMapProps> {
   }
 
   public static resetLocale(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      NativeYamapModule.resetLocale(() => resolve(), (err: string) => reject(new Error(err)));
+    return new Promise(() => {
+      NativeYamapModule.resetLocale();
     });
   }
 

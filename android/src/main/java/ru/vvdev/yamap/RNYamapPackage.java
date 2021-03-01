@@ -1,6 +1,10 @@
 package ru.vvdev.yamap;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;
@@ -24,10 +28,7 @@ public class RNYamapPackage implements ReactPackage {
     public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactContext) {
         return Arrays.<ViewManager>asList(
                 new YamapViewManager(),
-                new YamapPolygonManager(),
-                new YamapPolylineManager(),
-                new YamapMarkerManager(),
-                new YamapCircleManager()
+                new YamapMarkerManager()
         );
     }
 }

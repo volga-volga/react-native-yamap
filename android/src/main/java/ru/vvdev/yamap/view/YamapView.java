@@ -3,6 +3,7 @@ package ru.vvdev.yamap.view;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -14,10 +15,11 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.yandex.mapkit.Animation;
+import com.yandex.mapkit.MapKitFactory;
 import com.yandex.mapkit.RequestPoint;
 import com.yandex.mapkit.RequestPointType;
+import com.yandex.mapkit.MapKit;
 import com.yandex.mapkit.directions.DirectionsFactory;
-import com.yandex.mapkit.directions.driving.DrivingArrivalPoint;
 import com.yandex.mapkit.directions.driving.DrivingOptions;
 import com.yandex.mapkit.directions.driving.DrivingRoute;
 import com.yandex.mapkit.directions.driving.DrivingRouter;
@@ -30,9 +32,10 @@ import com.yandex.mapkit.geometry.SubpolylineHelper;
 import com.yandex.mapkit.layers.ObjectEvent;
 import com.yandex.mapkit.map.CameraListener;
 import com.yandex.mapkit.map.CameraPosition;
-import com.yandex.mapkit.map.CameraUpdateSource;
+import com.yandex.mapkit.map.CameraUpdateReason;
 import com.yandex.mapkit.map.CircleMapObject;
 import com.yandex.mapkit.map.InputListener;
+import com.yandex.mapkit.map.MapWindow;
 import com.yandex.mapkit.map.PlacemarkMapObject;
 import com.yandex.mapkit.map.PolygonMapObject;
 import com.yandex.mapkit.map.PolylineMapObject;
@@ -87,7 +90,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     private MasstransitRouter masstransitRouter = TransportFactory.getInstance().createMasstransitRouter();
     private DrivingRouter drivingRouter;
     private PedestrianRouter pedestrianRouter = TransportFactory.getInstance().createPedestrianRouter();
-    private UserLocationLayer userLocationLayer = null;
+    private UserLocationLayer userLocationLayer = MapKitFactory.getInstance().createUserLocationLayer(getMapWindow());
     private int userLocationAccuracyFillColor = 0;
     private int userLocationAccuracyStrokeColor = 0;
     private float userLocationAccuracyStrokeWidth = 0.f;
@@ -142,80 +145,6 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     }
 
     public void findRoutes(ArrayList<Point> points, final ArrayList<String> vehicles, final String id) {
-        final YamapView self = this;
-        if (vehicles.size() == 1 && vehicles.get(0).equals("car")) {
-            DrivingSession.DrivingRouteListener listener = new DrivingSession.DrivingRouteListener() {
-                @Override
-                public void onDrivingRoutes(@NonNull List<DrivingRoute> routes) {
-                    WritableArray jsonRoutes = Arguments.createArray();
-                    for (int i = 0; i < routes.size(); ++i) {
-                        DrivingRoute _route = routes.get(i);
-                        WritableMap jsonRoute = Arguments.createMap();
-                        String id = RouteManager.generateId();
-                        jsonRoute.putString("id", id);
-                        WritableArray sections = Arguments.createArray();
-                        for (DrivingSection section : _route.getSections()) {
-                            WritableMap jsonSection = convertDrivingRouteSection(_route, section, i);
-                            sections.pushMap(jsonSection);
-                        }
-                        jsonRoute.putArray("sections", sections);
-                        jsonRoutes.pushMap(jsonRoute);
-                    }
-                    self.onRoutesFound(id, jsonRoutes, "success");
-                }
-
-                @Override
-                public void onDrivingRoutesError(@NonNull Error error) {
-                    self.onRoutesFound(id, Arguments.createArray(), "error");
-                }
-            };
-            ArrayList<com.yandex.mapkit.directions.driving.RequestPoint> _points = new ArrayList<>();
-            for (int i = 0; i < points.size(); ++i) {
-                Point point = points.get(i);
-                com.yandex.mapkit.directions.driving.RequestPoint _p = new com.yandex.mapkit.directions.driving.RequestPoint(point, new ArrayList<Point>(), new ArrayList<DrivingArrivalPoint>(), com.yandex.mapkit.directions.driving.RequestPointType.WAYPOINT);
-                _points.add(_p);
-            }
-            drivingRouter.requestRoutes(_points, new DrivingOptions(), listener);
-            return;
-        }
-        ArrayList<RequestPoint> _points = new ArrayList<>();
-        for (int i = 0; i < points.size(); ++i) {
-            Point point = points.get(i);
-            _points.add(new RequestPoint(point, new ArrayList<Point>(), RequestPointType.WAYPOINT));
-        }
-        Session.RouteListener listener = new Session.RouteListener() {
-            @Override
-            public void onMasstransitRoutes(@NonNull List<Route> routes) {
-                WritableArray jsonRoutes = Arguments.createArray();
-                for (int i = 0; i < routes.size(); ++i) {
-                    Route _route = routes.get(i);
-                    WritableMap jsonRoute = Arguments.createMap();
-                    String id = RouteManager.generateId();
-                    self.routeMng.saveRoute(_route, id);
-                    jsonRoute.putString("id", id);
-                    WritableArray sections = Arguments.createArray();
-                    for (Section section : _route.getSections()) {
-                        WritableMap jsonSection = convertRouteSection(_route, section, SubpolylineHelper.subpolyline(_route.getGeometry(),
-                                section.getGeometry()), _route.getMetadata().getWeight(), i);
-                        sections.pushMap(jsonSection);
-                    }
-                    jsonRoute.putArray("sections", sections);
-                    jsonRoutes.pushMap(jsonRoute);
-                }
-                self.onRoutesFound(id, jsonRoutes, "success");
-            }
-
-            @Override
-            public void onMasstransitRoutesError(@NonNull Error error) {
-                self.onRoutesFound(id, Arguments.createArray(), "error");
-            }
-        };
-        if (vehicles.size() == 0) {
-            pedestrianRouter.requestRoutes(_points, new TimeOptions(), listener);
-            return;
-        }
-        MasstransitOptions masstransitOptions = new MasstransitOptions(new ArrayList<String>(), vehicles, new TimeOptions());
-        masstransitRouter.requestRoutes(_points, masstransitOptions, listener);
     }
 
     public void fitAllMarkers() {
@@ -304,15 +233,12 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     }
 
     public void setShowUserPosition(Boolean show) {
-        if (userLocationLayer == null) {
-            userLocationLayer = getMap().getUserLocationLayer();
-        }
         if (show) {
             userLocationLayer.setObjectListener(this);
-            userLocationLayer.setEnabled(true);
+            userLocationLayer.setVisible(true);
             userLocationLayer.setHeadingEnabled(true);
         } else {
-            userLocationLayer.setEnabled(false);
+            userLocationLayer.setVisible(false);
             userLocationLayer.setHeadingEnabled(false);
             userLocationLayer.setObjectListener(null);
         }
@@ -374,7 +300,6 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         }
         WritableMap wTransports = Arguments.createMap();
         for (Map.Entry<String, ArrayList<String>> entry : transports.entrySet()) {
-            wTransports.putArray(entry.getKey(), Arguments.fromList(entry.getValue()));
         }
         routeMetadata.putMap("transports", wTransports);
         Polyline subpolyline = SubpolylineHelper.subpolyline(route.getGeometry(), section.getGeometry());
@@ -447,24 +372,9 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     // children
     public void addFeature(View child, int index) {
-        if (child instanceof YamapPolygon) {
-            YamapPolygon _child = (YamapPolygon) child;
-            PolygonMapObject obj = getMap().getMapObjects().addPolygon(_child.polygon);
-            _child.setMapObject(obj);
-            childs.add(_child);
-        } else if (child instanceof YamapPolyline) {
-            YamapPolyline _child = (YamapPolyline) child;
-            PolylineMapObject obj = getMap().getMapObjects().addPolyline(_child.polyline);
-            _child.setMapObject(obj);
-            childs.add(_child);
-        } else if (child instanceof YamapMarker) {
+        if (child instanceof YamapMarker) {
             YamapMarker _child = (YamapMarker) child;
             PlacemarkMapObject obj = getMap().getMapObjects().addPlacemark(_child.point);
-            _child.setMapObject(obj);
-            childs.add(_child);
-        } else if (child instanceof YamapCircle) {
-            YamapCircle _child = (YamapCircle) child;
-            CircleMapObject obj = getMap().getMapObjects().addCircle(_child.circle, 0, 0.f, 0);
             _child.setMapObject(obj);
             childs.add(_child);
         }
@@ -514,7 +424,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     }
 
     @Override
-    public void onCameraPositionChanged(@NonNull com.yandex.mapkit.map.Map map, @NonNull CameraPosition cameraPosition, @NonNull CameraUpdateSource cameraUpdateSource, boolean b) {
+    public void onCameraPositionChanged(@NonNull com.yandex.mapkit.map.Map map, @NonNull CameraPosition cameraPosition, @NonNull CameraUpdateReason cameraUpdateSource, boolean b) {
         WritableMap position = positionToJSON(cameraPosition);
         ReactContext reactContext = (ReactContext) getContext();
         reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "cameraPositionChanged", position);

@@ -13,10 +13,9 @@ import com.yandex.mapkit.transport.TransportFactory;
 import com.yandex.runtime.Error;
 import com.yandex.runtime.i18n.I18nManagerFactory;
 import com.yandex.runtime.i18n.LocaleListener;
-import com.yandex.runtime.i18n.LocaleResetListener;
-import com.yandex.runtime.i18n.LocaleUpdateListener;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -53,29 +52,18 @@ public class RNYamapModule extends ReactContextBaseJavaModule {
             @Override
             public void run() {
                 MapKitFactory.setApiKey(apiKey);
-                MapKitFactory.initialize(reactContext);
-                TransportFactory.initialize(reactContext);
+                MapKitFactory.initialize(getContext());
                 MapKitFactory.getInstance().onStart();
             }
         }));
     }
 
     @ReactMethod
-    public void setLocale(final String locale, final Callback successCb, final Callback errorCb) {
+    public void setLocale(final String locale) {
         runOnUiThread(new Thread(new Runnable() {
             @Override
             public void run() {
-                I18nManagerFactory.setLocale(locale, new LocaleUpdateListener() {
-                    @Override
-                    public void onLocaleUpdated() {
-                        successCb.invoke();
-                    }
-
-                    @Override
-                    public void onLocaleUpdateError(@NonNull Error error) {
-                        errorCb.invoke(error.toString());
-                    }
-                });
+                I18nManagerFactory.setLocale(locale);
             }
         }));
     }
@@ -90,32 +78,17 @@ public class RNYamapModule extends ReactContextBaseJavaModule {
                     public void onLocaleReceived(@androidx.annotation.Nullable String s) {
                         successCb.invoke(s);
                     }
-
-                    @Override
-                    public void onLocaleError(@NonNull Error error) {
-                        errorCb.invoke(error.toString());
-                    }
                 });
             }
         }));
     }
 
     @ReactMethod
-    public void resetLocale(final Callback successCb, final Callback errorCb) {
+    public void resetLocale() {
         runOnUiThread(new Thread(new Runnable() {
             @Override
             public void run() {
-                I18nManagerFactory.resetLocale(new LocaleResetListener() {
-                    @Override
-                    public void onLocaleReset() {
-                        successCb.invoke();
-                    }
-
-                    @Override
-                    public void onLocaleResetError(@NonNull Error error) {
-                        errorCb.invoke(error.toString());
-                    }
-                });
+                MapKitFactory.setLocale(Locale.getDefault().getLanguage());
             }
         }));
     }
