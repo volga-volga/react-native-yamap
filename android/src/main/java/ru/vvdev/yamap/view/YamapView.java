@@ -372,11 +372,26 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     // children
     public void addFeature(View child, int index) {
-        if (child instanceof YamapMarker) {
+        if (child instanceof YamapPolygon) {
+            YamapPolygon _child = (YamapPolygon) child;
+            PolygonMapObject obj = getMap().getMapObjects().addPolygon(_child.polygon);
+            _child.setMapObject(obj);
+            childs.add(_child);
+        } else if (child instanceof YamapPolyline) {
+            YamapPolyline _child = (YamapPolyline) child;
+            PolylineMapObject obj = getMap().getMapObjects().addPolyline(_child.polyline);
+            _child.setMapObject(obj);
+            childs.add(_child);
+        } else if (child instanceof YamapMarker) {
             YamapMarker _child = (YamapMarker) child;
             PlacemarkMapObject obj = getMap().getMapObjects().addPlacemark(_child.point);
             _child.setMapObject(obj);
             childs.add(_child);
+        } else if (child instanceof YamapCircle) {
+             YamapCircle _child = (YamapCircle) child;
+             CircleMapObject obj = getMap().getMapObjects().addCircle(_child.circle, 0, 0.f, 0);
+             _child.setMapObject(obj);
+             childs.add(_child);
         }
     }
 
