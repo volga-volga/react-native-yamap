@@ -3,7 +3,6 @@ package ru.vvdev.yamap.view;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -25,6 +24,7 @@ import com.yandex.mapkit.directions.driving.DrivingRoute;
 import com.yandex.mapkit.directions.driving.DrivingRouter;
 import com.yandex.mapkit.directions.driving.DrivingSection;
 import com.yandex.mapkit.directions.driving.DrivingSession;
+import com.yandex.mapkit.directions.driving.VehicleOptions;
 import com.yandex.mapkit.geometry.BoundingBox;
 import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.geometry.Polyline;
@@ -40,6 +40,7 @@ import com.yandex.mapkit.map.PlacemarkMapObject;
 import com.yandex.mapkit.map.PolygonMapObject;
 import com.yandex.mapkit.map.PolylineMapObject;
 import com.yandex.mapkit.mapview.MapView;
+import com.yandex.mapkit.search.DrivingArrivalPoint;
 import com.yandex.mapkit.transport.TransportFactory;
 import com.yandex.mapkit.transport.masstransit.MasstransitOptions;
 import com.yandex.mapkit.transport.masstransit.MasstransitRouter;
@@ -145,6 +146,80 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     }
 
     public void findRoutes(ArrayList<Point> points, final ArrayList<String> vehicles, final String id) {
+    final YamapView self = this;
+            if (vehicles.size() == 1 && vehicles.get(0).equals("car")) {
+                DrivingSession.DrivingRouteListener listener = new DrivingSession.DrivingRouteListener() {
+                    @Override
+                    public void onDrivingRoutes(@NonNull List<DrivingRoute> routes) {
+                        WritableArray jsonRoutes = Arguments.createArray();
+                        for (int i = 0; i < routes.size(); ++i) {
+                            DrivingRoute _route = routes.get(i);
+                            WritableMap jsonRoute = Arguments.createMap();
+                            String id = RouteManager.generateId();
+                            jsonRoute.putString("id", id);
+                            WritableArray sections = Arguments.createArray();
+                            for (DrivingSection section : _route.getSections()) {
+                                WritableMap jsonSection = convertDrivingRouteSection(_route, section, i);
+                                sections.pushMap(jsonSection);
+                            }
+                            jsonRoute.putArray("sections", sections);
+                            jsonRoutes.pushMap(jsonRoute);
+                        }
+                        self.onRoutesFound(id, jsonRoutes, "success");
+                    }
+
+                    @Override
+                    public void onDrivingRoutesError(@NonNull Error error) {
+                        self.onRoutesFound(id, Arguments.createArray(), "error");
+                    }
+                };
+                ArrayList<RequestPoint> _points = new ArrayList<>();
+                for (int i = 0; i < points.size(); ++i) {
+                    Point point = points.get(i);
+                    RequestPoint _p = new RequestPoint(point, RequestPointType.WAYPOINT, null);
+                    _points.add(_p);
+                }
+                drivingRouter.requestRoutes(_points, new DrivingOptions(), new VehicleOptions(), listener);
+                return;
+            }
+            ArrayList<RequestPoint> _points = new ArrayList<>();
+            for (int i = 0; i < points.size(); ++i) {
+                Point point = points.get(i);
+                _points.add(new RequestPoint(point, RequestPointType.WAYPOINT, "point" + i));
+            }
+            Session.RouteListener listener = new Session.RouteListener() {
+                @Override
+                public void onMasstransitRoutes(@NonNull List<Route> routes) {
+                    WritableArray jsonRoutes = Arguments.createArray();
+                    for (int i = 0; i < routes.size(); ++i) {
+                        Route _route = routes.get(i);
+                        WritableMap jsonRoute = Arguments.createMap();
+                        String id = RouteManager.generateId();
+                        self.routeMng.saveRoute(_route, id);
+                        jsonRoute.putString("id", id);
+                        WritableArray sections = Arguments.createArray();
+                        for (Section section : _route.getSections()) {
+                            WritableMap jsonSection = convertRouteSection(_route, section, SubpolylineHelper.subpolyline(_route.getGeometry(),
+                                    section.getGeometry()), _route.getMetadata().getWeight(), i);
+                            sections.pushMap(jsonSection);
+                        }
+                        jsonRoute.putArray("sections", sections);
+                        jsonRoutes.pushMap(jsonRoute);
+                    }
+                    self.onRoutesFound(id, jsonRoutes, "success");
+                }
+
+                @Override
+                public void onMasstransitRoutesError(@NonNull Error error) {
+                    self.onRoutesFound(id, Arguments.createArray(), "error");
+                }
+            };
+            if (vehicles.size() == 0) {
+                pedestrianRouter.requestRoutes(_points, new TimeOptions(), listener);
+                return;
+            }
+            MasstransitOptions masstransitOptions = new MasstransitOptions(new ArrayList<String>(), vehicles, new TimeOptions());
+            masstransitRouter.requestRoutes(_points, masstransitOptions, listener);
     }
 
     public void fitAllMarkers() {
