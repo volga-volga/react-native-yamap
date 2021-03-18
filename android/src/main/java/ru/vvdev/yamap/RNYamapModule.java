@@ -10,11 +10,8 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.yandex.mapkit.MapKitFactory;
 import com.yandex.mapkit.transport.TransportFactory;
-import com.yandex.runtime.Error;
 import com.yandex.runtime.i18n.I18nManagerFactory;
 import com.yandex.runtime.i18n.LocaleListener;
-import com.yandex.runtime.i18n.LocaleResetListener;
-import com.yandex.runtime.i18n.LocaleUpdateListener;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -65,17 +62,8 @@ public class RNYamapModule extends ReactContextBaseJavaModule {
         runOnUiThread(new Thread(new Runnable() {
             @Override
             public void run() {
-                I18nManagerFactory.setLocale(locale, new LocaleUpdateListener() {
-                    @Override
-                    public void onLocaleUpdated() {
-                        successCb.invoke();
-                    }
-
-                    @Override
-                    public void onLocaleUpdateError(@NonNull Error error) {
-                        errorCb.invoke(error.toString());
-                    }
-                });
+                I18nManagerFactory.setLocale(locale);
+                successCb.invoke();
             }
         }));
     }
@@ -87,13 +75,8 @@ public class RNYamapModule extends ReactContextBaseJavaModule {
             public void run() {
                 I18nManagerFactory.getLocale(new LocaleListener() {
                     @Override
-                    public void onLocaleReceived(@androidx.annotation.Nullable String s) {
+                    public void onLocaleReceived(@NonNull String s) {
                         successCb.invoke(s);
-                    }
-
-                    @Override
-                    public void onLocaleError(@NonNull Error error) {
-                        errorCb.invoke(error.toString());
                     }
                 });
             }
@@ -105,17 +88,8 @@ public class RNYamapModule extends ReactContextBaseJavaModule {
         runOnUiThread(new Thread(new Runnable() {
             @Override
             public void run() {
-                I18nManagerFactory.resetLocale(new LocaleResetListener() {
-                    @Override
-                    public void onLocaleReset() {
-                        successCb.invoke();
-                    }
-
-                    @Override
-                    public void onLocaleResetError(@NonNull Error error) {
-                        errorCb.invoke(error.toString());
-                    }
-                });
+                I18nManagerFactory.setLocale(null);
+                successCb.invoke(null);
             }
         }));
     }

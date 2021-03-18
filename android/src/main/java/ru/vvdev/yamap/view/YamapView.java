@@ -14,15 +14,16 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.yandex.mapkit.Animation;
+import com.yandex.mapkit.MapKitFactory;
 import com.yandex.mapkit.RequestPoint;
 import com.yandex.mapkit.RequestPointType;
 import com.yandex.mapkit.directions.DirectionsFactory;
-import com.yandex.mapkit.directions.driving.DrivingArrivalPoint;
 import com.yandex.mapkit.directions.driving.DrivingOptions;
 import com.yandex.mapkit.directions.driving.DrivingRoute;
 import com.yandex.mapkit.directions.driving.DrivingRouter;
 import com.yandex.mapkit.directions.driving.DrivingSection;
 import com.yandex.mapkit.directions.driving.DrivingSession;
+import com.yandex.mapkit.directions.driving.VehicleOptions;
 import com.yandex.mapkit.geometry.BoundingBox;
 import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.geometry.Polyline;
@@ -30,7 +31,7 @@ import com.yandex.mapkit.geometry.SubpolylineHelper;
 import com.yandex.mapkit.layers.ObjectEvent;
 import com.yandex.mapkit.map.CameraListener;
 import com.yandex.mapkit.map.CameraPosition;
-import com.yandex.mapkit.map.CameraUpdateSource;
+import com.yandex.mapkit.map.CameraUpdateReason;
 import com.yandex.mapkit.map.CircleMapObject;
 import com.yandex.mapkit.map.InputListener;
 import com.yandex.mapkit.map.PlacemarkMapObject;
@@ -169,19 +170,19 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
                     self.onRoutesFound(id, Arguments.createArray(), "error");
                 }
             };
-            ArrayList<com.yandex.mapkit.directions.driving.RequestPoint> _points = new ArrayList<>();
+            ArrayList<RequestPoint> _points = new ArrayList<>();
             for (int i = 0; i < points.size(); ++i) {
                 Point point = points.get(i);
-                com.yandex.mapkit.directions.driving.RequestPoint _p = new com.yandex.mapkit.directions.driving.RequestPoint(point, new ArrayList<Point>(), new ArrayList<DrivingArrivalPoint>(), com.yandex.mapkit.directions.driving.RequestPointType.WAYPOINT);
+                RequestPoint _p = new RequestPoint(point, RequestPointType.WAYPOINT, null);
                 _points.add(_p);
             }
-            drivingRouter.requestRoutes(_points, new DrivingOptions(), listener);
+            drivingRouter.requestRoutes(_points, new DrivingOptions(), new VehicleOptions(), listener);
             return;
         }
         ArrayList<RequestPoint> _points = new ArrayList<>();
         for (int i = 0; i < points.size(); ++i) {
             Point point = points.get(i);
-            _points.add(new RequestPoint(point, new ArrayList<Point>(), RequestPointType.WAYPOINT));
+            _points.add(new RequestPoint(point, RequestPointType.WAYPOINT, null));
         }
         Session.RouteListener listener = new Session.RouteListener() {
             @Override
@@ -305,14 +306,14 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     public void setShowUserPosition(Boolean show) {
         if (userLocationLayer == null) {
-            userLocationLayer = getMap().getUserLocationLayer();
+            userLocationLayer = MapKitFactory.getInstance().createUserLocationLayer(getMapWindow());
         }
         if (show) {
             userLocationLayer.setObjectListener(this);
-            userLocationLayer.setEnabled(true);
+            userLocationLayer.setVisible(true);
             userLocationLayer.setHeadingEnabled(true);
         } else {
-            userLocationLayer.setEnabled(false);
+            userLocationLayer.setVisible(false);
             userLocationLayer.setHeadingEnabled(false);
             userLocationLayer.setObjectListener(null);
         }
@@ -514,7 +515,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     }
 
     @Override
-    public void onCameraPositionChanged(@NonNull com.yandex.mapkit.map.Map map, @NonNull CameraPosition cameraPosition, @NonNull CameraUpdateSource cameraUpdateSource, boolean b) {
+    public void onCameraPositionChanged(@NonNull com.yandex.mapkit.map.Map map, @NonNull CameraPosition cameraPosition, @NonNull CameraUpdateReason cameraUpdateReason, boolean b) {
         WritableMap position = positionToJSON(cameraPosition);
         ReactContext reactContext = (ReactContext) getContext();
         reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "cameraPositionChanged", position);
