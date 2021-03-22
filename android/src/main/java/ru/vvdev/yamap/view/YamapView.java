@@ -37,6 +37,7 @@ import com.yandex.mapkit.map.InputListener;
 import com.yandex.mapkit.map.PlacemarkMapObject;
 import com.yandex.mapkit.map.PolygonMapObject;
 import com.yandex.mapkit.map.PolylineMapObject;
+import com.yandex.mapkit.map.VisibleRegion;
 import com.yandex.mapkit.mapview.MapView;
 import com.yandex.mapkit.transport.TransportFactory;
 import com.yandex.mapkit.transport.masstransit.MasstransitOptions;
@@ -134,6 +135,40 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         cameraPosition.putString("id", id);
         ReactContext reactContext = (ReactContext) getContext();
         reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "cameraPosition", cameraPosition);
+    }
+
+    private WritableMap visibleRegionToJSON(VisibleRegion region) {
+        WritableMap result = Arguments.createMap();
+
+        WritableMap bl = Arguments.createMap();
+        bl.putDouble("lat", region.getBottomLeft().getLatitude());
+        bl.putDouble("lon", region.getBottomLeft().getLongitude());
+        result.putMap("bottomLeft", bl);
+
+        WritableMap br = Arguments.createMap();
+        br.putDouble("lat", region.getBottomRight().getLatitude());
+        br.putDouble("lon", region.getBottomRight().getLongitude());
+        result.putMap("bottomRight", br);
+
+        WritableMap tl = Arguments.createMap();
+        tl.putDouble("lat", region.getTopLeft().getLatitude());
+        tl.putDouble("lon", region.getTopLeft().getLongitude());
+        result.putMap("topLeft", tl);
+
+        WritableMap tr = Arguments.createMap();
+        tr.putDouble("lat", region.getTopRight().getLatitude());
+        tr.putDouble("lon", region.getTopRight().getLongitude());
+        result.putMap("topRight", tr);
+
+        return result;
+    }
+
+    public void emitVisibleRegionToJS(String id) {
+        VisibleRegion visibleRegion = getMap().getVisibleRegion();
+        WritableMap result = visibleRegionToJSON(visibleRegion);
+        result.putString("id", id);
+        ReactContext reactContext = (ReactContext) getContext();
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "visibleRegion", result);
     }
 
     public void setZoom(Float zoom, float duration, int animation) {

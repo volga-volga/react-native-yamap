@@ -311,6 +311,28 @@
     };
 }
 
+-(NSDictionary*) visibleRegionToJSON:(YMKVisibleRegion*) region {
+    return @{
+        @"bottomLeft": @{
+                @"lat": [NSNumber numberWithDouble:region.bottomLeft.latitude],
+                @"lon": [NSNumber numberWithDouble:region.bottomLeft.longitude],
+        },
+        @"bottomRight": @{
+                @"lat": [NSNumber numberWithDouble:region.bottomRight.latitude],
+                @"lon": [NSNumber numberWithDouble:region.bottomRight.longitude],
+        },
+        @"topLeft": @{
+                @"lat": [NSNumber numberWithDouble:region.topLeft.latitude],
+                @"lon": [NSNumber numberWithDouble:region.topLeft.longitude],
+        },
+        @"topRight": @{
+                @"lat": [NSNumber numberWithDouble:region.topRight.latitude],
+                @"lon": [NSNumber numberWithDouble:region.topRight.longitude],
+        },
+    };
+}
+
+
 -(void) emitCameraPositionToJS:(NSString*) _id {
     YMKCameraPosition* position = self.mapWindow.map.cameraPosition;
     NSDictionary* cameraPosition = [self cameraPositionToJSON:position];
@@ -318,6 +340,16 @@
     [response setValue:_id forKey:@"id"];
     if (self.onCameraPositionReceived) {
         self.onCameraPositionReceived(response);
+    }
+}
+
+-(void) emitVisibleRegionToJS:(NSString*) _id {
+    YMKVisibleRegion* region = self.mapWindow.map.visibleRegion;
+    NSDictionary* visibleRegion = [self visibleRegionToJSON:region];
+    NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:visibleRegion];
+    [response setValue:_id forKey:@"id"];
+    if (self.onVisibleRegionReceived) {
+        self.onVisibleRegionReceived(response);
     }
 }
 

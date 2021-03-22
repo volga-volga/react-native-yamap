@@ -52,3 +52,10 @@ export interface CameraPosition {
   azimuth: number;
   point: Point;
 }
+
+export type VisibleRegion = {
+  bottomLeft: Point;
+  bottomRight: Point;
+  topLeft: Point;
+  topRight: Point;
+}
