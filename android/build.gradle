@@ -32,10 +32,7 @@ repositories {
 }
 
 dependencies {
-    implementation ('com.yandex.android:maps.mobile:4.0.0-full')
+    implementation ('com.yandex.android:maps.mobile:4.0.0-lite')
     implementation 'com.facebook.react:react-native:+'
-    implementation "androidx.annotation:annotation:1.1.0"
     implementation 'com.google.android.gms:play-services-location:18.0.0'
-    implementation 'com.android.support:support-annotations:28.0.0'
-    implementation 'org.jetbrains:annotations-java5:15.0'
 }
