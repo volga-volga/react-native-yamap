@@ -60,7 +60,7 @@ public class RNYandexSuggestModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    void resetSuggest() {
+    void reset() {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
