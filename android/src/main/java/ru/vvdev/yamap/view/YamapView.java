@@ -339,6 +339,14 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         getMap().setNightModeEnabled(nightMode);
     }
 
+    public void setScrollGesturesEnabled(Boolean scrollGesturesEnabled) { getMap().setScrollGesturesEnabled(scrollGesturesEnabled); }
+
+    public void setZoomGesturesEnabled(Boolean zoomGesturesEnabled) { getMap().setZoomGesturesEnabled(zoomGesturesEnabled); }
+
+    public void setRotateGesturesEnabled(Boolean rotateGesturesEnabled) { getMap().setRotateGesturesEnabled(rotateGesturesEnabled); }
+
+    public void setTiltGesturesEnabled(Boolean tiltGesturesEnabled) { getMap().setTiltGesturesEnabled(tiltGesturesEnabled); }
+
     public void setShowUserPosition(Boolean show) {
         if (userLocationLayer == null) {
             userLocationLayer = MapKitFactory.getInstance().createUserLocationLayer(getMapWindow());

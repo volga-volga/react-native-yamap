@@ -184,6 +184,10 @@ export type VisibleRegion = {
 - `userLocationAccuracyFillColor?: string` - цвет фона зоны точности определения позиции пользователя
 - `userLocationAccuracyStrokeColor?: string` - цвет границы зоны точности определения позиции пользователя
 - `userLocationAccuracyStrokeWidth?: number` - толщина зоны точности определения позиции пользователя
+- `scrollGesturesEnabled?: boolean` - включены ли жесты скролла. По умолчанию true.
+- `zoomGesturesEnabled?: boolean` - включены ли жесты зума. По умолчанию true.
+- `tiltGesturesEnabled?: boolean` - включены ли жесты наклона камеры двумя пальцами. По умолчанию true.
+- `rotateGesturesEnabled?: boolean` - включены ли жесты вращения. По умолчанию true.
 
 #### Методы
 - `fitAllMarkers` - подобрать положение камеры, чтобы вместить все маркеры

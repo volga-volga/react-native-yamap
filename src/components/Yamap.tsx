@@ -27,6 +27,10 @@ export interface YaMapProps extends ViewProps {
   userLocationAccuracyFillColor?: string;
   userLocationAccuracyStrokeColor?: string;
   userLocationAccuracyStrokeWidth?: number;
+  scrollGesturesEnabled?: boolean;
+  zoomGesturesEnabled?: boolean;
+  tiltGesturesEnabled?: boolean;
+  rotateGesturesEnabled?: boolean;
 }
 
 const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');
