@@ -1,18 +1,26 @@
 {
   "name": "react-native-yamap",
-  "version": "1.0.20",
+  "version": "1.1.0-beta",
   "description": "Yandex.MapKit and Yandex.Geocoder for react-native",
   "main": "build/index.js",
   "scripts": {
-    "prepare": "rm -rf build && tsc",
+    "prepublishOnly": "rm -rf build && tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "homepage": "https://github.com/volga-volga/react-native-yamap",
-  "keywords": ["react-native", "mapkit", "yandex", "yamap", "polygon", "polyline", "marker", "geocoder"],
+  "keywords": [
+    "react-native",
+    "mapkit",
+    "yandex",
+    "yamap",
+    "polygon",
+    "polyline",
+    "marker",
+    "geocoder"
+  ],
   "author": "Nikita Sirotkin",
   "license": "",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "typescript": "^3.8.3",
     "@types/react": "*",
