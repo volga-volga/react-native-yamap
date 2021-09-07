@@ -20,7 +20,7 @@ yarn add react-native-yamap
 react-native link react-native-yamap
 ``` 
 
-## Миграция с версии 1.0.x -> 1.1.x
+## Миграция с версии 1.0.x -> 1.1.x или ^4.0.0
 
 В файле `AppDelegate.m` нужно поменять импорт с
 ```
