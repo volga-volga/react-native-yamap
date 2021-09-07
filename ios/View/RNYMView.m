@@ -2,30 +2,7 @@
 #import <React/UIView+React.h>
 
 #import <MapKit/MapKit.h>
-#import <YandexMapKit/YMKMapKitFactory.h>
-#import <YandexMapKit/YMKMapView.h>
-#import <YandexMapKit/YMKBoundingBox.h>
-#import <YandexMapKit/YMKCameraPosition.h>
-#import <YandexMapKit/YMKCircle.h>
-#import <YandexMapKit/YMKPolyline.h>
-#import <YandexMapKit/YMKPolylineMapObject.h>
-#import <YandexMapKit/YMKMap.h>
-#import <YandexMapKit/YMKMapObjectCollection.h>
-#import <YandexMapKit/YMKGeoObjectCollection.h>
-#import <YandexMapKit/YMKSubpolylineHelper.h>
-#import <YandexMapKit/YMKPlacemarkMapObject.h>
-#import <YandexMapKitTransport/YMKMasstransitSession.h>
-#import <YandexMapKitDirections/YMKDrivingRouter.h>
-#import <YandexMapKitDirections/YMKDrivingSession.h>
-#import <YandexMapKitTransport/YMKMasstransitRouter.h>
-#import <YandexMapKitTransport/YMKPedestrianRouter.h>
-#import <YandexMapKitTransport/YMKMasstransitRouteStop.h>
-#import <YandexMapKitTransport/YMKMasstransitOptions.h>
-#import <YandexMapKitTransport/YMKMasstransitSection.h>
-#import <YandexMapKitTransport/YMKMasstransitSectionMetadata.h>
-#import <YandexMapKitTransport/YMKMasstransitTransport.h>
-#import <YandexMapKitTransport/YMKMasstransitWeight.h>
-#import <YandexMapKitTransport/YMKTimeOptions.h>
+@import YandexMapsMobile;
 
 #ifndef MAX
 #import <NSObjCRuntime.h>
@@ -134,6 +111,7 @@
     [routeMetadata setValue:points forKey:@"points"];
     return routeMetadata;
 }
+
 -(NSDictionary*) convertRouteSection:(YMKMasstransitRoute*) route withSection:(YMKMasstransitSection*) section {
     int routeIndex = 0;
     YMKMasstransitWeight* routeWeight = route.metadata.weight;
@@ -214,8 +192,11 @@
 -(void) findRoutes:(NSArray<YMKRequestPoint*>*) _points vehicles:(NSArray<NSString*>*) vehicles withId:(NSString*)_id {
     __weak RNYMView *weakSelf = self;
     if ([vehicles count] == 1 && [[vehicles objectAtIndex:0] isEqualToString:@"car"]) {
-        YMKDrivingDrivingOptions* options = [[YMKDrivingDrivingOptions alloc] init];
-        drivingSession = [drivingRouter requestRoutesWithPoints:_points drivingOptions:options routeHandler:^(NSArray<YMKDrivingRoute *> *routes, NSError *error) {
+        YMKDrivingDrivingOptions* drivingOptions = [[YMKDrivingDrivingOptions alloc] init];
+        YMKDrivingVehicleOptions* vehicleOptions = [[YMKDrivingVehicleOptions alloc] init];
+        
+        drivingSession = [drivingRouter requestRoutesWithPoints:_points drivingOptions:drivingOptions
+                                                 vehicleOptions:vehicleOptions routeHandler:^(NSArray<YMKDrivingRoute *> *routes, NSError *error) {
             RNYMView *strongSelf = weakSelf;
             if (error != nil) {
                 [strongSelf onReceiveNativeEvent: @{@"id": _id, @"status": @"error"}];
@@ -318,7 +299,7 @@
     [self setCenter:position withDuration:duration withAnimation:animation];
 }
 
--(NSDictionary*) cameraPositionToJSON:(YMKCameraPosition*) position {
+-(NSDictionary*) cameraPositionToJSON:(YMKCameraPosition*) position finished:(BOOL) finished {
     return @{
         @"azimuth": [NSNumber numberWithFloat:position.azimuth],
         @"tilt": [NSNumber numberWithFloat:position.tilt],
@@ -326,13 +307,36 @@
         @"point": @{
                 @"lat": [NSNumber numberWithDouble:position.target.latitude],
                 @"lon": [NSNumber numberWithDouble:position.target.longitude],
-        }
+        },
+        @"finished": @(finished)
     };
 }
 
+-(NSDictionary*) visibleRegionToJSON:(YMKVisibleRegion*) region {
+    return @{
+        @"bottomLeft": @{
+                @"lat": [NSNumber numberWithDouble:region.bottomLeft.latitude],
+                @"lon": [NSNumber numberWithDouble:region.bottomLeft.longitude],
+        },
+        @"bottomRight": @{
+                @"lat": [NSNumber numberWithDouble:region.bottomRight.latitude],
+                @"lon": [NSNumber numberWithDouble:region.bottomRight.longitude],
+        },
+        @"topLeft": @{
+                @"lat": [NSNumber numberWithDouble:region.topLeft.latitude],
+                @"lon": [NSNumber numberWithDouble:region.topLeft.longitude],
+        },
+        @"topRight": @{
+                @"lat": [NSNumber numberWithDouble:region.topRight.latitude],
+                @"lon": [NSNumber numberWithDouble:region.topRight.longitude],
+        },
+    };
+}
+
+
 -(void) emitCameraPositionToJS:(NSString*) _id {
     YMKCameraPosition* position = self.mapWindow.map.cameraPosition;
-    NSDictionary* cameraPosition = [self cameraPositionToJSON:position];
+    NSDictionary* cameraPosition = [self cameraPositionToJSON:position finished:YES];
     NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:cameraPosition];
     [response setValue:_id forKey:@"id"];
     if (self.onCameraPositionReceived) {
@@ -340,13 +344,22 @@
     }
 }
 
+-(void) emitVisibleRegionToJS:(NSString*) _id {
+    YMKVisibleRegion* region = self.mapWindow.map.visibleRegion;
+    NSDictionary* visibleRegion = [self visibleRegionToJSON:region];
+    NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:visibleRegion];
+    [response setValue:_id forKey:@"id"];
+    if (self.onVisibleRegionReceived) {
+        self.onVisibleRegionReceived(response);
+    }
+}
 
-- (void)onCameraPositionChangedWithMap:(nonnull YMKMap *)map
-    cameraPosition:(nonnull YMKCameraPosition *)cameraPosition
-cameraUpdateSource:(YMKCameraUpdateSource)cameraUpdateSource
+-(void) onCameraPositionChangedWithMap:(nonnull YMKMap *)map
+                        cameraPosition:(nonnull YMKCameraPosition *)cameraPosition
+                    cameraUpdateReason:(YMKCameraUpdateReason)cameraUpdateReason
                               finished:(BOOL)finished {
     if (self.onCameraPositionChange) {
-        self.onCameraPositionChange([self cameraPositionToJSON:cameraPosition]);
+        self.onCameraPositionChange([self cameraPositionToJSON:cameraPosition finished:finished]);
     }
 }
 

@@ -20,6 +20,16 @@ yarn add react-native-yamap
 react-native link react-native-yamap
 ``` 
 
+## Миграция с версии 1.0.x -> 1.1.x
+
+В файле `AppDelegate.m` нужно поменять импорт с
+```
+#import <YandexMapKit/YMKMapKitFactory.h>
+```
+на
+```
+#import <YandexMapsMobile/YMKMapKitFactory.h>
+```
 ## Использование карт
 
 ### Инициализировать карты
@@ -36,7 +46,7 @@ YaMap.init('API_KEY');
 Рекомендуется инициализировать MapKit в функции `didFinishLaunchingWithOptions` в AppDelegate.m
 
 ```
-#import <YandexMapKit/YMKMapKitFactory.h>
+#import <YandexMapsMobile/YMKMapKitFactory.h>
 
 ...
 
@@ -153,6 +163,13 @@ export interface CameraPosition {
   azimuth: number;
   point: Point;
 }
+
+export type VisibleRegion = {
+  bottomLeft: Point;
+  bottomRight: Point;
+  topLeft: Point;
+  topRight: Point;
+}
 ```
 
 #### Доступные `props` для компонента **MapView**
@@ -167,6 +184,10 @@ export interface CameraPosition {
 - `userLocationAccuracyFillColor?: string` - цвет фона зоны точности определения позиции пользователя
 - `userLocationAccuracyStrokeColor?: string` - цвет границы зоны точности определения позиции пользователя
 - `userLocationAccuracyStrokeWidth?: number` - толщина зоны точности определения позиции пользователя
+- `scrollGesturesEnabled?: boolean` - включены ли жесты скролла. По умолчанию true.
+- `zoomGesturesEnabled?: boolean` - включены ли жесты зума. По умолчанию true.
+- `tiltGesturesEnabled?: boolean` - включены ли жесты наклона камеры двумя пальцами. По умолчанию true.
+- `rotateGesturesEnabled?: boolean` - включены ли жесты вращения. По умолчанию true.
 
 #### Методы
 - `fitAllMarkers` - подобрать положение камеры, чтобы вместить все маркеры
@@ -175,6 +196,7 @@ export interface CameraPosition {
 - `setCenter(center: { lon: number, lat: number }, zoom: number = 10, azimuth: number = 0, tilt: number = 0, duration: number = 0, animation: Animation = Animation.SMOOTH)` - устанавливает камеру в точку с заданным zoom, поворотом по азимуту и наклоном карты (`tilt`). Можно параметризовать анимацию: длительность и тип. Если длительность установить 0, то переход будет без анимации. Возможные типы анимаций `Animation.SMOOTH` и `Animation.LINEAR`
 - `setZoom(zoom: number, duration: number, animation: Animation)` - изменить текущий zoom карты. Параметры `duration` и `animation` работают по аналогии с `setCenter`
 - `getCameraPosition(callback: (position: CameraPosition) => void)` - запрашивает положение камеры и вызывает переданный колбек с текущим значением
+- `getVisibleRegion(callback: (region: VisibleRegion) => void)` - запрашивает видимый регион и вызывает переданный колбек с текущим значением
 - `findRoutes(points: Point[], vehicles: Vehicles[], callback: (event: RoutesFoundEvent) => void)` - запрос маршрутов через точки `points` с использованием транспорта `vehicles`. При получении маршрутов будет вызван `callback` с информацией обо всех маршрутах (подробнее в разделе **"Запрос маршрутов"**)
 - `findMasstransitRoutes(points: Point[], callback: (event: RoutesFoundEvent<MasstransitInfo>) => void): void` - запрос маршрутов на любом общественном транспорте
 - `findPedestrianRoutes(points: Point[], callback: (event: RoutesFoundEvent<MasstransitInfo>) => void): void` - запрос пешеходного маршрута
@@ -377,3 +399,35 @@ Geocoder.addressToGeo(address: string);
 [yandex-geo-doc]: https://tech.yandex.ru/maps/geocoder/doc/desc/concepts/input_params-docpage
 
 [yandex-geo-response]: https://tech.yandex.ru/maps/geocoder/doc/desc/reference/response_structure-docpage/
+
+
+## Поиск по гео с подсказсками (GeoSuggestions)
+
+Для поиска с геоподсказками нужно воспользоваться модулем Suggest:
+
+```typescript
+import {Suggest} from 'react-native-yamap';
+
+const find = async (query: string) => {
+  const suggestions = await Suggest.suggest(query);
+
+  // suggestion = [{
+  //  subtitle: "Москва, Россия"
+  //  title: "улица Льва Толстого, 16"
+  //  uri: "ymapsbm1://geo?ll=37.587093%2C55.733974&spn=0.001000%2C0.001000&text=%D0%A0%D0%BE%D1%81%D1%81%D0%B8%D1%8F%2C%20%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0%2C%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%20%D0%9B%D1%8C%D0%B2%D0%B0%20%D0%A2%D0%BE%D0%BB%D1%81%D1%82%D0%BE%D0%B3%D0%BE%2C%2016"
+  // }, ...]
+
+  const suggestionsWithCoards = await Suggest.suggestWithCoords(query);
+  
+  // suggestionsWithCoards = [{
+  //  subtitle: "Москва, Россия"
+  //  title: "улица Льва Толстого, 16"
+  //  lat: 55.733974
+  //  lon: 37.587093
+  //  uri: "ymapsbm1://geo?ll=37.587093%2C55.733974&spn=0.001000%2C0.001000&text=%D0%A0%D0%BE%D1%81%D1%81%D0%B8%D1%8F%2C%20%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0%2C%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%20%D0%9B%D1%8C%D0%B2%D0%B0%20%D0%A2%D0%BE%D0%BB%D1%81%D1%82%D0%BE%D0%B3%D0%BE%2C%2016"
+  // }, ...]
+
+  // After searh session is finished
+  Suggest.reset();
+}
+```

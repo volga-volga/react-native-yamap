@@ -15,7 +15,7 @@
 RCT_EXPORT_MODULE()
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"onRouteFound", @"onCameraPositionReceived", @"onCameraPositionChange", @"onMapPress", @"onMapLongPress"];
+    return @[@"onRouteFound", @"onCameraPositionReceived", @"onVisibleRegionReceived", @"onCameraPositionChange", @"onMapPress", @"onMapLongPress"];
 }
 
 - (instancetype)init {
@@ -37,6 +37,7 @@ RCT_EXPORT_MODULE()
 // props
 RCT_EXPORT_VIEW_PROPERTY(onRouteFound, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onCameraPositionReceived, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onVisibleRegionReceived, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onCameraPositionChange, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMapPress, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMapLongPress, RCTBubblingEventBlock)
@@ -77,6 +78,30 @@ RCT_CUSTOM_VIEW_PROPERTY(mapStyle, NSString, RNYMView) {
 	if (json && view) {
 		[view.mapWindow.map setMapStyleWithStyle:json];
 	}
+}
+
+RCT_CUSTOM_VIEW_PROPERTY(zoomGesturesEnabled, BOOL, RNYMView) {
+    if (view) {
+        view.mapWindow.map.zoomGesturesEnabled = json ? [json boolValue] : YES;
+    }
+}
+
+RCT_CUSTOM_VIEW_PROPERTY(scrollGesturesEnabled, BOOL, RNYMView) {
+    if (view) {
+        view.mapWindow.map.scrollGesturesEnabled = json ? [json boolValue] : YES;
+    }
+}
+
+RCT_CUSTOM_VIEW_PROPERTY(tiltGesturesEnabled, BOOL, RNYMView) {
+    if (view) {
+        view.mapWindow.map.tiltGesturesEnabled = json ? [json boolValue] : YES;
+    }
+}
+
+RCT_CUSTOM_VIEW_PROPERTY(rotateGesturesEnabled, BOOL, RNYMView) {
+    if (view) {
+        view.mapWindow.map.rotateGesturesEnabled = json ? [json boolValue] : YES;
+    }
 }
 
 // ref
@@ -139,6 +164,17 @@ RCT_EXPORT_METHOD(getCameraPosition:(nonnull NSNumber*) reactTag _id:(NSString*_
             return;
         }
         [view emitCameraPositionToJS:_id];
+    }];
+}
+
+RCT_EXPORT_METHOD(getVisibleRegion:(nonnull NSNumber*) reactTag _id:(NSString*_Nonnull) _id ) {
+    [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
+        RNYMView *view = (RNYMView*) viewRegistry[reactTag];
+        if (!view || ![view isKindOfClass:[RNYMView class]]) {
+            RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
+            return;
+        }
+        [view emitVisibleRegionToJS:_id];
     }];
 }
 

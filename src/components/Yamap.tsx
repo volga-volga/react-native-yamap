@@ -11,7 +11,7 @@ import {
 // @ts-ignore
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 import CallbacksManager from '../utils/CallbacksManager';
-import { Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition } from '../interfaces';
+import { Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition, VisibleRegion } from '../interfaces';
 import { processColorProps } from '../utils';
 
 const { yamap: NativeYamapModule } = NativeModules;
@@ -27,6 +27,10 @@ export interface YaMapProps extends ViewProps {
   userLocationAccuracyFillColor?: string;
   userLocationAccuracyStrokeColor?: string;
   userLocationAccuracyStrokeWidth?: number;
+  scrollGesturesEnabled?: boolean;
+  zoomGesturesEnabled?: boolean;
+  tiltGesturesEnabled?: boolean;
+  rotateGesturesEnabled?: boolean;
 }
 
 const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');
@@ -122,6 +126,15 @@ export class YaMap extends React.Component<YaMapProps> {
     );
   }
 
+  public getVisibleRegion(callback: (VisibleRegion: VisibleRegion) => void) {
+    const callbackId = CallbacksManager.addCallback(callback);
+    UIManager.dispatchViewManagerCommand(
+      findNodeHandle(this),
+      this.getCommand('getVisibleRegion'),
+      [callbackId]
+    )
+  }
+
   private _findRoutes(points: Point[], vehicles: Vehicles[], callback: ((event: RoutesFoundEvent<DrivingInfo | MasstransitInfo>) => void) | ((event: RoutesFoundEvent<DrivingInfo>) => void) | ((event: RoutesFoundEvent<MasstransitInfo>) => void)) {
     const cbId = CallbacksManager.addCallback(callback);
     const args
@@ -152,6 +165,11 @@ export class YaMap extends React.Component<YaMapProps> {
     CallbacksManager.call(id, position);
   }
 
+  private processVisibleRegion(event: NativeSyntheticEvent<{id: string} & VisibleRegion>) {
+    const {id, ...visibleRegion} = event.nativeEvent;
+    CallbacksManager.call(id, visibleRegion);
+  }
+
   private resolveImageUri(img: ImageSourcePropType) {
     return img ? resolveAssetSource(img).uri : '';
   }
@@ -161,6 +179,7 @@ export class YaMap extends React.Component<YaMapProps> {
       ...this.props,
       onRouteFound: this.processRoute,
       onCameraPositionReceived: this.processCameraPosition,
+      onVisibleRegionReceived: this.processVisibleRegion,
       userLocationIcon: this.props.userLocationIcon ? this.resolveImageUri(this.props.userLocationIcon) : undefined,
     };
     processColorProps(props, 'userLocationAccuracyFillColor' as keyof YaMapProps);

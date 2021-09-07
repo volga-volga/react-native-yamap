@@ -31,6 +31,7 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     private static final int FIND_ROUTES = 3;
     private static final int SET_ZOOM = 4;
     private static final int GET_CAMERA_POSITION = 5;
+    private static final int GET_VISIBLE_REGION = 6;
 
     YamapViewManager() {
     }
@@ -51,6 +52,7 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
                 .put("routes", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onRouteFound")))
                 .put("cameraPosition", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionReceived")))
                 .put("cameraPositionChanged", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionChange")))
+                .put("visibleRegion", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onVisibleRegionReceived")))
                 .put("onMapPress", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapPress")))
                 .put("onMapLongPress", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapLongPress")))
                 .build();
@@ -68,7 +70,9 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
                 "setZoom",
                 SET_ZOOM,
                 "getCameraPosition",
-                GET_CAMERA_POSITION);
+                GET_CAMERA_POSITION,
+                "getVisibleRegion",
+                GET_VISIBLE_REGION);
     }
 
     @Override
@@ -98,6 +102,11 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
             case "getCameraPosition":
                 if (args != null) {
                     view.emitCameraPositionToJS(args.getString(0));
+                }
+                return;
+            case "getVisibleRegion":
+                if (args != null) {
+                    view.emitVisibleRegionToJS(args.getString(0));
                 }
                 return;
             default:
@@ -183,6 +192,26 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     @ReactProp(name = "nightMode")
     public void setNightMode(View view, Boolean nightMode) {
         castToYaMapView(view).setNightMode(nightMode != null ? nightMode : false);
+    }
+
+    @ReactProp(name = "scrollGesturesEnabled")
+    public void setScrollGesturesEnabled(View view, Boolean scrollGesturesEnabled) {
+        castToYaMapView(view).setScrollGesturesEnabled(scrollGesturesEnabled == true);
+    }
+
+    @ReactProp(name = "rotateGesturesEnabled")
+    public void setRotateGesturesEnabled(View view, Boolean rotateGesturesEnabled) {
+        castToYaMapView(view).setRotateGesturesEnabled(rotateGesturesEnabled == true);
+    }
+
+    @ReactProp(name = "zoomGesturesEnabled")
+    public void setZoomGesturesEnabled(View view, Boolean zoomGesturesEnabled) {
+        castToYaMapView(view).setZoomGesturesEnabled(zoomGesturesEnabled == true);
+    }
+
+    @ReactProp(name = "tiltGesturesEnabled")
+    public void setTiltGesturesEnabled(View view, Boolean tiltGesturesEnabled) {
+        castToYaMapView(view).setTiltGesturesEnabled(tiltGesturesEnabled == true);
     }
 
     @ReactProp(name = "mapStyle")
