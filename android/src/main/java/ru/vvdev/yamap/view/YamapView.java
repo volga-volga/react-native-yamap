@@ -348,6 +348,20 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     public void setTiltGesturesEnabled(Boolean tiltGesturesEnabled) { getMap().setTiltGesturesEnabled(tiltGesturesEnabled); }
 
+
+    public void setTrafficVisible(Boolean isVisible) {
+       if (trafficLayer == null) {
+          trafficLayer = MapKitFactory.getInstance().createTrafficLayer(getMapWindow());
+       }
+       if (isVisible) {
+          trafficLayer.addTrafficListener(this);
+          trafficLayer.setTrafficVisible(true);
+       } else {
+          trafficLayer.setTrafficVisible(false);
+          trafficLayer.addTrafficListener(null);
+       }
+    }
+
     public void setShowUserPosition(Boolean show) {
         if (userLocationLayer == null) {
             userLocationLayer = MapKitFactory.getInstance().createUserLocationLayer(getMapWindow());
@@ -581,5 +595,18 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         data.putDouble("lon", point.getLongitude());
         ReactContext reactContext = (ReactContext) getContext();
         reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onMapLongPress", data);
+    }
+
+    //trafficListener implementation
+    @Override
+    public void onTrafficChanged(@Nullable TrafficLevel trafficLevel) {
+    }
+
+    @Override
+    public void onTrafficLoading() {
+    }
+
+    @Override
+    public void onTrafficExpired() {
     }
 }
