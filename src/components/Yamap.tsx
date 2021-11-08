@@ -101,6 +101,14 @@ export class YaMap extends React.Component<YaMapProps> {
     );
   }
 
+  public setTrafficVisible(isVisible: boolean) {
+    UIManager.dispatchViewManagerCommand(
+        findNodeHandle(this),
+        this.getCommand('setTrafficVisible'),
+        [isVisible],
+    );
+  }
+
   public setCenter(center: { lon: number, lat: number, zoom?: number }, zoom: number = center.zoom || 10, azimuth: number = 0, tilt: number = 0, duration: number = 0, animation: Animation = Animation.SMOOTH) {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),

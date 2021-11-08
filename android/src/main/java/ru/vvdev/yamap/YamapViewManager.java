@@ -32,6 +32,7 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     private static final int SET_ZOOM = 4;
     private static final int GET_CAMERA_POSITION = 5;
     private static final int GET_VISIBLE_REGION = 6;
+    private static final int SET_TRAFFIC_VISIBLE = 7;
 
     YamapViewManager() {
     }
@@ -72,7 +73,9 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
                 "getCameraPosition",
                 GET_CAMERA_POSITION,
                 "getVisibleRegion",
-                GET_VISIBLE_REGION);
+                GET_VISIBLE_REGION,
+                "setTrafficVisible",
+                SET_TRAFFIC_VISIBLE);
     }
 
     @Override
@@ -107,6 +110,11 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
             case "getVisibleRegion":
                 if (args != null) {
                     view.emitVisibleRegionToJS(args.getString(0));
+                }
+                return;
+            case "setTrafficVisible":
+                if (args != null) {
+                   view.setTrafficVisible(args.getBoolean(0));
                 }
                 return;
             default:
