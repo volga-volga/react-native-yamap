@@ -202,6 +202,11 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         castToYaMapView(view).setNightMode(nightMode != null ? nightMode : false);
     }
 
+    @ReactProp(name = "clasteredMap")
+    public void setClasteredMap(View view, Boolean clasteredMap) {
+        castToYaMapView(view).setClasteredMap(clasteredMap != null ? clasteredMap : false);
+    }
+
     @ReactProp(name = "scrollGesturesEnabled")
     public void setScrollGesturesEnabled(View view, Boolean scrollGesturesEnabled) {
         castToYaMapView(view).setScrollGesturesEnabled(scrollGesturesEnabled == true);

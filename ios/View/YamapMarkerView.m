@@ -24,6 +24,7 @@
     NSValue* anchor;
     NSMutableArray<UIView*>* _reactSubviews;
     UIView* _childView;
+    NSString* sectionType;
 }
 
 - (instancetype)init {
@@ -33,6 +34,7 @@
     _reactSubviews = [[NSMutableArray alloc] init];
     source = @"";
     lastSource = @"";
+    sectionType = nil;
     return self;
 }
 
@@ -59,15 +61,27 @@
 
 -(void) setScale:(NSNumber*) _scale {
     scale = _scale;
-    [self updateMarker];
+    if (sectionType == nil) {
+      [self updateMarker];
+    }
 }
 -(void) setZIndex:(NSNumber*) _zIndex {
     zIndex = _zIndex;
-    [self updateMarker];
+    if (sectionType == nil) {
+      [self updateMarker];
+    }
 }
 
 -(void) setPoint:(YMKPoint*) point {
     _point = point;
+    if (sectionType == nil) {
+      [self updateMarker];
+    }
+}
+
+-(void) setSectionType:(NSString*) _sectionType {
+    sectionType = _sectionType;
+
     [self updateMarker];
 }
 
@@ -88,12 +102,16 @@
 
 -(void) setSource:(NSString*) _source {
     source = _source;
-    [self updateMarker];
+    if (sectionType == nil) {
+      [self updateMarker];
+    }
 }
 -(void) setMapObject:(YMKPlacemarkMapObject *)_mapObject {
     mapObject = _mapObject;
     [mapObject addTapListenerWithTapListener:self];
-    [self updateMarker];
+    if (sectionType == nil) {
+      [self updateMarker];
+    }
 }
 
 // object tap listener
@@ -104,6 +122,10 @@
 
 -(YMKPoint*) getPoint {
     return _point;
+}
+
+-(NSString*) getSectionType {
+    return sectionType;
 }
 
 -(void) setAnchor:(NSValue*)_anchor {
@@ -123,7 +145,10 @@
             if (v != nil) {
 				if (mapObject.isValid) {
 					[mapObject setViewWithView:v];
-                    [self updateMarker];
+
+          if (sectionType == nil) {
+            [self updateMarker];
+          }
 				}
             }
         }

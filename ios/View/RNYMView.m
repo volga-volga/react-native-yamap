@@ -40,6 +40,16 @@
     UIColor* userLocationAccuracyFillColor;
     UIColor* userLocationAccuracyStrokeColor;
     float userLocationAccuracyStrokeWidth;
+    BOOL clasteredMap;
+    YMKClusterizedPlacemarkCollection *collection;
+    UIImage *buildingsIcon;
+    UIImage *monumentsIcon;
+    UIImage *museumsIcon;
+    UIImage *personalityIcon;
+    UIImage *postersIcon;
+    UIImage *questsIcon;
+    UIImage *routesIcon;
+    UIImage *territoriesIcon;
 }
 
 - (instancetype)init {
@@ -67,6 +77,18 @@
     userLocationAccuracyStrokeWidth = 0.f;
     [self.mapWindow.map addCameraListenerWithCameraListener:self];
     [self.mapWindow.map addInputListenerWithInputListener:(id<YMKMapInputListener>) self];
+
+    buildingsIcon = [UIImage imageNamed:@"buildings_icon"];
+    monumentsIcon = [UIImage imageNamed:@"monuments_icon"];
+    museumsIcon = [UIImage imageNamed:@"museums_icon"];
+    personalityIcon = [UIImage imageNamed:@"personality_icon"];
+    postersIcon = [UIImage imageNamed:@"posters_icon"];
+    questsIcon = [UIImage imageNamed:@"quests_icon"];
+    routesIcon = [UIImage imageNamed:@"routes_icon"];
+    territoriesIcon = [UIImage imageNamed:@"territories_icon"];
+    collection = [self.mapWindow.map.mapObjects addClusterizedPlacemarkCollectionWithClusterListener:self];
+
+
     return self;
 }
 
@@ -194,7 +216,7 @@
     if ([vehicles count] == 1 && [[vehicles objectAtIndex:0] isEqualToString:@"car"]) {
         YMKDrivingDrivingOptions* drivingOptions = [[YMKDrivingDrivingOptions alloc] init];
         YMKDrivingVehicleOptions* vehicleOptions = [[YMKDrivingVehicleOptions alloc] init];
-        
+
         drivingSession = [drivingRouter requestRoutesWithPoints:_points drivingOptions:drivingOptions
                                                  vehicleOptions:vehicleOptions routeHandler:^(NSArray<YMKDrivingRoute *> *routes, NSError *error) {
             RNYMView *strongSelf = weakSelf;
@@ -291,6 +313,7 @@
     } else {
         [self.mapWindow.map moveWithCameraPosition:position];
     }
+    [self viewCollection];
 }
 
 -(void) setZoom:(float) zoom withDuration:(float) duration withAnimation:(int) animation {
@@ -339,6 +362,23 @@
     NSDictionary* cameraPosition = [self cameraPositionToJSON:position finished:YES];
     NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:cameraPosition];
     [response setValue:_id forKey:@"id"];
+
+    YMKVisibleRegion *visibleRegion = self.mapWindow.map.visibleRegion;
+    double latitudeDelta = visibleRegion.topRight.latitude - visibleRegion.bottomLeft.latitude;
+    double longitudeDelta;
+
+    if(visibleRegion.topRight.longitude >= visibleRegion.bottomLeft.longitude) {
+        longitudeDelta = visibleRegion.topRight.longitude - visibleRegion.bottomLeft.longitude;
+    } else {
+        longitudeDelta = visibleRegion.topRight.longitude + 360 - visibleRegion.bottomLeft.longitude;
+    }
+
+    NSDictionary *newKey = @{
+        @"latitudeDelta": [NSNumber numberWithDouble:latitudeDelta],
+        @"longitudeDelta": [NSNumber numberWithDouble:longitudeDelta]
+    };
+    [response addEntriesFromDictionary:newKey];
+
     if (self.onCameraPositionReceived) {
         self.onCameraPositionReceived(response);
     }
@@ -358,8 +398,26 @@
                         cameraPosition:(nonnull YMKCameraPosition *)cameraPosition
                     cameraUpdateReason:(YMKCameraUpdateReason)cameraUpdateReason
                               finished:(BOOL)finished {
+    YMKVisibleRegion *visibleRegion = map.visibleRegion;
+    double latitudeDelta = visibleRegion.topRight.latitude - visibleRegion.bottomLeft.latitude;
+    double longitudeDelta;
+
+    if(visibleRegion.topRight.longitude >= visibleRegion.bottomLeft.longitude) {
+        longitudeDelta = visibleRegion.topRight.longitude - visibleRegion.bottomLeft.longitude;
+    } else {
+        longitudeDelta = visibleRegion.topRight.longitude + 360 - visibleRegion.bottomLeft.longitude;
+    }
+
+    NSDictionary *newKey = @{
+        @"latitudeDelta": [NSNumber numberWithDouble:latitudeDelta],
+        @"longitudeDelta": [NSNumber numberWithDouble:longitudeDelta]
+    };
+
     if (self.onCameraPositionChange) {
-        self.onCameraPositionChange([self cameraPositionToJSON:cameraPosition finished:finished]);
+        NSDictionary *positions = [self cameraPositionToJSON:cameraPosition finished:finished];
+        NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:positions];
+        [response addEntriesFromDictionary:newKey];
+        self.onCameraPositionChange(response);
     }
 }
 
@@ -517,34 +575,57 @@
 }
 
 - (void)insertReactSubview:(UIView<RCTComponent>*)subview atIndex:(NSInteger)atIndex {
-    if ([subview isKindOfClass:[YamapPolygonView class]]) {
-        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
-        YamapPolygonView* polygon = (YamapPolygonView*) subview;
-        YMKPolygonMapObject* obj = [objects addPolygonWithPolygon:[polygon getPolygon]];
-        [polygon setMapObject:obj];
-    } else if ([subview isKindOfClass:[YamapPolylineView class]]) {
-        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
-        YamapPolylineView* polyline = (YamapPolylineView*) subview;
-        YMKPolylineMapObject* obj = [objects addPolylineWithPolyline:[polyline getPolyline]];
-        [polyline setMapObject:obj];
-    } else if ([subview isKindOfClass:[YamapMarkerView class]]) {
-        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
-        YamapMarkerView* marker = (YamapMarkerView*) subview;
-        YMKPlacemarkMapObject* obj = [objects addPlacemarkWithPoint:[marker getPoint]];
-        [marker setMapObject:obj];
-    } else if ([subview isKindOfClass:[YamapCircleView class]]) {
-           YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
-           YamapCircleView* circle = (YamapCircleView*) subview;
-           YMKCircleMapObject* obj = [objects addCircleWithCircle:[circle getCircle] strokeColor:UIColor.blackColor strokeWidth:0.f fillColor:UIColor.blackColor];
-           [circle setMapObject:obj];
-    } else {
-        NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
-        for (int i = 0; i < childSubviews.count; i++) {
-            [self insertReactSubview:(UIView *)childSubviews[i] atIndex:atIndex];
+    if (clasteredMap == YES) {
+        if ([subview isKindOfClass:[YamapMarkerView class]]) {
+            YamapMarkerView* marker = (YamapMarkerView*) subview;
+            YMKPlacemarkMapObject* obj;
+            if ([[marker getSectionType] isEqual: @"houses"]) {
+                obj = [collection addPlacemarkWithPoint:[marker getPoint] image:buildingsIcon];
+            } else if ([[marker getSectionType] isEqual: @"museums"]) {
+                obj = [collection addPlacemarkWithPoint:[marker getPoint] image:museumsIcon];
+            } else if ([[marker getSectionType] isEqual: @"monuments"]) {
+                obj = [collection addPlacemarkWithPoint:[marker getPoint] image:monumentsIcon];
+            } else if ([[marker getSectionType] isEqual: @"quests"]) {
+                obj = [collection addPlacemarkWithPoint:[marker getPoint] image:questsIcon];
+            } else if ([[marker getSectionType] isEqual: @"routes"]) {
+                obj = [collection addPlacemarkWithPoint:[marker getPoint] image:routesIcon];
+            } else if ([[marker getSectionType] isEqual: @"personalities"]) {
+                obj = [collection addPlacemarkWithPoint:[marker getPoint] image:personalityIcon];
+            } else if ([[marker getSectionType] isEqual: @"places"]) {
+                obj = [collection addPlacemarkWithPoint:[marker getPoint] image:territoriesIcon];
+            }
+            [marker setMapObject:obj];
         }
+    } else {
+        if ([subview isKindOfClass:[YamapPolygonView class]]) {
+            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            YamapPolygonView* polygon = (YamapPolygonView*) subview;
+            YMKPolygonMapObject* obj = [objects addPolygonWithPolygon:[polygon getPolygon]];
+            [polygon setMapObject:obj];
+        } else if ([subview isKindOfClass:[YamapPolylineView class]]) {
+            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            YamapPolylineView* polyline = (YamapPolylineView*) subview;
+            YMKPolylineMapObject* obj = [objects addPolylineWithPolyline:[polyline getPolyline]];
+            [polyline setMapObject:obj];
+        } else if ([subview isKindOfClass:[YamapMarkerView class]]) {
+            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            YamapMarkerView* marker = (YamapMarkerView*) subview;
+            YMKPlacemarkMapObject* obj = [objects addPlacemarkWithPoint:[marker getPoint]];
+            [marker setMapObject:obj];
+        } else if ([subview isKindOfClass:[YamapCircleView class]]) {
+            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            YamapCircleView* circle = (YamapCircleView*) subview;
+            YMKCircleMapObject* obj = [objects addCircleWithCircle:[circle getCircle] strokeColor:UIColor.blackColor strokeWidth:0.f fillColor:UIColor.blackColor];
+            [circle setMapObject:obj];
+        } else {
+            NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
+            for (int i = 0; i < childSubviews.count; i++) {
+                [self insertReactSubview:(UIView *)childSubviews[i] atIndex:atIndex];
+            }
+        }
+        [_reactSubviews insertObject:subview atIndex:atIndex];
+        [super insertReactSubview:subview atIndex:atIndex];
     }
-    [_reactSubviews insertObject:subview atIndex:atIndex];
-    [super insertReactSubview:subview atIndex:atIndex];
 }
 
 - (void)removeReactSubview:(UIView<RCTComponent>*)subview {
@@ -572,6 +653,78 @@
     }
     [_reactSubviews removeObject:subview];
     [super removeReactSubview: subview];
+}
+
+- (UIImage*) clusterImage:(NSInteger*)clusterSize {
+    CGFloat scale;
+    CGFloat FONT_SIZE = 10;
+    CGFloat MARGIN_SIZE = 2;
+    CGFloat internalRadius;
+    CGFloat externalRadius;
+    CGSize iconSize;
+    CGFloat STROKE_SIZE = 2;
+    NSString *text;
+
+    scale = [UIScreen mainScreen].scale;
+    if (clusterSize > 100) {
+        text = [NSString stringWithFormat:@"%i+", 99];
+    } else {
+        text = [NSString stringWithFormat:@"%i", clusterSize];
+    }
+    UIFont *font = [UIFont systemFontOfSize:FONT_SIZE * scale];
+    CGSize size = [text sizeWithAttributes:@{NSFontAttributeName:font}];
+
+    double textRadius = sqrt(size.height * size.height + size.width * size.width) / 2;
+    internalRadius = textRadius + MARGIN_SIZE * scale;
+    externalRadius = internalRadius + STROKE_SIZE * scale;
+
+    iconSize = CGSizeMake(externalRadius * 2, externalRadius * 2);
+
+    UIGraphicsBeginImageContextWithOptions(iconSize, NO, 0);
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+
+    UIColor* color = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:1.0f];
+    UIColor* color1 = [UIColor colorWithRed:0.0f green:219.0f/255.0f blue:164.0f/255.0f alpha:1.0f];
+    UIColor* color2 = [UIColor colorWithRed:0.0f green:179.0f/255.0f blue:134.0f/255.0f alpha:1.0f];
+
+    CGContextSetFillColorWithColor(ctx, color1.CGColor);
+    CGContextFillEllipseInRect(ctx, CGRectMake(0, 0, 2 * externalRadius, 2 * externalRadius));
+
+    CGContextSetFillColorWithColor(ctx, color2.CGColor);
+    CGContextFillEllipseInRect(ctx, CGRectMake(4, 4, 2 * externalRadius - 8, 2 * externalRadius - 8));
+
+    NSMutableParagraphStyle *style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+    style.alignment = NSTextAlignmentCenter;
+
+    NSMutableDictionary *attr = [[NSMutableDictionary alloc] init];
+    [attr setObject:font forKey:NSFontAttributeName];
+    [attr setObject:style forKey:NSParagraphStyleAttributeName];
+    [attr setObject:color forKey:NSForegroundColorAttributeName];
+
+    [text drawInRect:CGRectMake(externalRadius - size.width / 2, externalRadius - size.height / 2, size.width, size.height)
+      withAttributes:attr];
+
+    return UIGraphicsGetImageFromCurrentImageContext();
+}
+
+- (void) onClusterAddedWithCluster:(YMKCluster *)cluster {
+    YMKPlacemarkMapObject *obj = cluster.appearance;
+    [obj setIconWithImage:[self clusterImage:cluster.size]];
+    [cluster addClusterTapListenerWithClusterTapListener:self];
+}
+
+- (void) setClasterMode:(BOOL)clastered {
+    clasteredMap = clastered;
+}
+
+- (void) viewCollection {
+    if (clasteredMap == YES) {
+        [collection clusterPlacemarksWithClusterRadius:60 minZoom:15];
+    }
+}
+
+- (BOOL)onClusterTapWithCluster:(nonnull YMKCluster *)cluster {
+    return YES;
 }
 
 @synthesize reactTag;

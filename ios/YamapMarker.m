@@ -43,6 +43,10 @@ RCT_CUSTOM_VIEW_PROPERTY(scale, NSNumber, YamapMarkerView) {
     [view setScale: json];
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(sectionType, NSString, YamapMarkerView) {
+    [view setSectionType: json];
+}
+
 RCT_CUSTOM_VIEW_PROPERTY(anchor, NSDictionary, YamapMarkerView) {
     CGPoint point;
     if (json) {

@@ -76,9 +76,21 @@ public class YamapMarkerManager extends ViewGroupManager<YamapMarker> {
         }
     }
 
+    @ReactProp(name = "update")
+    public void setUpdate(View view, Boolean source) {
+        if (source) {
+            castToMarkerView(view).setUpdateMarker();
+        }
+    }
+
     @ReactProp(name = "anchor")
     public void setAnchor(View view, ReadableMap anchor) {
         castToMarkerView(view).setAnchor(anchor != null ? new PointF((float) anchor.getDouble("x"), (float) anchor.getDouble("y")) : null);
+    }
+
+    @ReactProp(name = "sectionType")
+    public void setSectionType(View view, String sectionType) {
+        castToMarkerView(view).setSectionType(sectionType);
     }
 
     @Override

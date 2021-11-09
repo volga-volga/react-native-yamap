@@ -2,10 +2,16 @@ package ru.vvdev.yamap.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.util.DisplayMetrics;
 import android.view.View;
+import java.lang.Object;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
@@ -29,10 +35,15 @@ import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.geometry.Polyline;
 import com.yandex.mapkit.geometry.SubpolylineHelper;
 import com.yandex.mapkit.layers.ObjectEvent;
+import com.yandex.mapkit.location.LocationManager;
 import com.yandex.mapkit.map.CameraListener;
 import com.yandex.mapkit.map.CameraPosition;
 import com.yandex.mapkit.map.CameraUpdateReason;
 import com.yandex.mapkit.map.CircleMapObject;
+import com.yandex.mapkit.map.Cluster;
+import com.yandex.mapkit.map.ClusterListener;
+import com.yandex.mapkit.map.ClusterizedPlacemarkCollection;
+import com.yandex.mapkit.map.IconStyle;
 import com.yandex.mapkit.map.InputListener;
 import com.yandex.mapkit.map.PlacemarkMapObject;
 import com.yandex.mapkit.map.PolygonMapObject;
@@ -65,12 +76,16 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import ru.vvdev.yamap.R;
 import ru.vvdev.yamap.models.ReactMapObject;
 import ru.vvdev.yamap.utils.Callback;
 import ru.vvdev.yamap.utils.ImageLoader;
 import ru.vvdev.yamap.utils.RouteManager;
 
-public class YamapView extends MapView implements UserLocationObjectListener, CameraListener, InputListener {
+import com.yandex.mapkit.map.ClusterListener;
+import com.yandex.mapkit.map.ClusterTapListener;
+
+public class YamapView extends MapView implements UserLocationObjectListener, CameraListener, InputListener, ClusterListener, ClusterTapListener {
     // default colors for known vehicles
     // "underground" actually get color considering with his own branch"s color
     private final static Map<String, String> DEFAULT_VEHICLE_COLORS = new HashMap<String, String>() {{
@@ -94,9 +109,75 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     private int userLocationAccuracyStrokeColor = 0;
     private float userLocationAccuracyStrokeWidth = 0.f;
     private List<ReactMapObject> childs = new ArrayList<>();
+    private boolean clasteredMap = false;
+    private ClusterizedPlacemarkCollection clusterizedCollection;
+    private ImageProvider buildingsIcon;
+    private ImageProvider monumentsIcon;
+    private ImageProvider museumsIcon;
+    private ImageProvider personalityIcon;
+    private ImageProvider postersIcon;
+    private ImageProvider questsIcon;
+    private ImageProvider routesIcon;
+    private ImageProvider territoriesIcon;
+    private PlacemarkMapObject obj;
+    private static final float FONT_SIZE = 15;
+    private static final float MARGIN_SIZE = 3;
+    private static final float STROKE_SIZE = 3;
+    private int color_bg = 0;
+    private int color_fg = 0;
 
     // location
     private UserLocationView userLocationView = null;
+
+    public class TextImageProvider extends ImageProvider {
+        @Override
+        public String getId() {
+            return "text_" + text;
+        }
+
+        private final String text;
+        @Override
+        public Bitmap getImage() {
+            Paint textPaint = new Paint();
+            textPaint.setTextSize(FONT_SIZE * 3);
+            textPaint.setTextAlign(Paint.Align.CENTER);
+            textPaint.setStyle(Paint.Style.FILL);
+            textPaint.setAntiAlias(true);
+            textPaint.setColor(Color.WHITE);
+
+            float widthF = textPaint.measureText(text);
+            Paint.FontMetrics textMetrics = textPaint.getFontMetrics();
+            float heightF = Math.abs(textMetrics.bottom) + Math.abs(textMetrics.top);
+            float textRadius = (float)Math.sqrt(widthF * widthF + heightF * heightF) / 2;
+            float internalRadius = textRadius + MARGIN_SIZE * 3;
+            float externalRadius = internalRadius + STROKE_SIZE * 3;
+
+            int width = (int) (2 * externalRadius + 0.5);
+
+            Bitmap bitmap = Bitmap.createBitmap(width, width, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+
+            Paint backgroundPaint = new Paint();
+            backgroundPaint.setAntiAlias(true);
+            backgroundPaint.setColor(color_fg);
+            canvas.drawCircle(width / 2, width / 2, externalRadius, backgroundPaint);
+
+            backgroundPaint.setColor(color_bg);
+            canvas.drawCircle(width / 2, width / 2, internalRadius, backgroundPaint);
+
+            canvas.drawText(
+                    text,
+                    width / 2,
+                    width / 2 - (textMetrics.ascent + textMetrics.descent) / 2,
+                    textPaint);
+
+            return bitmap;
+        }
+
+        public TextImageProvider(String text) {
+            this.text = text;
+        }
+    }
 
     public YamapView(Context context) {
         super(context);
@@ -104,6 +185,19 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         drivingRouter = DirectionsFactory.getInstance().createDrivingRouter();
         getMap().addCameraListener(this);
         getMap().addInputListener(this);
+
+        clusterizedCollection = getMap().getMapObjects().addClusterizedPlacemarkCollection(this);
+
+        buildingsIcon = ImageProvider.fromResource(context, R.drawable.buildings_icon);
+        monumentsIcon = ImageProvider.fromResource(context, R.drawable.monuments_icon);
+        museumsIcon = ImageProvider.fromResource(context, R.drawable.museums_icon);
+        personalityIcon = ImageProvider.fromResource(context, R.drawable.personality_icon);
+        postersIcon = ImageProvider.fromResource(context, R.drawable.posters_icon);
+        questsIcon = ImageProvider.fromResource(context, R.drawable.quests_icon);
+        routesIcon = ImageProvider.fromResource(context, R.drawable.routes_icon);
+        territoriesIcon = ImageProvider.fromResource(context, R.drawable.territories_icon);
+        color_bg = ContextCompat.getColor(context, R.color.color_bg);
+        color_fg = ContextCompat.getColor(context, R.color.color_fg);
     }
 
     // ref methods
@@ -114,6 +208,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         } else {
             getMap().move(position);
         }
+        viewCollection();
     }
 
     private WritableMap positionToJSON(CameraPosition position, boolean finished) {
@@ -340,6 +435,10 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         getMap().setNightModeEnabled(nightMode);
     }
 
+    public void setClasteredMap(Boolean clastered) {
+        clasteredMap = clastered;
+    }
+
     public void setScrollGesturesEnabled(Boolean scrollGesturesEnabled) { getMap().setScrollGesturesEnabled(scrollGesturesEnabled); }
 
     public void setZoomGesturesEnabled(Boolean zoomGesturesEnabled) { getMap().setZoomGesturesEnabled(zoomGesturesEnabled); }
@@ -506,26 +605,50 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     // children
     public void addFeature(View child, int index) {
-        if (child instanceof YamapPolygon) {
-            YamapPolygon _child = (YamapPolygon) child;
-            PolygonMapObject obj = getMap().getMapObjects().addPolygon(_child.polygon);
-            _child.setMapObject(obj);
-            childs.add(_child);
-        } else if (child instanceof YamapPolyline) {
-            YamapPolyline _child = (YamapPolyline) child;
-            PolylineMapObject obj = getMap().getMapObjects().addPolyline(_child.polyline);
-            _child.setMapObject(obj);
-            childs.add(_child);
-        } else if (child instanceof YamapMarker) {
-            YamapMarker _child = (YamapMarker) child;
-            PlacemarkMapObject obj = getMap().getMapObjects().addPlacemark(_child.point);
-            _child.setMapObject(obj);
-            childs.add(_child);
-        } else if (child instanceof YamapCircle) {
-            YamapCircle _child = (YamapCircle) child;
-            CircleMapObject obj = getMap().getMapObjects().addCircle(_child.circle, 0, 0.f, 0);
-            _child.setMapObject(obj);
-            childs.add(_child);
+        if (clasteredMap) {
+            if (child instanceof YamapMarker) {
+                YamapMarker _child = (YamapMarker) child;
+                if (_child.getSectionType().equals("houses")) {
+                    obj = clusterizedCollection.addPlacemark(_child.getPoint(), buildingsIcon);
+                } else if (_child.getSectionType().equals("museums")) {
+                    obj = clusterizedCollection.addPlacemark(_child.getPoint(), museumsIcon);
+                } else if (_child.getSectionType().equals("monuments")) {
+                    obj = clusterizedCollection.addPlacemark(_child.getPoint(), monumentsIcon);
+                } else if (_child.getSectionType().equals("quests")) {
+                    obj = clusterizedCollection.addPlacemark(_child.getPoint(), questsIcon);
+                } else if (_child.getSectionType().equals("routes")) {
+                    obj = clusterizedCollection.addPlacemark(_child.getPoint(), routesIcon);
+                } else if (_child.getSectionType().equals("personalities")) {
+                    obj = clusterizedCollection.addPlacemark(_child.getPoint(), personalityIcon);
+                } else if (_child.getSectionType().equals("places")) {
+                    obj = clusterizedCollection.addPlacemark(_child.getPoint(), territoriesIcon);
+                }
+                if (obj != null) {
+                    _child.setMapObject(obj);
+                }
+            }
+        } else {
+            if (child instanceof YamapPolygon) {
+                YamapPolygon _child = (YamapPolygon) child;
+                PolygonMapObject obj = getMap().getMapObjects().addPolygon(_child.polygon);
+                _child.setMapObject(obj);
+                childs.add(_child);
+            } else if (child instanceof YamapPolyline) {
+                YamapPolyline _child = (YamapPolyline) child;
+                PolylineMapObject obj = getMap().getMapObjects().addPolyline(_child.polyline);
+                _child.setMapObject(obj);
+                childs.add(_child);
+            } else if (child instanceof YamapMarker) {
+                YamapMarker _child = (YamapMarker) child;
+                PlacemarkMapObject obj = getMap().getMapObjects().addPlacemark(_child.point);
+                _child.setMapObject(obj);
+                childs.add(_child);
+            } else if (child instanceof YamapCircle) {
+                YamapCircle _child = (YamapCircle) child;
+                CircleMapObject obj = getMap().getMapObjects().addCircle(_child.circle, 0, 0.f, 0);
+                _child.setMapObject(obj);
+                childs.add(_child);
+            }
         }
     }
 
@@ -599,14 +722,20 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     //trafficListener implementation
     @Override
-    public void onTrafficChanged(@Nullable TrafficLevel trafficLevel) {
+    public void onClusterAdded(@NonNull Cluster cluster) {
+        cluster.getAppearance().setIcon(
+                new TextImageProvider(Integer.toString(cluster.getSize())));
+        cluster.addClusterTapListener(this);
     }
 
     @Override
-    public void onTrafficLoading() {
+    public boolean onClusterTap(@NonNull Cluster cluster) {
+        return false;
     }
 
-    @Override
-    public void onTrafficExpired() {
+    private void viewCollection() {
+        if (clasteredMap) {
+            clusterizedCollection.clusterPlacemarks(60, 15);
+        }
     }
 }

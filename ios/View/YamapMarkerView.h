@@ -15,10 +15,13 @@
 -(void) setSource:(NSString*) _source;
 -(void) setPoint:(YMKPoint*) _points;
 -(void) setAnchor:(NSValue*) _anchor;
+-(void) setSectionType:(NSString*) _sectionType;
 
 -(YMKPoint*) getPoint;
 -(YMKPlacemarkMapObject*) getMapObject;
 -(void) setMapObject:(YMKPlacemarkMapObject*) mapObject;
+
+-(NSString*) getSectionType;
 
 @end
 

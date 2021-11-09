@@ -31,6 +31,7 @@ export interface YaMapProps extends ViewProps {
   zoomGesturesEnabled?: boolean;
   tiltGesturesEnabled?: boolean;
   rotateGesturesEnabled?: boolean;
+  clasteredMap?: boolean;
 }
 
 const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');
@@ -38,6 +39,7 @@ const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');
 export class YaMap extends React.Component<YaMapProps> {
   static defaultProps = {
     showUserPosition: true,
+    clasteredMap: false
   };
 
   // @ts-ignore
