@@ -97,6 +97,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     private int userLocationAccuracyStrokeColor = 0;
     private float userLocationAccuracyStrokeWidth = 0.f;
     private List<ReactMapObject> childs = new ArrayList<>();
+    private TrafficLayer trafficLayer = null;
 
     // location
     private UserLocationView userLocationView = null;
