@@ -56,6 +56,9 @@ import com.yandex.mapkit.user_location.UserLocationObjectListener;
 import com.yandex.mapkit.user_location.UserLocationView;
 import com.yandex.runtime.Error;
 import com.yandex.runtime.image.ImageProvider;
+import com.yandex.mapkit.traffic.TrafficLayer;
+import com.yandex.mapkit.traffic.TrafficListener;
+import com.yandex.mapkit.traffic.TrafficLevel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -70,7 +73,7 @@ import ru.vvdev.yamap.utils.Callback;
 import ru.vvdev.yamap.utils.ImageLoader;
 import ru.vvdev.yamap.utils.RouteManager;
 
-public class YamapView extends MapView implements UserLocationObjectListener, CameraListener, InputListener {
+public class YamapView extends MapView implements UserLocationObjectListener, CameraListener, InputListener, TrafficListener  {
     // default colors for known vehicles
     // "underground" actually get color considering with his own branch"s color
     private final static Map<String, String> DEFAULT_VEHICLE_COLORS = new HashMap<String, String>() {{
@@ -94,6 +97,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     private int userLocationAccuracyStrokeColor = 0;
     private float userLocationAccuracyStrokeWidth = 0.f;
     private List<ReactMapObject> childs = new ArrayList<>();
+    private TrafficLayer trafficLayer = null;
 
     // location
     private UserLocationView userLocationView = null;
