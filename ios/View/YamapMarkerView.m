@@ -146,9 +146,9 @@
 				if (mapObject.isValid) {
 					[mapObject setViewWithView:v];
 
-          if (sectionType == nil) {
-            [self updateMarker];
-          }
+                    if (sectionType == nil) {
+                        [self updateMarker];
+                    }
 				}
             }
         }

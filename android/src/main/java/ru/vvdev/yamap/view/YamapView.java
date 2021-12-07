@@ -720,7 +720,6 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onMapLongPress", data);
     }
 
-    //trafficListener implementation
     @Override
     public void onClusterAdded(@NonNull Cluster cluster) {
         cluster.getAppearance().setIcon(
