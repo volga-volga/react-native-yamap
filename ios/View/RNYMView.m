@@ -14,7 +14,6 @@
 #import "YamapCircleView.h"
 #import "RNYMView.h"
 
-
 #define ANDROID_COLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 green:((c>>8)&0xFF)/255.0 blue:((c)&0xFF)/255.0  alpha:((c>>24)&0xFF)/255.0]
 
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
@@ -87,7 +86,6 @@
     routesIcon = [UIImage imageNamed:@"routes_icon"];
     territoriesIcon = [UIImage imageNamed:@"territories_icon"];
     collection = [self.mapWindow.map.mapObjects addClusterizedPlacemarkCollectionWithClusterListener:self];
-
 
     return self;
 }
@@ -412,7 +410,9 @@
         @"latitudeDelta": [NSNumber numberWithDouble:latitudeDelta],
         @"longitudeDelta": [NSNumber numberWithDouble:longitudeDelta]
     };
-
+    // if (self.onCameraPositionChange) {
+    //     self.onCameraPositionChange([self cameraPositionToJSON:cameraPosition finished:finished]);
+    // }
     if (self.onCameraPositionChange) {
         NSDictionary *positions = [self cameraPositionToJSON:cameraPosition finished:finished];
         NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:positions];
@@ -497,6 +497,10 @@
 -(void) setUserLocationAccuracyStrokeWidth: (float) width {
     userLocationAccuracyStrokeWidth = width;
     [self updateUserIcon];
+}
+
+-(void) didUpdateReactSubviews {
+    [self viewCollection];
 }
 
 -(void) updateUserIcon {
@@ -595,6 +599,9 @@
                 obj = [collection addPlacemarkWithPoint:[marker getPoint] image:territoriesIcon];
             }
             [marker setMapObject:obj];
+
+            [_reactSubviews insertObject:subview atIndex:atIndex];
+            [super insertReactSubview:subview atIndex:atIndex];
         }
     } else {
         if ([subview isKindOfClass:[YamapPolygonView class]]) {
@@ -629,26 +636,34 @@
 }
 
 - (void)removeReactSubview:(UIView<RCTComponent>*)subview {
-    if ([subview isKindOfClass:[YamapPolygonView class]]) {
-        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
-        YamapPolygonView* polygon = (YamapPolygonView*) subview;
-        [objects removeWithMapObject:[polygon getMapObject]];
-    } else if ([subview isKindOfClass:[YamapPolylineView class]]) {
-        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
-        YamapPolylineView* polyline = (YamapPolylineView*) subview;
-        [objects removeWithMapObject:[polyline getMapObject]];
-    } else if ([subview isKindOfClass:[YamapMarkerView class]]) {
-        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
-        YamapMarkerView* marker = (YamapMarkerView*) subview;
-        [objects removeWithMapObject:[marker getMapObject]];
-    } else if ([subview isKindOfClass:[YamapCircleView class]]) {
-        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
-        YamapCircleView* marker = (YamapCircleView*) subview;
-        [objects removeWithMapObject:[marker getMapObject]];
+    if (clasteredMap == YES) {
+        if ([subview isKindOfClass:[YamapMarkerView class]]) {
+            YamapMarkerView* marker = (YamapMarkerView*) subview;
+            YMKPlacemarkMapObject* obj = [marker getMapObject];
+            [collection removeWithPlacemark:obj];
+        }
     } else {
-        NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
-        for (int i = 0; i < childSubviews.count; i++) {
-            [self removeReactSubview:(UIView *)childSubviews[i]];
+        if ([subview isKindOfClass:[YamapPolygonView class]]) {
+            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            YamapPolygonView* polygon = (YamapPolygonView*) subview;
+            [objects removeWithMapObject:[polygon getMapObject]];
+        } else if ([subview isKindOfClass:[YamapPolylineView class]]) {
+            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            YamapPolylineView* polyline = (YamapPolylineView*) subview;
+            [objects removeWithMapObject:[polyline getMapObject]];
+        } else if ([subview isKindOfClass:[YamapMarkerView class]]) {
+            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            YamapMarkerView* marker = (YamapMarkerView*) subview;
+            [objects removeWithMapObject:[marker getMapObject]];
+        } else if ([subview isKindOfClass:[YamapCircleView class]]) {
+            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            YamapCircleView* marker = (YamapCircleView*) subview;
+            [objects removeWithMapObject:[marker getMapObject]];
+        } else {
+            NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
+            for (int i = 0; i < childSubviews.count; i++) {
+                [self removeReactSubview:(UIView *)childSubviews[i]];
+            }
         }
     }
     [_reactSubviews removeObject:subview];
