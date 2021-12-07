@@ -1,3 +1,7 @@
+## Добавлен параметр clasteredMap
+
+Параметр включает кластеризацию на карте
+
 ## Пример
 
 [Пример использования библиотеки](https://github.com/ownikss/rn-yamaps-example)
@@ -188,6 +192,7 @@ export type VisibleRegion = {
 - `zoomGesturesEnabled?: boolean` - включены ли жесты зума. По умолчанию true.
 - `tiltGesturesEnabled?: boolean` - включены ли жесты наклона камеры двумя пальцами. По умолчанию true.
 - `rotateGesturesEnabled?: boolean` - включены ли жесты вращения. По умолчанию true.
+- `clasteredMap?: boolean` - включает кластеризацию. По умолчанию false.
 
 #### Методы
 - `fitAllMarkers` - подобрать положение камеры, чтобы вместить все маркеры
