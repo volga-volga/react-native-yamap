@@ -7,7 +7,7 @@
     "prepublishOnly": "rm -rf build && tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "homepage": "https://github.com/volga-volga/react-native-yamap",
+  "homepage": "https://github.com/azesmway/react-native-yamap",
   "keywords": [
     "react-native",
     "mapkit",
@@ -18,7 +18,7 @@
     "marker",
     "geocoder"
   ],
-  "author": "Nikita Sirotkin",
+  "author": "Nikita Sirotkin / Change Alexey Zolotarev",
   "license": "",
   "dependencies": {},
   "devDependencies": {
