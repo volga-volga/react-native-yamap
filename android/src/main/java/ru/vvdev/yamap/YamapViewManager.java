@@ -33,10 +33,12 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     private static final int GET_CAMERA_POSITION = 5;
     private static final int GET_VISIBLE_REGION = 6;
     private static final int SET_TRAFFIC_VISIBLE = 7;
+    private static final int INIT_CLUSTER = 8;
 
     YamapViewManager() {
     }
 
+    @NonNull
     @Override
     public String getName() {
         return REACT_CLASS;
@@ -60,25 +62,6 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     }
 
     @Override
-    public Map<String, Integer> getCommandsMap() {
-        return MapBuilder.of(
-                "setCenter",
-                SET_CENTER,
-                "fitAllMarkers",
-                FIT_ALL_MARKERS,
-                "findRoutes",
-                FIND_ROUTES,
-                "setZoom",
-                SET_ZOOM,
-                "getCameraPosition",
-                GET_CAMERA_POSITION,
-                "getVisibleRegion",
-                GET_VISIBLE_REGION,
-                "setTrafficVisible",
-                SET_TRAFFIC_VISIBLE);
-    }
-
-    @Override
     public void receiveCommand(
             @NonNull YamapView view,
             String commandType,
@@ -87,10 +70,14 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         Assertions.assertNotNull(args);
         switch (commandType) {
             case "setCenter":
+                assert args != null;
                 setCenter(castToYaMapView(view), args.getMap(0), (float) args.getDouble(1), (float) args.getDouble(2), (float) args.getDouble(3), (float) args.getDouble(4), args.getInt(5));
                 return;
             case "fitAllMarkers":
                 fitAllMarkers(view);
+                return;
+            case "updateCluster":
+                updateCluster(view);
                 return;
             case "findRoutes":
                 if (args != null) {
@@ -150,6 +137,10 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         castToYaMapView(view).fitAllMarkers();
     }
 
+    private void updateCluster(View view) {
+        castToYaMapView(view).updateCluster();
+    }
+
     private void findRoutes(View view, ReadableArray jsPoints, ReadableArray jsVehicles, String id) {
         if (jsPoints != null) {
             ArrayList<Point> points = new ArrayList<>();
@@ -202,9 +193,9 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         castToYaMapView(view).setNightMode(nightMode != null ? nightMode : false);
     }
 
-    @ReactProp(name = "clasteredMap")
-    public void setClasteredMap(View view, Boolean clasteredMap) {
-        castToYaMapView(view).setClasteredMap(clasteredMap != null ? clasteredMap : false);
+    @ReactProp(name = "clusteredMap")
+    public void setClusteredMap(View view, Boolean clusteredMap) {
+        castToYaMapView(view).setClusteredMap(clusteredMap != null ? clusteredMap : false);
     }
 
     @ReactProp(name = "scrollGesturesEnabled")

@@ -31,7 +31,7 @@ export interface YaMapProps extends ViewProps {
   zoomGesturesEnabled?: boolean;
   tiltGesturesEnabled?: boolean;
   rotateGesturesEnabled?: boolean;
-  clasteredMap?: boolean;
+  clusteredMap?: boolean;
 }
 
 const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');
@@ -39,7 +39,7 @@ const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');
 export class YaMap extends React.Component<YaMapProps> {
   static defaultProps = {
     showUserPosition: true,
-    clasteredMap: false
+    clusteredMap: false
   };
 
   // @ts-ignore
@@ -99,6 +99,14 @@ export class YaMap extends React.Component<YaMapProps> {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('fitAllMarkers'),
+      [],
+    );
+  }
+
+  public updateCluster() {
+    UIManager.dispatchViewManagerCommand(
+      findNodeHandle(this),
+      this.getCommand('updateCluster'),
       [],
     );
   }

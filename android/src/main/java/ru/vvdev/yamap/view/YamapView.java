@@ -5,10 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.util.DisplayMetrics;
 import android.view.View;
-import java.lang.Object;
-import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -35,7 +32,6 @@ import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.geometry.Polyline;
 import com.yandex.mapkit.geometry.SubpolylineHelper;
 import com.yandex.mapkit.layers.ObjectEvent;
-import com.yandex.mapkit.location.LocationManager;
 import com.yandex.mapkit.map.CameraListener;
 import com.yandex.mapkit.map.CameraPosition;
 import com.yandex.mapkit.map.CameraUpdateReason;
@@ -43,7 +39,6 @@ import com.yandex.mapkit.map.CircleMapObject;
 import com.yandex.mapkit.map.Cluster;
 import com.yandex.mapkit.map.ClusterListener;
 import com.yandex.mapkit.map.ClusterizedPlacemarkCollection;
-import com.yandex.mapkit.map.IconStyle;
 import com.yandex.mapkit.map.InputListener;
 import com.yandex.mapkit.map.PlacemarkMapObject;
 import com.yandex.mapkit.map.PolygonMapObject;
@@ -67,6 +62,9 @@ import com.yandex.mapkit.user_location.UserLocationObjectListener;
 import com.yandex.mapkit.user_location.UserLocationView;
 import com.yandex.runtime.Error;
 import com.yandex.runtime.image.ImageProvider;
+import com.yandex.mapkit.traffic.TrafficLayer;
+import com.yandex.mapkit.traffic.TrafficListener;
+import com.yandex.mapkit.traffic.TrafficLevel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -82,10 +80,9 @@ import ru.vvdev.yamap.utils.Callback;
 import ru.vvdev.yamap.utils.ImageLoader;
 import ru.vvdev.yamap.utils.RouteManager;
 
-import com.yandex.mapkit.map.ClusterListener;
 import com.yandex.mapkit.map.ClusterTapListener;
 
-public class YamapView extends MapView implements UserLocationObjectListener, CameraListener, InputListener, ClusterListener, ClusterTapListener {
+public class YamapView extends MapView implements UserLocationObjectListener, CameraListener, InputListener, TrafficListener, ClusterListener, ClusterTapListener {
     // default colors for known vehicles
     // "underground" actually get color considering with his own branch"s color
     private final static Map<String, String> DEFAULT_VEHICLE_COLORS = new HashMap<String, String>() {{
@@ -109,7 +106,10 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     private int userLocationAccuracyStrokeColor = 0;
     private float userLocationAccuracyStrokeWidth = 0.f;
     private List<ReactMapObject> childs = new ArrayList<>();
+    private TrafficLayer trafficLayer = null;
+
     private boolean clasteredMap = false;
+    private Integer markersLenght = 0;
     private ClusterizedPlacemarkCollection clusterizedCollection;
     private ImageProvider buildingsIcon;
     private ImageProvider monumentsIcon;
@@ -128,56 +128,6 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     // location
     private UserLocationView userLocationView = null;
-
-    public class TextImageProvider extends ImageProvider {
-        @Override
-        public String getId() {
-            return "text_" + text;
-        }
-
-        private final String text;
-        @Override
-        public Bitmap getImage() {
-            Paint textPaint = new Paint();
-            textPaint.setTextSize(FONT_SIZE * 3);
-            textPaint.setTextAlign(Paint.Align.CENTER);
-            textPaint.setStyle(Paint.Style.FILL);
-            textPaint.setAntiAlias(true);
-            textPaint.setColor(Color.WHITE);
-
-            float widthF = textPaint.measureText(text);
-            Paint.FontMetrics textMetrics = textPaint.getFontMetrics();
-            float heightF = Math.abs(textMetrics.bottom) + Math.abs(textMetrics.top);
-            float textRadius = (float)Math.sqrt(widthF * widthF + heightF * heightF) / 2;
-            float internalRadius = textRadius + MARGIN_SIZE * 3;
-            float externalRadius = internalRadius + STROKE_SIZE * 3;
-
-            int width = (int) (2 * externalRadius + 0.5);
-
-            Bitmap bitmap = Bitmap.createBitmap(width, width, Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(bitmap);
-
-            Paint backgroundPaint = new Paint();
-            backgroundPaint.setAntiAlias(true);
-            backgroundPaint.setColor(color_fg);
-            canvas.drawCircle(width / 2, width / 2, externalRadius, backgroundPaint);
-
-            backgroundPaint.setColor(color_bg);
-            canvas.drawCircle(width / 2, width / 2, internalRadius, backgroundPaint);
-
-            canvas.drawText(
-                    text,
-                    width / 2,
-                    width / 2 - (textMetrics.ascent + textMetrics.descent) / 2,
-                    textPaint);
-
-            return bitmap;
-        }
-
-        public TextImageProvider(String text) {
-            this.text = text;
-        }
-    }
 
     public YamapView(Context context) {
         super(context);
@@ -201,6 +151,14 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     }
 
     // ref methods
+    public void updateCluster() {
+        if (clasteredMap) {
+            if (clusterizedCollection != null) {
+                clusterizedCollection.clusterPlacemarks(60, 15);
+            }
+        }
+    }
+
     public void setCenter(CameraPosition position, float duration, int animation) {
         if (duration > 0) {
             Animation.Type anim = animation == 0 ? Animation.Type.SMOOTH : Animation.Type.LINEAR;
@@ -351,6 +309,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     }
 
     public void fitAllMarkers() {
+        viewCollection();
         ArrayList<Point> lastKnownMarkers = new ArrayList<>();
         for (int i = 0; i < childs.size(); ++i) {
             ReactMapObject obj = childs.get(i);
@@ -435,9 +394,19 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         getMap().setNightModeEnabled(nightMode);
     }
 
-    public void setClasteredMap(Boolean clastered) {
+    public void setClusteredMap(Boolean clastered) {
         clasteredMap = clastered;
     }
+
+    public void setMarkersLenght(Integer lenght) {
+        markersLenght = lenght;
+    }
+
+    public Integer getMarkersLenght() {
+        return markersLenght;
+    }
+
+    public ClusterizedPlacemarkCollection getClusterizedCollection() { return clusterizedCollection; }
 
     public void setScrollGesturesEnabled(Boolean scrollGesturesEnabled) { getMap().setScrollGesturesEnabled(scrollGesturesEnabled); }
 
@@ -609,22 +578,23 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
             if (child instanceof YamapMarker) {
                 YamapMarker _child = (YamapMarker) child;
                 if (_child.getSectionType().equals("houses")) {
-                    obj = clusterizedCollection.addPlacemark(_child.getPoint(), buildingsIcon);
+                    obj = clusterizedCollection.addPlacemark(_child.point, buildingsIcon);
                 } else if (_child.getSectionType().equals("museums")) {
-                    obj = clusterizedCollection.addPlacemark(_child.getPoint(), museumsIcon);
+                    obj = clusterizedCollection.addPlacemark(_child.point, museumsIcon);
                 } else if (_child.getSectionType().equals("monuments")) {
-                    obj = clusterizedCollection.addPlacemark(_child.getPoint(), monumentsIcon);
+                    obj = clusterizedCollection.addPlacemark(_child.point, monumentsIcon);
                 } else if (_child.getSectionType().equals("quests")) {
-                    obj = clusterizedCollection.addPlacemark(_child.getPoint(), questsIcon);
+                    obj = clusterizedCollection.addPlacemark(_child.point, questsIcon);
                 } else if (_child.getSectionType().equals("routes")) {
-                    obj = clusterizedCollection.addPlacemark(_child.getPoint(), routesIcon);
+                    obj = clusterizedCollection.addPlacemark(_child.point, routesIcon);
                 } else if (_child.getSectionType().equals("personalities")) {
-                    obj = clusterizedCollection.addPlacemark(_child.getPoint(), personalityIcon);
+                    obj = clusterizedCollection.addPlacemark(_child.point, personalityIcon);
                 } else if (_child.getSectionType().equals("places")) {
-                    obj = clusterizedCollection.addPlacemark(_child.getPoint(), territoriesIcon);
+                    obj = clusterizedCollection.addPlacemark(_child.point, territoriesIcon);
                 }
                 if (obj != null) {
                     _child.setMapObject(obj);
+                    childs.add(_child);
                 }
             }
         } else {
@@ -653,9 +623,17 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     }
 
     public void removeChild(int index) {
-        if (index < childs.size()) {
-            ReactMapObject child = childs.remove(index);
-            getMap().getMapObjects().remove(child.getMapObject());
+        if (clasteredMap) {
+            if (index < childs.size()) {
+                ReactMapObject child = childs.get(index);
+                clusterizedCollection.remove(child.getMapObject());
+                childs.remove(index);
+            }
+        } else {
+            if (index < childs.size()) {
+                ReactMapObject child = childs.remove(index);
+                getMap().getMapObjects().remove(child.getMapObject());
+            }
         }
     }
 
@@ -722,8 +700,17 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     @Override
     public void onClusterAdded(@NonNull Cluster cluster) {
+        Integer num = cluster.getSize();
+        String text = "";
+
+        if (num > 100) {
+            text = "99+";
+        } else {
+            text = Integer.toString(num);
+        }
+
         cluster.getAppearance().setIcon(
-                new TextImageProvider(Integer.toString(cluster.getSize())));
+                new TextImageProvider(text));
         cluster.addClusterTapListener(this);
     }
 
@@ -735,6 +722,65 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     private void viewCollection() {
         if (clasteredMap) {
             clusterizedCollection.clusterPlacemarks(60, 15);
+        }
+    }
+
+    @Override
+    public void onTrafficChanged(@androidx.annotation.Nullable TrafficLevel trafficLevel) { }
+
+    @Override
+    public void onTrafficLoading() { }
+
+    @Override
+    public void onTrafficExpired() { }
+
+    public class TextImageProvider extends ImageProvider {
+        @Override
+        public String getId() {
+            return "text_" + text;
+        }
+
+        private final String text;
+        @Override
+        public Bitmap getImage() {
+            Paint textPaint = new Paint();
+            textPaint.setTextSize(FONT_SIZE * 3);
+            textPaint.setTextAlign(Paint.Align.CENTER);
+            textPaint.setStyle(Paint.Style.FILL);
+            textPaint.setAntiAlias(true);
+            textPaint.setColor(Color.WHITE);
+
+            float widthF = textPaint.measureText(text);
+            Paint.FontMetrics textMetrics = textPaint.getFontMetrics();
+            float heightF = Math.abs(textMetrics.bottom) + Math.abs(textMetrics.top);
+            float textRadius = (float)Math.sqrt(widthF * widthF + heightF * heightF) / 2;
+            float internalRadius = textRadius + MARGIN_SIZE * 3;
+            float externalRadius = internalRadius + STROKE_SIZE * 3;
+
+            int width = (int) (2 * externalRadius + 0.5);
+
+            Bitmap bitmap = Bitmap.createBitmap(width, width, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+
+            Paint backgroundPaint = new Paint();
+            backgroundPaint.setAntiAlias(true);
+            backgroundPaint.setColor(color_fg);
+            canvas.drawCircle(width / 2, width / 2, externalRadius, backgroundPaint);
+
+            backgroundPaint.setColor(color_bg);
+            canvas.drawCircle(width / 2, width / 2, internalRadius, backgroundPaint);
+
+            canvas.drawText(
+                    text,
+                    width / 2,
+                    width / 2 - (textMetrics.ascent + textMetrics.descent) / 2,
+                    textPaint);
+
+            return bitmap;
+        }
+
+        public TextImageProvider(String text) {
+            this.text = text;
         }
     }
 }
