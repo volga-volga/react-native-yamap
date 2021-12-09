@@ -1,4 +1,4 @@
-## Добавлен параметр clasteredMap
+## Добавлен параметр clusteredMap
 
 Параметр включает кластеризацию на карте
 
@@ -192,7 +192,7 @@ export type VisibleRegion = {
 - `zoomGesturesEnabled?: boolean` - включены ли жесты зума. По умолчанию true.
 - `tiltGesturesEnabled?: boolean` - включены ли жесты наклона камеры двумя пальцами. По умолчанию true.
 - `rotateGesturesEnabled?: boolean` - включены ли жесты вращения. По умолчанию true.
-- `clasteredMap?: boolean` - включает кластеризацию. По умолчанию false.
+- `clusteredMap?: boolean` - включает кластеризацию. По умолчанию false.
 
 #### Методы
 - `fitAllMarkers` - подобрать положение камеры, чтобы вместить все маркеры
