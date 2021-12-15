@@ -86,7 +86,7 @@ RCT_EXPORT_METHOD(suggest:(nonnull NSString*) searchQuery
     }
 })
 
-RCT_EXPORT_METHOD(resetSuggest: (NSString*) ususedParam
+RCT_EXPORT_METHOD(reset: (NSString*) ususedParam
                       resolver:(RCTPromiseResolveBlock) resolve
                       rejecter:(RCTPromiseRejectBlock) reject {
     @try {
