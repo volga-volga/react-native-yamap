@@ -1,4 +1,4 @@
-## Добавлен параметр clasteredMap
+## Добавлен параметр clusteredMap
 
 Параметр включает кластеризацию на карте
 
@@ -22,7 +22,7 @@ yarn add react-native-yamap
 
 ```
 react-native link react-native-yamap
-``` 
+```
 
 ## Миграция с версии 1.0.x -> 1.1.x или ^4.0.0
 
@@ -69,7 +69,7 @@ YaMap.init('API_KEY');
 // js
 import YaMap from 'react-native-yamap';
 
-const currentLocale = await YaMap.getLocale(); 
+const currentLocale = await YaMap.getLocale();
 YaMap.setLocale('en_US'); // 'ru_RU'...
 YaMap.resetLocale();
 
@@ -117,7 +117,7 @@ class Map extends React.Component {
 #### Основные типы
 ```typescript
 interface Point {
- lat: Number; 
+ lat: Number;
  lon: Number;
 }
 
@@ -192,12 +192,12 @@ export type VisibleRegion = {
 - `zoomGesturesEnabled?: boolean` - включены ли жесты зума. По умолчанию true.
 - `tiltGesturesEnabled?: boolean` - включены ли жесты наклона камеры двумя пальцами. По умолчанию true.
 - `rotateGesturesEnabled?: boolean` - включены ли жесты вращения. По умолчанию true.
-- `clasteredMap?: boolean` - включает кластеризацию. По умолчанию false.
+- `clusteredMap?: boolean` - включает кластеризацию. По умолчанию false.
 
 #### Методы
 - `fitAllMarkers` - подобрать положение камеры, чтобы вместить все маркеры
 (если возможно)
- 
+
 - `setCenter(center: { lon: number, lat: number }, zoom: number = 10, azimuth: number = 0, tilt: number = 0, duration: number = 0, animation: Animation = Animation.SMOOTH)` - устанавливает камеру в точку с заданным zoom, поворотом по азимуту и наклоном карты (`tilt`). Можно параметризовать анимацию: длительность и тип. Если длительность установить 0, то переход будет без анимации. Возможные типы анимаций `Animation.SMOOTH` и `Animation.LINEAR`
 - `setZoom(zoom: number, duration: number, animation: Animation)` - изменить текущий zoom карты. Параметры `duration` и `animation` работают по аналогии с `setCenter`
 - `getCameraPosition(callback: (position: CameraPosition) => void)` - запрашивает положение камеры и вызывает переданный колбек с текущим значением
@@ -233,7 +233,7 @@ interface MarkerProps {
   scale?: number; // масштабирование иконки маркера. Не работает если использовать children у маркера
   point: Point; // координаты точки для отображения маркера
   source?: ImageSource; // данные для изображения маркера
-  children?: React.ReactElement; // рендер маркера как компонента (не рекомендуется) 
+  children?: React.ReactElement; // рендер маркера как компонента (не рекомендуется)
   onPress?: () => void;
   anchor: { x: number, y: number }; // Якорь иконки маркера. Координаты принимают значения от 0 до 1. По умолчанию { x: 0.5, y: 0.5 } - центр иконки указывает на точку с координатами point
   zIndex?: number;
@@ -318,7 +318,7 @@ interface PolygonProps {
   strokeColor?: string; // цвет границы
   strokeWidth?: number; // толщина границы
   points: Point[]; // точки полигона
-  innerRings: (Point[])[]; // массив полилиний, которые образуют отверстия в полигоне 
+  innerRings: (Point[])[]; // массив полилиний, которые образуют отверстия в полигоне
   zIndex?: number;
   onPress?: () => void;
 }
@@ -333,7 +333,7 @@ interface PolygonProps {
 В настоящее время добавлены следующие роутеры из Yandex MapKit:
 - **masstransit** - для маршрутов на общественном транспорте
 - **pedestrian** - для пешеходных маршрутов
-- **driving** - для маршрутов на автомобиле 
+- **driving** - для маршрутов на автомобиле
 
 Тип роутера зависит от переданного в функцию массива `vehicles`:
 - если передан пустой массив (`this.map.current.findRoutes(points, [], () => null);`), то будет использован `PedestrianRouter`
@@ -424,7 +424,7 @@ const find = async (query: string) => {
   // }, ...]
 
   const suggestionsWithCoards = await Suggest.suggestWithCoords(query);
-  
+
   // suggestionsWithCoards = [{
   //  subtitle: "Москва, Россия"
   //  title: "улица Льва Толстого, 16"

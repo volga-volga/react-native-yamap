@@ -28,7 +28,7 @@
 -(void) setNightMode:(BOOL)nightMode;
 -(void) setListenUserLocation:(BOOL)listen;
 -(void) setUserLocationIcon:(NSString*_Nullable) iconSource;
--(void) setClasterMode:(BOOL)clasteredMap;
+-(void) setClusterMode:(BOOL)clusteredMap;
 
 -(void) setUserLocationAccuracyFillColor: (UIColor*_Nullable) color;
 -(void) setUserLocationAccuracyStrokeColor: (UIColor*_Nullable) color;

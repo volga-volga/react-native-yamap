@@ -39,7 +39,7 @@
     UIColor* userLocationAccuracyFillColor;
     UIColor* userLocationAccuracyStrokeColor;
     float userLocationAccuracyStrokeWidth;
-    BOOL clasteredMap;
+    BOOL clusteredMap;
     YMKClusterizedPlacemarkCollection *collection;
     UIImage *buildingsIcon;
     UIImage *monumentsIcon;
@@ -579,7 +579,7 @@
 }
 
 - (void)insertReactSubview:(UIView<RCTComponent>*)subview atIndex:(NSInteger)atIndex {
-    if (clasteredMap == YES) {
+    if (clusteredMap == YES) {
         if ([subview isKindOfClass:[YamapMarkerView class]]) {
             YamapMarkerView* marker = (YamapMarkerView*) subview;
             YMKPlacemarkMapObject* obj;
@@ -636,7 +636,7 @@
 }
 
 - (void)removeReactSubview:(UIView<RCTComponent>*)subview {
-    if (clasteredMap == YES) {
+    if (clusteredMap == YES) {
         if ([subview isKindOfClass:[YamapMarkerView class]]) {
             YamapMarkerView* marker = (YamapMarkerView*) subview;
             YMKPlacemarkMapObject* obj = [marker getMapObject];
@@ -728,12 +728,12 @@
     [cluster addClusterTapListenerWithClusterTapListener:self];
 }
 
-- (void) setClasterMode:(BOOL)clastered {
-    clasteredMap = clastered;
+- (void) setClusterMode:(BOOL)clustered {
+    clusteredMap = clustered;
 }
 
 - (void) viewCollection {
-    if (clasteredMap == YES) {
+    if (clusteredMap == YES) {
         [collection clusterPlacemarksWithClusterRadius:60 minZoom:15];
     }
 }

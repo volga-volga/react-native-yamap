@@ -108,7 +108,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     private List<ReactMapObject> childs = new ArrayList<>();
     private TrafficLayer trafficLayer = null;
 
-    private boolean clasteredMap = false;
+    private boolean clusteredMap = false;
     private Integer markersLenght = 0;
     private ClusterizedPlacemarkCollection clusterizedCollection;
     private ImageProvider buildingsIcon;
@@ -152,7 +152,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     // ref methods
     public void updateCluster() {
-        if (clasteredMap) {
+        if (clusteredMap) {
             if (clusterizedCollection != null) {
                 clusterizedCollection.clusterPlacemarks(60, 15);
             }
@@ -394,8 +394,8 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         getMap().setNightModeEnabled(nightMode);
     }
 
-    public void setClusteredMap(Boolean clastered) {
-        clasteredMap = clastered;
+    public void setClusteredMap(Boolean clustered) {
+        clusteredMap = clustered;
     }
 
     public void setMarkersLenght(Integer lenght) {
@@ -574,7 +574,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     // children
     public void addFeature(View child, int index) {
-        if (clasteredMap) {
+        if (clusteredMap) {
             if (child instanceof YamapMarker) {
                 YamapMarker _child = (YamapMarker) child;
                 if (_child.getSectionType().equals("houses")) {
@@ -623,7 +623,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     }
 
     public void removeChild(int index) {
-        if (clasteredMap) {
+        if (clusteredMap) {
             if (index < childs.size()) {
                 ReactMapObject child = childs.get(index);
                 clusterizedCollection.remove(child.getMapObject());
@@ -720,7 +720,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     }
 
     private void viewCollection() {
-        if (clasteredMap) {
+        if (clusteredMap) {
             clusterizedCollection.clusterPlacemarks(60, 15);
         }
     }

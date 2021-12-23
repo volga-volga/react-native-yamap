@@ -104,9 +104,9 @@ RCT_CUSTOM_VIEW_PROPERTY(rotateGesturesEnabled, BOOL, RNYMView) {
     }
 }
 
-RCT_CUSTOM_VIEW_PROPERTY(clasteredMap, BOOL, RNYMView) {
+RCT_CUSTOM_VIEW_PROPERTY(clusteredMap, BOOL, RNYMView) {
     if (view) {
-        [view setClasterMode: json ? [json boolValue] : NO];
+        [view setClusterMode: json ? [json boolValue] : NO];
     }
 }
 
