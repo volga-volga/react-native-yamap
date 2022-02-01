@@ -1,13 +1,14 @@
 #ifndef RNYMView_h
 #define RNYMView_h
 #import <React/RCTComponent.h>
+#import <React/RCTView.h>
 
 #import <MapKit/MapKit.h>
 @import YandexMapsMobile;
 
 @class RCTBridge;
 
-@interface RNYMView: YMKMapView<YMKUserLocationObjectListener, YMKMapCameraListener, RCTComponent, YMKClusterListener, YMKClusterTapListener>
+@interface RNYMView: RCTView<YMKUserLocationObjectListener, YMKMapCameraListener, RCTComponent, YMKClusterListener, YMKClusterTapListener>
 
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onRouteFound;
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onCameraPositionReceived;
@@ -15,6 +16,8 @@
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onCameraPositionChange;
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onMapPress;
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onMapLongPress;
+
+@property (nonatomic) YMKMapView * _Nullable map;
 
 // ref
 -(void) emitCameraPositionToJS:(NSString*_Nonnull) _id;

@@ -53,6 +53,10 @@
 
 - (instancetype)init {
     self = [super init];
+
+    _map = [[YMKMapView alloc] initWithFrame:self.bounds];
+    _map.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+
     _reactSubviews = [[NSMutableArray alloc] init];
     masstransitRouter = [[YMKTransport sharedInstance] createMasstransitRouter];
     drivingRouter = [[YMKDirections sharedInstance] createDrivingRouter];
@@ -74,8 +78,8 @@
     userLocationAccuracyFillColor = nil;
     userLocationAccuracyStrokeColor = nil;
     userLocationAccuracyStrokeWidth = 0.f;
-    [self.mapWindow.map addCameraListenerWithCameraListener:self];
-    [self.mapWindow.map addInputListenerWithInputListener:(id<YMKMapInputListener>) self];
+    [_map.mapWindow.map addCameraListenerWithCameraListener:self];
+    [_map.mapWindow.map addInputListenerWithInputListener:(id<YMKMapInputListener>) self];
 
     buildingsIcon = [UIImage imageNamed:@"buildings_icon"];
     monumentsIcon = [UIImage imageNamed:@"monuments_icon"];
@@ -85,7 +89,9 @@
     questsIcon = [UIImage imageNamed:@"quests_icon"];
     routesIcon = [UIImage imageNamed:@"routes_icon"];
     territoriesIcon = [UIImage imageNamed:@"territories_icon"];
-    collection = [self.mapWindow.map.mapObjects addClusterizedPlacemarkCollectionWithClusterListener:self];
+    collection = [_map.mapWindow.map.mapObjects addClusterizedPlacemarkCollectionWithClusterListener:self];
+
+    [self addSubview:_map];
 
     return self;
 }
@@ -299,23 +305,23 @@
 }
 
 -(void) removeAllSections {
-    [self.mapWindow.map.mapObjects clear];
+    [_map.mapWindow.map.mapObjects clear];
 }
 
 // ref
 -(void) setCenter:(YMKCameraPosition*) position withDuration:(float) duration withAnimation:(int) animation {
     if (duration > 0) {
         YMKAnimationType anim = animation == 0 ? YMKAnimationTypeSmooth : YMKAnimationTypeLinear;
-        [self.mapWindow.map moveWithCameraPosition:position animationType:[YMKAnimation animationWithType:anim duration: duration] cameraCallback: ^(BOOL completed) {
+        [_map.mapWindow.map moveWithCameraPosition:position animationType:[YMKAnimation animationWithType:anim duration: duration] cameraCallback: ^(BOOL completed) {
          }];
     } else {
-        [self.mapWindow.map moveWithCameraPosition:position];
+        [_map.mapWindow.map moveWithCameraPosition:position];
     }
     [self viewCollection];
 }
 
 -(void) setZoom:(float) zoom withDuration:(float) duration withAnimation:(int) animation {
-    YMKCameraPosition* prevPosition = self.mapWindow.map.cameraPosition;
+    YMKCameraPosition* prevPosition = _map.mapWindow.map.cameraPosition;
     YMKCameraPosition* position = [YMKCameraPosition cameraPositionWithTarget:prevPosition.target zoom:zoom azimuth:prevPosition.azimuth tilt:prevPosition.tilt];
     [self setCenter:position withDuration:duration withAnimation:animation];
 }
@@ -356,12 +362,12 @@
 
 
 -(void) emitCameraPositionToJS:(NSString*) _id {
-    YMKCameraPosition* position = self.mapWindow.map.cameraPosition;
+    YMKCameraPosition* position = _map.mapWindow.map.cameraPosition;
     NSDictionary* cameraPosition = [self cameraPositionToJSON:position finished:YES];
     NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:cameraPosition];
     [response setValue:_id forKey:@"id"];
 
-    YMKVisibleRegion *visibleRegion = self.mapWindow.map.visibleRegion;
+    YMKVisibleRegion *visibleRegion = _map.mapWindow.map.visibleRegion;
     double latitudeDelta = visibleRegion.topRight.latitude - visibleRegion.bottomLeft.latitude;
     double longitudeDelta;
 
@@ -383,7 +389,7 @@
 }
 
 -(void) emitVisibleRegionToJS:(NSString*) _id {
-    YMKVisibleRegion* region = self.mapWindow.map.visibleRegion;
+    YMKVisibleRegion* region = _map.mapWindow.map.visibleRegion;
     NSDictionary* visibleRegion = [self visibleRegionToJSON:region];
     NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:visibleRegion];
     [response setValue:_id forKey:@"id"];
@@ -422,13 +428,13 @@
 }
 
 -(void) setNightMode:(BOOL)nightMode {
-    [self.mapWindow.map setNightModeEnabled:nightMode];
+    [_map.mapWindow.map setNightModeEnabled:nightMode];
 }
 
 -(void) setListenUserLocation:(BOOL)listen {
     YMKMapKit* inst = [YMKMapKit sharedInstance];
     if (userLayer == nil) {
-        userLayer = [inst createUserLocationLayerWithMapWindow: self.mapWindow];
+        userLayer = [inst createUserLocationLayerWithMapWindow: _map.mapWindow];
     }
     if (listen) {
         [userLayer setVisibleWithOn:YES];
@@ -453,7 +459,7 @@
     }
     if ([lastKnownMarkers count] == 1) {
         YMKPoint *center = [lastKnownMarkers objectAtIndex:0];
-        [self.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:15 azimuth:0 tilt:0]];
+        [_map.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:15 azimuth:0 tilt:0]];
         return;
     }
     double minLon = [lastKnownMarkers[0] longitude], maxLon = [lastKnownMarkers[0] longitude];
@@ -473,9 +479,9 @@
     double scale = (distance/2)/140;
     int zoom = (int) (16 - log(scale) / log(2));
     YMKBoundingBox *boundingBox = [YMKBoundingBox boundingBoxWithSouthWest:southWest northEast:northEast];
-    YMKCameraPosition *cameraPosition = [self.mapWindow.map cameraPositionWithBoundingBox:boundingBox];
+    YMKCameraPosition *cameraPosition = [_map.mapWindow.map cameraPositionWithBoundingBox:boundingBox];
     cameraPosition = [YMKCameraPosition cameraPositionWithTarget:cameraPosition.target zoom:zoom azimuth:cameraPosition.azimuth tilt:cameraPosition.tilt];
-    [self.mapWindow.map moveWithCameraPosition:cameraPosition animationType:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:1.0] cameraCallback:^(BOOL completed){}];
+    [_map.mapWindow.map moveWithCameraPosition:cameraPosition animationType:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:1.0] cameraCallback:^(BOOL completed){}];
 }
 
 // props
@@ -605,22 +611,22 @@
         }
     } else {
         if ([subview isKindOfClass:[YamapPolygonView class]]) {
-            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            YMKMapObjectCollection *objects = _map.mapWindow.map.mapObjects;
             YamapPolygonView* polygon = (YamapPolygonView*) subview;
             YMKPolygonMapObject* obj = [objects addPolygonWithPolygon:[polygon getPolygon]];
             [polygon setMapObject:obj];
         } else if ([subview isKindOfClass:[YamapPolylineView class]]) {
-            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            YMKMapObjectCollection *objects = _map.mapWindow.map.mapObjects;
             YamapPolylineView* polyline = (YamapPolylineView*) subview;
             YMKPolylineMapObject* obj = [objects addPolylineWithPolyline:[polyline getPolyline]];
             [polyline setMapObject:obj];
         } else if ([subview isKindOfClass:[YamapMarkerView class]]) {
-            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            YMKMapObjectCollection *objects = _map.mapWindow.map.mapObjects;
             YamapMarkerView* marker = (YamapMarkerView*) subview;
             YMKPlacemarkMapObject* obj = [objects addPlacemarkWithPoint:[marker getPoint]];
             [marker setMapObject:obj];
         } else if ([subview isKindOfClass:[YamapCircleView class]]) {
-            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            YMKMapObjectCollection *objects = _map.mapWindow.map.mapObjects;
             YamapCircleView* circle = (YamapCircleView*) subview;
             YMKCircleMapObject* obj = [objects addCircleWithCircle:[circle getCircle] strokeColor:UIColor.blackColor strokeWidth:0.f fillColor:UIColor.blackColor];
             [circle setMapObject:obj];
@@ -644,19 +650,19 @@
         }
     } else {
         if ([subview isKindOfClass:[YamapPolygonView class]]) {
-            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            YMKMapObjectCollection *objects = _map.mapWindow.map.mapObjects;
             YamapPolygonView* polygon = (YamapPolygonView*) subview;
             [objects removeWithMapObject:[polygon getMapObject]];
         } else if ([subview isKindOfClass:[YamapPolylineView class]]) {
-            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            YMKMapObjectCollection *objects = _map.mapWindow.map.mapObjects;
             YamapPolylineView* polyline = (YamapPolylineView*) subview;
             [objects removeWithMapObject:[polyline getMapObject]];
         } else if ([subview isKindOfClass:[YamapMarkerView class]]) {
-            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            YMKMapObjectCollection *objects = _map.mapWindow.map.mapObjects;
             YamapMarkerView* marker = (YamapMarkerView*) subview;
             [objects removeWithMapObject:[marker getMapObject]];
         } else if ([subview isKindOfClass:[YamapCircleView class]]) {
-            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            YMKMapObjectCollection *objects = _map.mapWindow.map.mapObjects;
             YamapCircleView* marker = (YamapCircleView*) subview;
             [objects removeWithMapObject:[marker getMapObject]];
         } else {

@@ -24,8 +24,7 @@ RCT_EXPORT_MODULE()
 }
 
 - (UIView *_Nullable)view {
-    RNYMView* map = [[RNYMView alloc] init];
-    return map;
+    return [[RNYMView alloc] init];
 }
 
 -(void) setCenterForMap: (RNYMView*) map center:(NSDictionary*) _center zoom:(float) zoom azimuth:(float) azimuth tilt:(float) tilt duration:(float) duration animation:(int) animation {
@@ -76,31 +75,31 @@ RCT_CUSTOM_VIEW_PROPERTY(nightMode, BOOL, RNYMView) {
 
 RCT_CUSTOM_VIEW_PROPERTY(mapStyle, NSString, RNYMView) {
 	if (json && view) {
-		[view.mapWindow.map setMapStyleWithStyle:json];
+		[view.map.mapWindow.map setMapStyleWithStyle:json];
 	}
 }
 
 RCT_CUSTOM_VIEW_PROPERTY(zoomGesturesEnabled, BOOL, RNYMView) {
     if (view) {
-        view.mapWindow.map.zoomGesturesEnabled = json ? [json boolValue] : YES;
+        view.map.mapWindow.map.zoomGesturesEnabled = json ? [json boolValue] : YES;
     }
 }
 
 RCT_CUSTOM_VIEW_PROPERTY(scrollGesturesEnabled, BOOL, RNYMView) {
     if (view) {
-        view.mapWindow.map.scrollGesturesEnabled = json ? [json boolValue] : YES;
+        view.map.mapWindow.map.scrollGesturesEnabled = json ? [json boolValue] : YES;
     }
 }
 
 RCT_CUSTOM_VIEW_PROPERTY(tiltGesturesEnabled, BOOL, RNYMView) {
     if (view) {
-        view.mapWindow.map.tiltGesturesEnabled = json ? [json boolValue] : YES;
+        view.map.mapWindow.map.tiltGesturesEnabled = json ? [json boolValue] : YES;
     }
 }
 
 RCT_CUSTOM_VIEW_PROPERTY(rotateGesturesEnabled, BOOL, RNYMView) {
     if (view) {
-        view.mapWindow.map.rotateGesturesEnabled = json ? [json boolValue] : YES;
+        view.map.mapWindow.map.rotateGesturesEnabled = json ? [json boolValue] : YES;
     }
 }
 
