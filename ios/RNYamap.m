@@ -19,6 +19,11 @@ static NSString * _selectedMarkerIcon;
     return self;
 }
 
++ (BOOL)requiresMainQueueSetup
+{
+    return YES;
+}
+
 - (void)initWithKey:(NSString *) apiKey {
     [YMKMapKit setApiKey: apiKey];
 }

@@ -24,6 +24,11 @@
     return self;
 }
 
++ (BOOL)requiresMainQueueSetup
+{
+    return YES;
+}
+
 // TODO: Этот метод можно вынести в отдельный файл утилей, но пока в этом нет необходимости.
 void runOnMainQueueWithoutDeadlocking(void (^block)(void))
 {
