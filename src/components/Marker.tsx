@@ -1,5 +1,5 @@
 import React from 'react';
-import { requireNativeComponent, Platform, ImageSourcePropType } from 'react-native';
+import { requireNativeComponent, Platform, ImageSourcePropType, UIManager, findNodeHandle } from 'react-native';
 // @ts-ignore
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 import { Point } from '../interfaces';
@@ -27,6 +27,14 @@ export class Marker extends React.Component<MarkerProps, State> {
     children: this.props.children,
   };
 
+  private getCommand(cmd: string): any {
+    if (Platform.OS === 'ios') {
+      return UIManager.getViewManagerConfig('YamapMarker').Commands[cmd];
+    } else {
+      return cmd;
+    }
+  }
+
   static getDerivedStateFromProps(nextProps: MarkerProps, prevState: State): Partial<State> {
     if (Platform.OS === 'ios') {
       return {
@@ -52,6 +60,26 @@ export class Marker extends React.Component<MarkerProps, State> {
       ...this.props,
       source: this.resolveImageUri(this.props.source),
     };
+  }
+
+  public animatedMoveTo(coords: Point, duration: number) {
+    if (Platform.OS === 'ios') {
+      UIManager.dispatchViewManagerCommand(
+        findNodeHandle(this),
+        this.getCommand('animatedMoveTo'),
+        [coords, duration],
+      );
+    }
+  }
+
+  public animatedRotateTo(angle: number, duration: number) {
+    if (Platform.OS === 'ios') {
+      UIManager.dispatchViewManagerCommand(
+        findNodeHandle(this),
+        this.getCommand('animatedRotateTo'),
+        [angle, duration],
+      );
+    }
   }
 
   render() {

@@ -16,6 +16,10 @@
 -(void) setPoint:(YMKPoint*) _points;
 -(void) setAnchor:(NSValue*) _anchor;
 
+// ref
+-(void) animatedMoveTo:(YMKPoint*) point withDuration:(float) duration;
+-(void) animatedRotateTo:(float) angle withDuration:(float) duration;
+
 -(YMKPoint*) getPoint;
 -(YMKPlacemarkMapObject*) getMapObject;
 -(void) setMapObject:(YMKPlacemarkMapObject*) mapObject;
