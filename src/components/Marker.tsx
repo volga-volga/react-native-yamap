@@ -63,23 +63,19 @@ export class Marker extends React.Component<MarkerProps, State> {
   }
 
   public animatedMoveTo(coords: Point, duration: number) {
-    if (Platform.OS === 'ios') {
-      UIManager.dispatchViewManagerCommand(
-        findNodeHandle(this),
-        this.getCommand('animatedMoveTo'),
-        [coords, duration],
-      );
-    }
+    UIManager.dispatchViewManagerCommand(
+      findNodeHandle(this),
+      this.getCommand('animatedMoveTo'),
+      [coords, duration],
+    );
   }
 
   public animatedRotateTo(angle: number, duration: number) {
-    if (Platform.OS === 'ios') {
-      UIManager.dispatchViewManagerCommand(
-        findNodeHandle(this),
-        this.getCommand('animatedRotateTo'),
-        [angle, duration],
-      );
-    }
+    UIManager.dispatchViewManagerCommand(
+      findNodeHandle(this),
+      this.getCommand('animatedRotateTo'),
+      [angle, duration],
+    );
   }
 
   render() {
