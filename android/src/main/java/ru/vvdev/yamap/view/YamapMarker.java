@@ -22,6 +22,7 @@ import com.yandex.mapkit.map.IconStyle;
 import com.yandex.mapkit.map.MapObject;
 import com.yandex.mapkit.map.MapObjectTapListener;
 import com.yandex.mapkit.map.PlacemarkMapObject;
+import com.yandex.mapkit.map.RotationType;
 import com.yandex.runtime.image.ImageProvider;
 
 import java.util.ArrayList;
@@ -90,6 +91,7 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
         if (mapObject != null) {
             final IconStyle iconStyle = new IconStyle();
             iconStyle.setScale(scale);
+            iconStyle.setRotationType(RotationType.ROTATE);
             if (markerAnchor != null) {
                 iconStyle.setAnchor(markerAnchor);
             }
@@ -192,10 +194,10 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
         valueAnimator.start();
     }
 
-    public void animatedRotateTo(float angle, float duration) {
+    public void animatedRotateTo(final float angle, float duration) {
         PlacemarkMapObject placemark = (PlacemarkMapObject) this.getMapObject();
         final float startDirection = placemark.getDirection();
-        final float delta = placemark.getDirection() - angle;
+        final float delta = angle - placemark.getDirection();
         ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, 1);
         valueAnimator.setDuration((long) duration);
         valueAnimator.setInterpolator(new LinearInterpolator());
