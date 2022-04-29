@@ -176,14 +176,14 @@
 - (void) animatedMoveTo: (YMKPoint*) point withDuration:(float) duration {
     YMKPlacemarkMapObject *placemark = [self getMapObject];
     YMKPoint* p = placemark.geometry;
-    double deltaLat = p.latitude - point.latitude;
-    double deltaLon = p.longitude - point.longitude;
+    double deltaLat = point.latitude - p.latitude;
+    double deltaLon = point.longitude - p.longitude;
     [self moveAnimationLoop: 0 withTotalFrames:[@(duration / YAMAP_FRAMES_PER_SECOND) integerValue] withDeltaLat:deltaLat withDeltaLon:deltaLon];
 }
 
 - (void) animatedRotateTo:(float) angle withDuration:(float) duration {
     YMKPlacemarkMapObject *placemark = [self getMapObject];
-    double delta = placemark.direction - angle;
+    double delta = angle - placemark.direction;
     [self rotateAnimationLoop: 0 withTotalFrames:[@(duration / YAMAP_FRAMES_PER_SECOND) integerValue] withDelta:delta];
 }
 
