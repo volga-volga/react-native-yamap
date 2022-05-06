@@ -1,3 +1,7 @@
+## React Native Yandex Maps (Яндекс Карты)
+
+Библиотека для интеграции Yandex Maps (Яндекс Карт) в react-native 
+
 ## Пример
 
 [Пример использования библиотеки](https://github.com/ownikss/rn-yamaps-example)
