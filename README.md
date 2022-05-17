@@ -236,6 +236,7 @@ interface MarkerProps {
   onPress?: () => void;
   anchor: { x: number, y: number }; // Якорь иконки маркера. Координаты принимают значения от 0 до 1. По умолчанию { x: 0.5, y: 0.5 } - центр иконки указывает на точку с координатами point
   zIndex?: number;
+  visible?: boolean; // отображение маркера на карте
 }
 ```
 

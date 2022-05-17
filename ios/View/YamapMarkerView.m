@@ -22,14 +22,16 @@
     NSString* source;
     NSString* lastSource;
     NSValue* anchor;
+    BOOL* visible;
     NSMutableArray<UIView*>* _reactSubviews;
     UIView* _childView;
 }
 
 - (instancetype)init {
     self = [super init];
-    zIndex =  [[NSNumber alloc] initWithInt:1];
-    scale =  [[NSNumber alloc] initWithInt:1];
+    zIndex = [[NSNumber alloc] initWithInt:1];
+    scale = [[NSNumber alloc] initWithInt:1];
+    visible = [[BOOL alloc] initWithBool:YES];
     _reactSubviews = [[NSMutableArray alloc] init];
     source = @"";
     lastSource = @"";
@@ -42,6 +44,7 @@
         [mapObject setZIndex:[zIndex floatValue]];
         YMKIconStyle* iconStyle = [[YMKIconStyle alloc] init];
         [iconStyle setScale:scale];
+        [iconStyle setVisible:visible];
         if (anchor) {
           [iconStyle setAnchor:anchor];
         }
@@ -63,6 +66,10 @@
 }
 -(void) setZIndex:(NSNumber*) _zIndex {
     zIndex = _zIndex;
+    [self updateMarker];
+}
+-(void) setVisible:(BOOL*) _visible {
+    visible = _visible;
     [self updateMarker];
 }
 
@@ -97,7 +104,7 @@
 }
 
 // object tap listener
-- (BOOL)onMapObjectTapWithMapObject:(nonnull YMKMapObject *)_mapObject point:(nonnull YMKPoint *)point {
+-(BOOL) onMapObjectTapWithMapObject:(nonnull YMKMapObject *)_mapObject point:(nonnull YMKPoint *)point {
     if (self.onPress) self.onPress(@{});
     return YES;
 }
@@ -138,12 +145,12 @@
         [self setChildView];
     });
 }
-- (void)insertReactSubview:(UIView*) subview atIndex:(NSInteger)atIndex {
+-(void) insertReactSubview:(UIView*) subview atIndex:(NSInteger)atIndex {
     [_reactSubviews insertObject:subview atIndex: atIndex];
     [super insertReactSubview:subview atIndex:atIndex];
 }
 
-- (void)removeReactSubview:(UIView*) subview {
+-(void) removeReactSubview:(UIView*) subview {
     [_reactSubviews removeObject:subview];
     [super removeReactSubview: subview];
 }
