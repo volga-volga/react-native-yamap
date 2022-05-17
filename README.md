@@ -192,6 +192,7 @@ export type VisibleRegion = {
 - `zoomGesturesEnabled?: boolean` - включены ли жесты зума. По умолчанию true.
 - `tiltGesturesEnabled?: boolean` - включены ли жесты наклона камеры двумя пальцами. По умолчанию true.
 - `rotateGesturesEnabled?: boolean` - включены ли жесты вращения. По умолчанию true.
+- `mapStyle?: string` - кастомные стили в формате строки, см доки яндекса
 
 #### Методы
 - `fitAllMarkers` - подобрать положение камеры, чтобы вместить все маркеры
