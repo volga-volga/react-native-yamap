@@ -22,7 +22,7 @@
     NSString* source;
     NSString* lastSource;
     NSValue* anchor;
-    BOOL* visible;
+    NSNumber* visible;
     NSMutableArray<UIView*>* _reactSubviews;
     UIView* _childView;
 }
@@ -31,7 +31,7 @@
     self = [super init];
     zIndex = [[NSNumber alloc] initWithInt:1];
     scale = [[NSNumber alloc] initWithInt:1];
-    visible = [[BOOL alloc] initWithBool:YES];
+    visible = [[NSNumber alloc] initWithInt:1];
     _reactSubviews = [[NSMutableArray alloc] init];
     source = @"";
     lastSource = @"";
@@ -68,7 +68,7 @@
     zIndex = _zIndex;
     [self updateMarker];
 }
--(void) setVisible:(BOOL*) _visible {
+-(void) setVisible:(NSNumber*) _visible {
     visible = _visible;
     [self updateMarker];
 }
