@@ -69,6 +69,11 @@ public class YamapMarkerManager extends ViewGroupManager<YamapMarker> {
         castToMarkerView(view).setScale(scale);
     }
 
+    @ReactProp(name = "visible")
+    public void setVisible(View view, Boolean visible) {
+        castToMarkerView(view).setVisible(visible != null ? visible : true);
+    }
+
     @ReactProp(name = "source")
     public void setSource(View view, String source) {
         if (source != null) {
