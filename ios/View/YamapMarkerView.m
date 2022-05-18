@@ -39,7 +39,7 @@
 }
 
 - (void)updateMarker {
-    if (mapObject != nil && _point != nil) {
+    if (mapObject != nil && mapObject.isValid()) {
         [mapObject setGeometry:_point];
         [mapObject setZIndex:[zIndex floatValue]];
         YMKIconStyle* iconStyle = [[YMKIconStyle alloc] init];
