@@ -39,6 +39,7 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
     public Point point;
     private int zIndex = 1;
     private float scale = 1;
+    private Boolean visible = true;
     private int YAMAP_FRAMES_PER_SECOND = 25;
     private PointF markerAnchor = null;
     private String iconSource;
@@ -77,6 +78,11 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
         updateMarker();
     }
 
+    public void setVisible(Boolean _visible) {
+        visible = _visible;
+        updateMarker();
+    }
+
     public void setIconSource(String source) {
         iconSource = source;
         updateMarker();
@@ -88,10 +94,11 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
     }
 
     private void updateMarker() {
-        if (mapObject != null) {
+        if (mapObject != null && mapObject.isValid()) {
             final IconStyle iconStyle = new IconStyle();
             iconStyle.setScale(scale);
             iconStyle.setRotationType(RotationType.ROTATE);
+            iconStyle.setVisible(visible);
             if (markerAnchor != null) {
                 iconStyle.setAnchor(markerAnchor);
             }

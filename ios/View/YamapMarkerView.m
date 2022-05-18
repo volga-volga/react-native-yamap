@@ -24,26 +24,29 @@
     NSString* source;
     NSString* lastSource;
     NSValue* anchor;
+    NSNumber* visible;
     NSMutableArray<UIView*>* _reactSubviews;
     UIView* _childView;
 }
 
 - (instancetype)init {
     self = [super init];
-    zIndex =  [[NSNumber alloc] initWithInt:1];
-    scale =  [[NSNumber alloc] initWithInt:1];
+    zIndex = [[NSNumber alloc] initWithInt:1];
+    scale = [[NSNumber alloc] initWithInt:1];
+    visible = [[NSNumber alloc] initWithInt:1];
     _reactSubviews = [[NSMutableArray alloc] init];
     source = @"";
     lastSource = @"";
     return self;
 }
 
--(void) updateMarker {
-    if (mapObject != nil) {
+- (void)updateMarker {
+    if (mapObject != nil && mapObject.isValid()) {
         [mapObject setGeometry:_point];
         [mapObject setZIndex:[zIndex floatValue]];
         YMKIconStyle* iconStyle = [[YMKIconStyle alloc] init];
         [iconStyle setScale:scale];
+        [iconStyle setVisible:visible];
         if (anchor) {
           [iconStyle setAnchor:anchor];
         }
@@ -60,21 +63,25 @@
 	}
 }
 
--(void) setScale:(NSNumber*) _scale {
+- (void)setScale:(NSNumber*) _scale {
     scale = _scale;
     [self updateMarker];
 }
--(void) setZIndex:(NSNumber*) _zIndex {
+- (void)setZIndex:(NSNumber*) _zIndex {
     zIndex = _zIndex;
     [self updateMarker];
 }
+- (void)setVisible:(NSNumber*) _visible {
+    visible = _visible;
+    [self updateMarker];
+}
 
--(void) setPoint:(YMKPoint*) point {
+- (void)setPoint:(YMKPoint*) point {
     _point = point;
     [self updateMarker];
 }
 
--(UIImage*) resolveUIImage:(NSString*) uri {
+- (UIImage*)resolveUIImage:(NSString*) uri {
     UIImage *icon;
     if ([uri rangeOfString:@"http://"].location == NSNotFound && [uri rangeOfString:@"https://"].location == NSNotFound) {
         if ([uri rangeOfString:@"file://"].location != NSNotFound){
@@ -89,11 +96,11 @@
     return icon;
 }
 
--(void) setSource:(NSString*) _source {
+- (void)setSource:(NSString*) _source {
     source = _source;
     [self updateMarker];
 }
--(void) setMapObject:(YMKPlacemarkMapObject *)_mapObject {
+- (void)setMapObject:(YMKPlacemarkMapObject *)_mapObject {
     mapObject = _mapObject;
     [mapObject addTapListenerWithTapListener:self];
     [self updateMarker];
@@ -105,19 +112,19 @@
     return YES;
 }
 
--(YMKPoint*) getPoint {
+- (YMKPoint*)getPoint {
     return _point;
 }
 
--(void) setAnchor:(NSValue*)_anchor {
+- (void)setAnchor:(NSValue*)_anchor {
     anchor = _anchor;
 }
 
--(YMKPlacemarkMapObject*) getMapObject {
+- (YMKPlacemarkMapObject*)getMapObject {
     return mapObject;
 }
 
--(void) setChildView {
+- (void)setChildView {
     if ([_reactSubviews count] > 0) {
         _childView = [_reactSubviews objectAtIndex:0];
         if (_childView != nil) {
@@ -135,9 +142,8 @@
     }
 }
 
--(void) didUpdateReactSubviews {
-    // todo: Если вызывать сразу то frame имеет размеры 0. В идеале делать подписку на событие
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+- (void)didUpdateReactSubviews {
+    dispatch_async(dispatch_get_main_queue(), ^{
         [self setChildView];
     });
 }
