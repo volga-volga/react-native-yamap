@@ -562,8 +562,8 @@
         [objects removeWithMapObject:[marker getMapObject]];
     } else if ([subview isKindOfClass:[YamapCircleView class]]) {
         YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
-        YamapCircleView* marker = (YamapCircleView*) subview;
-        [objects removeWithMapObject:[marker getMapObject]];
+        YamapCircleView* circle = (YamapCircleView*) subview;
+        [objects removeWithMapObject:[circle getMapObject]];
     } else {
         NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
         for (int i = 0; i < childSubviews.count; i++) {
