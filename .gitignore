@@ -8,11 +8,10 @@
 node_modules/
 npm-debug.log
 yarn-error.log
-  
+
 
 # Xcode
 #
-build/
 *.pbxuser
 !default.pbxuser
 *.mode1v3
@@ -29,11 +28,10 @@ DerivedData
 *.ipa
 *.xcuserstate
 project.xcworkspace
-      
+
 
 # Android/IntelliJ
 #
-build/
 .idea
 .gradle
 local.properties
@@ -43,4 +41,3 @@ local.properties
 buck-out/
 \.buckd/
 *.keystore
-      
