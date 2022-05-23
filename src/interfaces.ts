@@ -7,6 +7,8 @@ export type MasstransitVehicles = 'bus' | 'trolleybus' | 'tramway' | 'minibus' |
 
 export type Vehicles = MasstransitVehicles | 'walk' | 'car';
 
+export type MapType = 'none' | 'raster' | 'vector';
+
 export interface DrivingInfo {
   time: string;
   timeWithTraffic: string;

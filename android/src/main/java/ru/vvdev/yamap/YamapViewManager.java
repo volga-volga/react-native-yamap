@@ -234,6 +234,13 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         }
     }
 
+    @ReactProp(name = "mapType")
+    public void setMapType(View view, String type) {
+        if (type != null) {
+            castToYaMapView(view).setMapType(type);
+        }
+    }
+
     @Override
     public void addView(YamapView parent, View child, int index) {
         parent.addFeature(child, index);

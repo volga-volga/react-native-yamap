@@ -114,6 +114,17 @@ RCT_CUSTOM_VIEW_PROPERTY(fastTapEnabled, BOOL, RNYMView) {
     }
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(mapType, NSString, RNYMView) {
+    if (view) {
+        if (json == @"none")
+            view.mapWindow.map.mapType = YMKMapTypeNone;
+        else if (json == @"raster")
+            view.mapWindow.map.mapType = YMKMapTypeMap;
+        else
+            view.mapWindow.map.mapType = YMKMapTypeVectorMap;
+    }
+}
+
 // ref
 RCT_EXPORT_METHOD(fitAllMarkers:(nonnull NSNumber*) reactTag) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {

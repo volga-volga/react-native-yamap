@@ -340,6 +340,18 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         }
     }
 
+    public void setMapType(@Nullable String type) {
+        if (type != null) {
+            if (type.equals("none")) {
+                getMap().setMapType(MapType.NONE);
+            } else if (type.equals("raster")) {
+                getMap().setMapType(MapType.MAP);
+            } else {
+                getMap().setMapType(MapType.VECTOR_MAP);
+            }
+        }
+    }
+
     public void setNightMode(Boolean nightMode) {
         getMap().setNightModeEnabled(nightMode);
     }
