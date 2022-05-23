@@ -342,12 +342,18 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     public void setMapType(@Nullable String type) {
         if (type != null) {
-            if (type.equals("none")) {
-                getMap().setMapType(MapType.NONE);
-            } else if (type.equals("raster")) {
-                getMap().setMapType(MapType.MAP);
-            } else {
-                getMap().setMapType(MapType.VECTOR_MAP);
+            switch (type) {
+                case "none": 
+                    getMap().setMapType(MapType.NONE);
+                    break;
+                
+                case "raster": 
+                    getMap().setMapType(MapType.MAP);
+                    break;
+
+                default: 
+                    getMap().setMapType(MapType.VECTOR_MAP);
+                    break;
             }
         }
     }
