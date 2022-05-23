@@ -300,13 +300,13 @@
 }
 
 -(void) setMapType:(NSString*) type {
-        if (type == @'none') {
-            self.mapWindow.map.mapType = YMKMapTypeNone;
-        } else if (type == @'raster') {
-            self.mapWindow.map.mapType = YMKMapTypeMap;
-        } else {
-            self.mapWindow.map.mapType = YMKMapTypeVectorMap;
-        }
+    if ([type isEqual:@"none"]) {
+        self.mapWindow.map.mapType = YMKMapTypeNone;
+    } else if ([type isEqual:@"raster"]) {
+        self.mapWindow.map.mapType = YMKMapTypeMap;
+    } else {
+        self.mapWindow.map.mapType = YMKMapTypeVectorMap;
+    }
 }
 
 -(NSDictionary*) cameraPositionToJSON:(YMKCameraPosition*) position finished:(BOOL) finished {
