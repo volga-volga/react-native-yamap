@@ -31,6 +31,7 @@ export interface YaMapProps extends ViewProps {
   zoomGesturesEnabled?: boolean;
   tiltGesturesEnabled?: boolean;
   rotateGesturesEnabled?: boolean;
+  fastTapEnabled?: boolean;
 }
 
 const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');

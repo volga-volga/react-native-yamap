@@ -192,6 +192,7 @@ export type VisibleRegion = {
 - `zoomGesturesEnabled?: boolean` - включены ли жесты зума. По умолчанию true.
 - `tiltGesturesEnabled?: boolean` - включены ли жесты наклона камеры двумя пальцами. По умолчанию true.
 - `rotateGesturesEnabled?: boolean` - включены ли жесты вращения. По умолчанию true.
+- `fastTapEnabled?: boolean` - убрана ли задержка в 300мс при клике/тапе. По умолчанию true.
 - `mapStyle?: string` - стили карты согласно [документации](https://yandex.ru/dev/maps/archive/doc/mapkit/3.0/concepts/style.html)
 
 #### Методы

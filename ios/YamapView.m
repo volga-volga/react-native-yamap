@@ -108,6 +108,12 @@ RCT_CUSTOM_VIEW_PROPERTY(rotateGesturesEnabled, BOOL, RNYMView) {
     }
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(fastTapEnabled, BOOL, RNYMView) {
+    if (view) {
+        view.mapWindow.map.fastTapEnabled = json ? [json boolValue] : YES;
+    }
+}
+
 // ref
 RCT_EXPORT_METHOD(fitAllMarkers:(nonnull NSNumber*) reactTag) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {

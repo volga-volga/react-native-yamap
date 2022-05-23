@@ -350,6 +350,8 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     public void setRotateGesturesEnabled(Boolean rotateGesturesEnabled) { getMap().setRotateGesturesEnabled(rotateGesturesEnabled); }
 
+    public void setFastTapEnabled(Boolean fastTapEnabled) { getMap().setFastTapEnabled(fastTapEnabled); }
+
     public void setTiltGesturesEnabled(Boolean tiltGesturesEnabled) { getMap().setTiltGesturesEnabled(tiltGesturesEnabled); }
 
 
