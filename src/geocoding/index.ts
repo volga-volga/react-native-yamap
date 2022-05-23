@@ -66,6 +66,7 @@ export class Geocoder {
       skip,
       lang,
       rspn,
+      ll: ll ? `${ll.lat},${ll.lon}` : undefined,
       spn: spn ? `${spn[0]},${spn[1]}` : undefined,
       bbox: bbox
         ? `${bbox[0].lat},${bbox[0].lon}-${bbox[1].lat},${bbox[1].lon}`
