@@ -533,10 +533,10 @@
         YMKPlacemarkMapObject* obj = [objects addPlacemarkWithPoint:[marker getPoint]];
         [marker setMapObject:obj];
     } else if ([subview isKindOfClass:[YamapCircleView class]]) {
-           YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
-           YamapCircleView* circle = (YamapCircleView*) subview;
-           YMKCircleMapObject* obj = [objects addCircleWithCircle:[circle getCircle] strokeColor:UIColor.blackColor strokeWidth:0.f fillColor:UIColor.blackColor];
-           [circle setMapObject:obj];
+        YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+        YamapCircleView* circle = (YamapCircleView*) subview;
+        YMKCircleMapObject* obj = [objects addCircleWithCircle:[circle getCircle] strokeColor:UIColor.blackColor strokeWidth:0.f fillColor:UIColor.blackColor];
+        [circle setMapObject:obj];
     } else {
         NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
         for (int i = 0; i < childSubviews.count; i++) {
