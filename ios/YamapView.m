@@ -116,12 +116,7 @@ RCT_CUSTOM_VIEW_PROPERTY(fastTapEnabled, BOOL, RNYMView) {
 
 RCT_CUSTOM_VIEW_PROPERTY(mapType, NSString, RNYMView) {
     if (view) {
-        if (json == @"none")
-            view.mapWindow.map.mapType = YMKMapTypeNone;
-        else if (json == @"raster")
-            view.mapWindow.map.mapType = YMKMapTypeMap;
-        else
-            view.mapWindow.map.mapType = YMKMapTypeVectorMap;
+        [view setMapType: json];
     }
 }
 
