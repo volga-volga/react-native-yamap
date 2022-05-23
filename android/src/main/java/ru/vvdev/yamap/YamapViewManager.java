@@ -222,10 +222,22 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         castToYaMapView(view).setTiltGesturesEnabled(tiltGesturesEnabled == true);
     }
 
+    @ReactProp(name = "fastTapEnabled")
+    public void setFastTapEnabled(View view, Boolean fastTapEnabled) {
+        castToYaMapView(view).setFastTapEnabled(fastTapEnabled == true);
+    }
+
     @ReactProp(name = "mapStyle")
     public void setMapStyle(View view, String style) {
         if (style != null) {
             castToYaMapView(view).setMapStyle(style);
+        }
+    }
+
+    @ReactProp(name = "mapType")
+    public void setMapType(View view, String type) {
+        if (type != null) {
+            castToYaMapView(view).setMapType(type);
         }
     }
 

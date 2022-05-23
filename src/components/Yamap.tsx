@@ -11,7 +11,7 @@ import {
 // @ts-ignore
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 import CallbacksManager from '../utils/CallbacksManager';
-import { Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition, VisibleRegion } from '../interfaces';
+import { MapType, Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition, VisibleRegion } from '../interfaces';
 import { processColorProps } from '../utils';
 
 const { yamap: NativeYamapModule } = NativeModules;
@@ -21,6 +21,7 @@ export interface YaMapProps extends ViewProps {
   showUserPosition?: boolean;
   nightMode?: boolean;
   mapStyle?: string;
+  mapType?: MapType;
   onCameraPositionChange?: (event: NativeSyntheticEvent<CameraPosition>) => void;
   onMapPress?: (event: NativeSyntheticEvent<Point>) => void;
   onMapLongPress?: (event: NativeSyntheticEvent<Point>) => void;
@@ -31,6 +32,7 @@ export interface YaMapProps extends ViewProps {
   zoomGesturesEnabled?: boolean;
   tiltGesturesEnabled?: boolean;
   rotateGesturesEnabled?: boolean;
+  fastTapEnabled?: boolean;
 }
 
 const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');
