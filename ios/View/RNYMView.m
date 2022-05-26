@@ -286,8 +286,7 @@
 -(void) setCenter:(YMKCameraPosition*) position withDuration:(float) duration withAnimation:(int) animation {
     if (duration > 0) {
         YMKAnimationType anim = animation == 0 ? YMKAnimationTypeSmooth : YMKAnimationTypeLinear;
-        [self.mapWindow.map moveWithCameraPosition:position animationType:[YMKAnimation animationWithType:anim duration: duration] cameraCallback: ^(BOOL completed) {
-         }];
+        [self.mapWindow.map moveWithCameraPosition:position animationType:[YMKAnimation animationWithType:anim duration: duration] cameraCallback: ^(BOOL completed) {}];
     } else {
         [self.mapWindow.map moveWithCameraPosition:position];
     }
