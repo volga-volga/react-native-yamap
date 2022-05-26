@@ -364,7 +364,7 @@
     }
 }
 
-- (void)onCameraPositionChangedWithMap:(nonnull YMKMap *)map
+- (void)onCameraPositionChangedWithMap:(nonnull YMKMap *) map
                         cameraPosition:(nonnull YMKCameraPosition *)cameraPosition
                     cameraUpdateReason:(YMKCameraUpdateReason)cameraUpdateReason
                               finished:(BOOL)finished {
@@ -373,11 +373,11 @@
     }
 }
 
-- (void)setNightMode:(BOOL)nightMode {
+- (void)setNightMode:(BOOL) nightMode {
     [self.mapWindow.map setNightModeEnabled:nightMode];
 }
 
-- (void)setListenUserLocation:(BOOL)listen {
+- (void)setListenUserLocation:(BOOL) listen {
     YMKMapKit* inst = [YMKMapKit sharedInstance];
     if (userLayer == nil) {
         userLayer = [inst createUserLocationLayerWithMapWindow: self.mapWindow];
@@ -469,21 +469,21 @@
 }
 
 // user location listener implementation
-- (void)onObjectAddedWithView:(nonnull YMKUserLocationView *)view {
+- (void)onObjectAddedWithView:(nonnull YMKUserLocationView *) view {
     userLocationView = view;
     [self updateUserIcon];
 }
 
-- (void)onObjectRemovedWithView:(nonnull YMKUserLocationView *)view {
+- (void)onObjectRemovedWithView:(nonnull YMKUserLocationView *) view {
 }
 
-- (void)onObjectUpdatedWithView:(nonnull YMKUserLocationView *)view event:(nonnull YMKObjectEvent *)event {
+- (void)onObjectUpdatedWithView:(nonnull YMKUserLocationView *) view event:(nonnull YMKObjectEvent *) event {
     userLocationView = view;
     [self updateUserIcon];
 }
 
-- (void)onMapTapWithMap:(nonnull YMKMap *)map
-                  point:(nonnull YMKPoint *)point {
+- (void)onMapTapWithMap:(nonnull YMKMap *) map
+                  point:(nonnull YMKPoint *) point {
     if (self.onMapPress) {
         NSDictionary* data = @{
             @"lat": [NSNumber numberWithDouble:point.latitude],
@@ -493,8 +493,8 @@
     }
 }
 
-- (void)onMapLongTapWithMap:(nonnull YMKMap *)map
-                      point:(nonnull YMKPoint *)point {
+- (void)onMapLongTapWithMap:(nonnull YMKMap *) map
+                      point:(nonnull YMKPoint *) point {
     if (self.onMapLongPress) {
         NSDictionary* data = @{
             @"lat": [NSNumber numberWithDouble:point.latitude],
@@ -522,11 +522,11 @@
 }
 
 // children
-- (void)addSubview:(UIView *)view {
+- (void)addSubview:(UIView *) view {
     [super addSubview:view];
 }
 
-- (void)insertReactSubview:(UIView<RCTComponent>*)subview atIndex:(NSInteger)atIndex {
+- (void)insertReactSubview:(UIView<RCTComponent>*) subview atIndex:(NSInteger) atIndex {
     if ([subview isKindOfClass:[YamapPolygonView class]]) {
         YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
         YamapPolygonView* polygon = (YamapPolygonView*) subview;
@@ -557,7 +557,7 @@
     [super insertReactSubview:subview atIndex:atIndex];
 }
 
-- (void)removeReactSubview:(UIView<RCTComponent>*)subview {
+- (void)removeReactSubview:(UIView<RCTComponent>*) subview {
     if ([subview isKindOfClass:[YamapPolygonView class]]) {
         YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
         YamapPolygonView* polygon = (YamapPolygonView*) subview;
