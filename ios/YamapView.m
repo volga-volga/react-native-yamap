@@ -22,8 +22,7 @@ RCT_EXPORT_MODULE()
     self = [super init];
     return self;
 }
-+ (BOOL)requiresMainQueueSetup
-{
++ (BOOL)requiresMainQueueSetup {
     return YES;
 }
 
@@ -32,7 +31,7 @@ RCT_EXPORT_MODULE()
     return map;
 }
 
--(void) setCenterForMap: (RNYMView*) map center:(NSDictionary*) _center zoom:(float) zoom azimuth:(float) azimuth tilt:(float) tilt duration:(float) duration animation:(int) animation {
+- (void)setCenterForMap: (RNYMView*) map center:(NSDictionary*) _center zoom:(float) zoom azimuth:(float) azimuth tilt:(float) tilt duration:(float) duration animation:(int) animation {
     YMKPoint *center = [RCTConvert YMKPoint:_center];
     YMKCameraPosition* pos = [YMKCameraPosition cameraPositionWithTarget:center zoom:zoom azimuth:azimuth tilt:tilt];
     [map setCenter: pos withDuration: duration withAnimation: animation];
@@ -116,12 +115,7 @@ RCT_CUSTOM_VIEW_PROPERTY(fastTapEnabled, BOOL, RNYMView) {
 
 RCT_CUSTOM_VIEW_PROPERTY(mapType, NSString, RNYMView) {
     if (view) {
-        if (json == @"none")
-            view.mapWindow.map.mapType = YMKMapTypeNone;
-        else if (json == @"raster")
-            view.mapWindow.map.mapType = YMKMapTypeMap;
-        else
-            view.mapWindow.map.mapType = YMKMapTypeVectorMap;
+        [view setMapType: json];
     }
 }
 
@@ -177,7 +171,7 @@ RCT_EXPORT_METHOD(setZoom:(nonnull NSNumber*) reactTag zoom:(NSNumber*_Nonnull) 
     }];
 }
 
-RCT_EXPORT_METHOD(getCameraPosition:(nonnull NSNumber*) reactTag _id:(NSString*_Nonnull) _id ) {
+RCT_EXPORT_METHOD(getCameraPosition:(nonnull NSNumber*) reactTag _id:(NSString*_Nonnull) _id) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
         RNYMView *view = (RNYMView*) viewRegistry[reactTag];
         if (!view || ![view isKindOfClass:[RNYMView class]]) {
@@ -188,7 +182,7 @@ RCT_EXPORT_METHOD(getCameraPosition:(nonnull NSNumber*) reactTag _id:(NSString*_
     }];
 }
 
-RCT_EXPORT_METHOD(getVisibleRegion:(nonnull NSNumber*) reactTag _id:(NSString*_Nonnull) _id ) {
+RCT_EXPORT_METHOD(getVisibleRegion:(nonnull NSNumber*) reactTag _id:(NSString*_Nonnull) _id) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
         RNYMView *view = (RNYMView*) viewRegistry[reactTag];
         if (!view || ![view isKindOfClass:[RNYMView class]]) {
@@ -196,6 +190,17 @@ RCT_EXPORT_METHOD(getVisibleRegion:(nonnull NSNumber*) reactTag _id:(NSString*_N
             return;
         }
         [view emitVisibleRegionToJS:_id];
+    }];
+}
+
+RCT_EXPORT_METHOD(screenToWorldPoint:(nonnull NSNumber*) reactTag _id:(NSString*_Nonnull) _id) {
+    [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
+        RNYMView *view = (RNYMView*) viewRegistry[reactTag];
+        if (!view || ![view isKindOfClass:[RNYMView class]]) {
+            RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
+            return;
+        }
+        [view emitScreenToWorldWithScreenPointToJS:_id];
     }];
 }
 

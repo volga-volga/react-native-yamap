@@ -14,7 +14,6 @@
 #import "YamapCircleView.h"
 #import "RNYMView.h"
 
-
 #define ANDROID_COLOR(c) [UIColor colorWithRed:((c>>16)&0xFF)/255.0 green:((c>>8)&0xFF)/255.0 blue:((c)&0xFF)/255.0  alpha:((c>>24)&0xFF)/255.0]
 
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
@@ -70,7 +69,7 @@
     return self;
 }
 
--(NSDictionary*) convertDrivingRouteSection:(YMKDrivingRoute*) route withSection:(YMKDrivingSection*) section {
+- (NSDictionary*)convertDrivingRouteSection:(YMKDrivingRoute*) route withSection:(YMKDrivingSection*) section {
     int routeIndex = 0;
     YMKDrivingWeight* routeWeight = route.metadata.weight;
     NSMutableDictionary *routeMetadata = [[NSMutableDictionary alloc] init];
@@ -112,7 +111,7 @@
     return routeMetadata;
 }
 
--(NSDictionary*) convertRouteSection:(YMKMasstransitRoute*) route withSection:(YMKMasstransitSection*) section {
+- (NSDictionary*)convertRouteSection:(YMKMasstransitRoute*) route withSection:(YMKMasstransitSection*) section {
     int routeIndex = 0;
     YMKMasstransitWeight* routeWeight = route.metadata.weight;
     YMKMasstransitSectionMetadataSectionData *data = section.metadata.data;
@@ -189,7 +188,7 @@
     return routeMetadata;
 }
 
--(void) findRoutes:(NSArray<YMKRequestPoint*>*) _points vehicles:(NSArray<NSString*>*) vehicles withId:(NSString*)_id {
+- (void)findRoutes:(NSArray<YMKRequestPoint*>*) _points vehicles:(NSArray<NSString*>*) vehicles withId:(NSString*)_id {
     __weak RNYMView *weakSelf = self;
     if ([vehicles count] == 1 && [[vehicles objectAtIndex:0] isEqualToString:@"car"]) {
         YMKDrivingDrivingOptions* drivingOptions = [[YMKDrivingDrivingOptions alloc] init];
@@ -259,7 +258,7 @@
     masstransitSession = [masstransitRouter requestRoutesWithPoints:_points masstransitOptions:_masstransitOptions routeHandler:_routeHandler];
 }
 
--(UIImage*) resolveUIImage:(NSString*) uri {
+- (UIImage*)resolveUIImage:(NSString*) uri {
     UIImage *icon;
     if ([uri rangeOfString:@"http://"].location == NSNotFound && [uri rangeOfString:@"https://"].location == NSNotFound) {
         if ([uri rangeOfString:@"file://"].location != NSNotFound){
@@ -274,16 +273,16 @@
     return icon;
 }
 
--(void)onReceiveNativeEvent:(NSDictionary *)response {
+- (void)onReceiveNativeEvent:(NSDictionary *)response {
     if (self.onRouteFound) self.onRouteFound(response);
 }
 
--(void) removeAllSections {
+- (void)removeAllSections {
     [self.mapWindow.map.mapObjects clear];
 }
 
 // ref
--(void) setCenter:(YMKCameraPosition*) position withDuration:(float) duration withAnimation:(int) animation {
+- (void)setCenter:(YMKCameraPosition*) position withDuration:(float) duration withAnimation:(int) animation {
     if (duration > 0) {
         YMKAnimationType anim = animation == 0 ? YMKAnimationTypeSmooth : YMKAnimationTypeLinear;
         [self.mapWindow.map moveWithCameraPosition:position animationType:[YMKAnimation animationWithType:anim duration: duration] cameraCallback: ^(BOOL completed) {
@@ -293,26 +292,37 @@
     }
 }
 
--(void) setZoom:(float) zoom withDuration:(float) duration withAnimation:(int) animation {
+- (void)setZoom:(float) zoom withDuration:(float) duration withAnimation:(int) animation {
     YMKCameraPosition* prevPosition = self.mapWindow.map.cameraPosition;
     YMKCameraPosition* position = [YMKCameraPosition cameraPositionWithTarget:prevPosition.target zoom:zoom azimuth:prevPosition.azimuth tilt:prevPosition.tilt];
     [self setCenter:position withDuration:duration withAnimation:animation];
 }
 
--(NSDictionary*) cameraPositionToJSON:(YMKCameraPosition*) position finished:(BOOL) finished {
+- (void)setMapType:(NSString*) type {
+    if ([type isEqual:@"none"]) {
+        self.mapWindow.map.mapType = YMKMapTypeNone;
+    } else if ([type isEqual:@"raster"]) {
+        self.mapWindow.map.mapType = YMKMapTypeMap;
+    } else {
+        self.mapWindow.map.mapType = YMKMapTypeVectorMap;
+    }
+}
+
+- (NSDictionary*)cameraPositionToJSON:(YMKCameraPosition*) position reason:(YMKCameraUpdateReason) reason finished:(BOOL) finished {
     return @{
         @"azimuth": [NSNumber numberWithFloat:position.azimuth],
         @"tilt": [NSNumber numberWithFloat:position.tilt],
         @"zoom": [NSNumber numberWithFloat:position.zoom],
         @"point": @{
-                @"lat": [NSNumber numberWithDouble:position.target.latitude],
-                @"lon": [NSNumber numberWithDouble:position.target.longitude],
+            @"lat": [NSNumber numberWithDouble:position.target.latitude],
+            @"lon": [NSNumber numberWithDouble:position.target.longitude],
         },
+        @"reason": reason == 0 ? @"GESTURES" : @"APPLICATION",
         @"finished": @(finished)
     };
 }
 
--(NSDictionary*) visibleRegionToJSON:(YMKVisibleRegion*) region {
+- (NSDictionary*)visibleRegionToJSON:(YMKVisibleRegion*) region {
     return @{
         @"bottomLeft": @{
                 @"lat": [NSNumber numberWithDouble:region.bottomLeft.latitude],
@@ -334,9 +344,9 @@
 }
 
 
--(void) emitCameraPositionToJS:(NSString*) _id {
+- (void)emitCameraPositionToJS:(NSString*) _id {
     YMKCameraPosition* position = self.mapWindow.map.cameraPosition;
-    NSDictionary* cameraPosition = [self cameraPositionToJSON:position finished:YES];
+    NSDictionary* cameraPosition = [self cameraPositionToJSON:position reason:1 finished:YES];
     NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:cameraPosition];
     [response setValue:_id forKey:@"id"];
     if (self.onCameraPositionReceived) {
@@ -344,7 +354,7 @@
     }
 }
 
--(void) emitVisibleRegionToJS:(NSString*) _id {
+- (void)emitVisibleRegionToJS:(NSString*) _id {
     YMKVisibleRegion* region = self.mapWindow.map.visibleRegion;
     NSDictionary* visibleRegion = [self visibleRegionToJSON:region];
     NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:visibleRegion];
@@ -354,20 +364,20 @@
     }
 }
 
--(void) onCameraPositionChangedWithMap:(nonnull YMKMap *)map
+- (void)onCameraPositionChangedWithMap:(nonnull YMKMap *)map
                         cameraPosition:(nonnull YMKCameraPosition *)cameraPosition
                     cameraUpdateReason:(YMKCameraUpdateReason)cameraUpdateReason
                               finished:(BOOL)finished {
     if (self.onCameraPositionChange) {
-        self.onCameraPositionChange([self cameraPositionToJSON:cameraPosition finished:finished]);
+        self.onCameraPositionChange([self cameraPositionToJSON:cameraPosition reason:cameraUpdateReason finished:finished]);
     }
 }
 
--(void) setNightMode:(BOOL)nightMode {
+- (void)setNightMode:(BOOL)nightMode {
     [self.mapWindow.map setNightModeEnabled:nightMode];
 }
 
--(void) setListenUserLocation:(BOOL)listen {
+- (void)setListenUserLocation:(BOOL)listen {
     YMKMapKit* inst = [YMKMapKit sharedInstance];
     if (userLayer == nil) {
         userLayer = [inst createUserLocationLayerWithMapWindow: self.mapWindow];
@@ -381,7 +391,7 @@
     }
 }
 
--(void) fitAllMarkers {
+- (void)fitAllMarkers {
     NSMutableArray<YMKPoint*>* lastKnownMarkers = [[NSMutableArray alloc] init];
     for (int i = 0; i < [_reactSubviews count]; ++i) {
         UIView* view = [_reactSubviews objectAtIndex:i];
@@ -421,27 +431,27 @@
 }
 
 // props
--(void) setUserLocationIcon:(NSString*) iconSource {
+- (void)setUserLocationIcon:(NSString*) iconSource {
     userLocationImage = [self resolveUIImage: iconSource];
     [self updateUserIcon];
 }
 
--(void) setUserLocationAccuracyFillColor: (UIColor*) color {
+- (void)setUserLocationAccuracyFillColor: (UIColor*) color {
     userLocationAccuracyFillColor = color;
     [self updateUserIcon];
 }
 
--(void) setUserLocationAccuracyStrokeColor: (UIColor*) color {
+- (void)setUserLocationAccuracyStrokeColor: (UIColor*) color {
     userLocationAccuracyStrokeColor = color;
     [self updateUserIcon];
 }
 
--(void) setUserLocationAccuracyStrokeWidth: (float) width {
+- (void)setUserLocationAccuracyStrokeWidth: (float) width {
     userLocationAccuracyStrokeWidth = width;
     [self updateUserIcon];
 }
 
--(void) updateUserIcon {
+- (void)updateUserIcon {
     if (userLocationView != nil) {
         if (userLocationImage) {
             [userLocationView.pin setIconWithImage: userLocationImage];
@@ -495,7 +505,7 @@
 }
 
 // utils
-+(UIColor *) colorFromHexString:(NSString*) hexString {
++ (UIColor*)colorFromHexString:(NSString*) hexString {
     unsigned rgbValue = 0;
     NSScanner *scanner = [NSScanner scannerWithString:hexString];
     [scanner setScanLocation:1];
@@ -503,7 +513,7 @@
     return [UIColor colorWithRed:((rgbValue & 0xFF0000) >> 16)/255.0 green:((rgbValue & 0xFF00) >> 8)/255.0 blue:(rgbValue & 0xFF)/255.0 alpha:1.0];
 }
 
-+(NSString*) hexStringFromColor:(UIColor *) color {
++ (NSString*)hexStringFromColor:(UIColor *) color {
     const CGFloat *components = CGColorGetComponents(color.CGColor);
     CGFloat r = components[0];
     CGFloat g = components[1];
@@ -512,7 +522,7 @@
 }
 
 // children
--(void)addSubview:(UIView *)view {
+- (void)addSubview:(UIView *)view {
     [super addSubview:view];
 }
 

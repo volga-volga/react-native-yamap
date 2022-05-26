@@ -121,7 +121,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         }
     }
 
-    private WritableMap positionToJSON(CameraPosition position, boolean finished) {
+    private WritableMap positionToJSON(CameraPosition position, CameraUpdateReason reason, boolean finished) {
         WritableMap cameraPosition = Arguments.createMap();
         Point point = position.getTarget();
         cameraPosition.putDouble("azimuth", position.getAzimuth());
@@ -131,13 +131,14 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         target.putDouble("lat", point.getLatitude());
         target.putDouble("lon", point.getLongitude());
         cameraPosition.putMap("point", target);
+        cameraPosition.putString("reason", reason.toString());
         cameraPosition.putBoolean("finished", finished);
         return cameraPosition;
     }
 
     public void emitCameraPositionToJS(String id) {
         CameraPosition position = getMap().getCameraPosition();
-        WritableMap cameraPosition = positionToJSON(position, true);
+        WritableMap cameraPosition = positionToJSON(position, CameraUpdateReason.valueOf("APPLICATION"), true);
         cameraPosition.putString("id", id);
         ReactContext reactContext = (ReactContext) getContext();
         reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "cameraPosition", cameraPosition);
@@ -343,12 +344,18 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     public void setMapType(@Nullable String type) {
         if (type != null) {
-            if (type.equals("none")) {
-                getMap().setMapType(MapType.NONE);
-            } else if (type.equals("raster")) {
-                getMap().setMapType(MapType.MAP);
-            } else {
-                getMap().setMapType(MapType.VECTOR_MAP);
+            switch (type) {
+                case "none": 
+                    getMap().setMapType(MapType.NONE);
+                    break;
+                
+                case "raster": 
+                    getMap().setMapType(MapType.MAP);
+                    break;
+
+                default: 
+                    getMap().setMapType(MapType.VECTOR_MAP);
+                    break;
             }
         }
     }
@@ -592,8 +599,8 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     }
 
     @Override
-    public void onCameraPositionChanged(@NonNull com.yandex.mapkit.map.Map map, @NonNull CameraPosition cameraPosition, @NonNull CameraUpdateReason cameraUpdateReason, boolean finished) {
-        WritableMap position = positionToJSON(cameraPosition, finished);
+    public void onCameraPositionChanged(@NonNull com.yandex.mapkit.map.Map map, @NonNull CameraPosition cameraPosition, CameraUpdateReason reason, boolean finished) {
+        WritableMap position = positionToJSON(cameraPosition, reason, finished);
         ReactContext reactContext = (ReactContext) getContext();
         reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "cameraPositionChanged", position);
     }

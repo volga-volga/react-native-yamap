@@ -21,6 +21,7 @@
 -(void) emitVisibleRegionToJS:(NSString*_Nonnull) _id;
 -(void) setCenter:(YMKCameraPosition*_Nonnull) position withDuration:(float) duration withAnimation:(int) animation;
 -(void) setZoom:(float) zoom withDuration:(float) duration withAnimation:(int) animation;
+-(void) setMapType:(NSString*_Nullable) type;
 -(void) fitAllMarkers;
 -(void) findRoutes:(NSArray<YMKRequestPoint*>*_Nonnull) points vehicles:(NSArray<NSString*>*_Nonnull) vehicles withId:(NSString*_Nonnull)_id;
 
