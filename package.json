@@ -1,6 +1,6 @@
 {
   "name": "react-native-yamap",
-  "version": "4.0.3",
+  "version": "4.0.12",
   "description": "Yandex.MapKit and Yandex.Geocoder for react-native",
   "main": "build/index.js",
   "scripts": {
@@ -16,6 +16,11 @@
     "polygon",
     "polyline",
     "marker",
+    "map",
+    "maps",
+    "react-native-maps",
+    "yandexmap",
+    "yandexmaps",
     "geocoder"
   ],
   "author": "Nikita Sirotkin",
