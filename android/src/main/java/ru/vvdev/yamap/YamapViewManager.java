@@ -177,6 +177,16 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         }
     }
 
+    @ReactProp(name = "withClusters")
+    public void setClusters(View view, Boolean with) {
+            castToYaMapView(view).setClusters(with);
+    }
+
+    @ReactProp(name = "clusterColor")
+    public void setClusterColor(View view, int color) {
+            castToYaMapView(view).setClustersColor(color);
+    }
+
     @ReactProp(name = "userLocationAccuracyFillColor")
     public void setUserLocationAccuracyFillColor(View view, int color) {
         castToYaMapView(view).setUserLocationAccuracyFillColor(color);
