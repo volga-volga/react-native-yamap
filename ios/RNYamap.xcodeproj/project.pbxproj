@@ -14,8 +14,6 @@
 		D6ABBD5B2236A9600060C368 /* RNYMView.h in Headers */ = {isa = PBXBuildFile; fileRef = D6ABBD592236A9600060C368 /* RNYMView.h */; };
 		D6ABBD5C2236A9600060C368 /* RNYMView.m in Sources */ = {isa = PBXBuildFile; fileRef = D6ABBD5A2236A9600060C368 /* RNYMView.m */; };
 		D6D0D4D3222E7E4900838171 /* RCTConvert+Yamap.m in Sources */ = {isa = PBXBuildFile; fileRef = D6D0D4D2222E7E4900838171 /* RCTConvert+Yamap.m */; };
-		D6D0D4FE222EA5E900838171 /* RNMarker.m in Sources */ = {isa = PBXBuildFile; fileRef = D6D0D4FC222EA5E900838171 /* RNMarker.m */; };
-		D6D0D4FF222EA5E900838171 /* RNMarker.h in Headers */ = {isa = PBXBuildFile; fileRef = D6D0D4FD222EA5E900838171 /* RNMarker.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,8 +25,6 @@
 		D6ABBD592236A9600060C368 /* RNYMView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNYMView.h; sourceTree = "<group>"; };
 		D6ABBD5A2236A9600060C368 /* RNYMView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNYMView.m; sourceTree = "<group>"; };
 		D6D0D4D2222E7E4900838171 /* RCTConvert+Yamap.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "RCTConvert+Yamap.m"; sourceTree = "<group>"; };
-		D6D0D4FC222EA5E900838171 /* RNMarker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNMarker.m; sourceTree = "<group>"; };
-		D6D0D4FD222EA5E900838171 /* RNMarker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNMarker.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,7 +50,6 @@
 			isa = PBXGroup;
 			children = (
 				D6F326A923C26911000C7D4A /* View */,
-				D6F326AA23C26923000C7D4A /* Models */,
 				D6F326A823C268CB000C7D4A /* Converter */,
 				D6ABBD13223667300060C368 /* YamapView.m */,
 				3CA9027D22E1E52D00C144AA /* YamapView.h */,
@@ -81,15 +76,6 @@
 			path = View;
 			sourceTree = "<group>";
 		};
-		D6F326AA23C26923000C7D4A /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				D6D0D4FD222EA5E900838171 /* RNMarker.h */,
-				D6D0D4FC222EA5E900838171 /* RNMarker.m */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -98,7 +84,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				3CA9027E22E1E52D00C144AA /* YamapView.h in Headers */,
-				D6D0D4FF222EA5E900838171 /* RNMarker.h in Headers */,
 				D6ABBD5B2236A9600060C368 /* RNYMView.h in Headers */,
 				D615FE4C222D655B0044E3FA /* RNYamap.h in Headers */,
 			);
@@ -176,7 +161,6 @@
 				B3E7B58A1CC2AC0600A0062D /* RNYamap.m in Sources */,
 				D6ABBD14223667300060C368 /* YamapView.m in Sources */,
 				D6D0D4D3222E7E4900838171 /* RCTConvert+Yamap.m in Sources */,
-				D6D0D4FE222EA5E900838171 /* RNMarker.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
