@@ -620,7 +620,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
             if (userClusters) {
                 PlacemarkMapObject obj = clusterCollection.addPlacemark(_child.point);
                 _child.setMapObject(obj);
-                clusterCollection.clusterPlacemarks(100, 5);
+                clusterCollection.clusterPlacemarks(50, 12);
             } else {
                 PlacemarkMapObject obj = getMap().getMapObjects().addPlacemark(_child.point);
                 _child.setMapObject(obj);
@@ -638,7 +638,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         if (index < childs.size()) {
             ReactMapObject child = childs.remove(index);
             if (userClusters) {
-                clusterCollection.remove(child.getMapObject());
+                clusterCollection.clear();
             } else {
                 getMap().getMapObjects().remove(child.getMapObject());
             }
