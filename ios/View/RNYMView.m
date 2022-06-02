@@ -386,6 +386,31 @@
 
 - (void)setClusters:(BOOL) useUserClusters {
     userClusters = useUserClusters;
+    [self updateUserMarkers];
+}
+
+-(void)updateUserMarkers {
+    NSMutableArray<YamapMarkerView*>* lastKnownMarkers = [[NSMutableArray alloc] init];
+    for (int i = 0; i < [_reactSubviews count]; ++i) {
+        UIView* view = [_reactSubviews objectAtIndex:i];
+        if ([view isKindOfClass:[YamapMarkerView class]]) {
+            YamapMarkerView* marker = (YamapMarkerView*) view;
+            [lastKnownMarkers addObject:marker];
+            if (!userClusters) {
+                [clusterCollection removeWithPlacemark:[marker getMapObject]];
+            } else {
+            YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+            [objects removeWithMapObject:[marker getMapObject]];
+            }
+            [_reactSubviews removeObject:marker];
+            --i;
+        }
+    }
+        [clusterCollection clear];
+    for (int i = 0; i < [lastKnownMarkers count]; ++i) {
+        UIView* view = [lastKnownMarkers objectAtIndex:i];
+        [self insertReactSubview:view atIndex:[_reactSubviews count]];
+    }
 }
 
 - (void)setListenUserLocation:(BOOL) listen {
@@ -627,7 +652,7 @@
         YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
         YamapMarkerView* marker = (YamapMarkerView*) subview;
         if (userClusters) {
-            [clusterCollection clear];
+            [clusterCollection removeWithPlacemark:[marker getMapObject]];
         } else {
         [objects removeWithMapObject:[marker getMapObject]];
         }
@@ -646,9 +671,9 @@
 }
 
 -(UIImage*)clusterImage:(NSNumber*) clusterSize {
-    float FONT_SIZE = 30;
-    float MARGIN_SIZE = 6;
-    float STROKE_SIZE = 6;
+    float FONT_SIZE = 45;
+    float MARGIN_SIZE = 9;
+    float STROKE_SIZE = 9;
     NSString *text = [clusterSize stringValue];
     UIFont *font = [UIFont systemFontOfSize:FONT_SIZE];
     CGSize size = [text sizeWithFont:font];

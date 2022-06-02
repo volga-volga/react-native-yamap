@@ -380,10 +380,12 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     public void setClusters(final Boolean with) {
         userClusters = with;
+        updateUserMarkers();
     }
 
     public void setClustersColor(int color) {
         clusterColor = color;
+        updateUserMarkersColor();
     }
 
     public void setUserLocationAccuracyFillColor(int color) {
@@ -638,7 +640,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         if (index < childs.size()) {
             ReactMapObject child = childs.remove(index);
             if (userClusters) {
-                clusterCollection.clear();
+                clusterCollection.remove(child.getMapObject());
             } else {
                 getMap().getMapObjects().remove(child.getMapObject());
             }
@@ -660,6 +662,46 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     public void onObjectUpdated(@Nonnull UserLocationView _userLocationView, @Nonnull ObjectEvent objectEvent) {
         userLocationView = _userLocationView;
         updateUserLocationIcon();
+    }
+
+    private void updateUserMarkers() {
+        ArrayList<YamapMarker> lastKnownMarkers = new ArrayList<>();
+        for (int i = 0; i < childs.size(); ++i) {
+            ReactMapObject obj = childs.get(i);
+            if (obj instanceof YamapMarker) {
+                lastKnownMarkers.add((YamapMarker) obj);
+                ReactMapObject removeMarker = childs.remove(i);
+                if (!userClusters) {
+                    clusterCollection.remove(removeMarker.getMapObject());
+                } else {
+                    getMap().getMapObjects().remove(removeMarker.getMapObject());
+                }
+                --i;
+            }
+        }
+        clusterCollection.clear();
+        for (int i = 0; i < lastKnownMarkers.size(); ++i) {
+            addFeature(lastKnownMarkers.get(i), childs.size());
+        }
+    }
+
+    private void updateUserMarkersColor() {
+        if (userClusters) {
+            ArrayList<YamapMarker> lastKnownMarkers = new ArrayList<>();
+            for (int i = 0; i < childs.size(); ++i) {
+                ReactMapObject obj = childs.get(i);
+                if (obj instanceof YamapMarker) {
+                    lastKnownMarkers.add((YamapMarker) obj);
+                    ReactMapObject removeMarker = childs.remove(i);
+                    clusterCollection.remove(removeMarker.getMapObject());
+                    --i;
+                }
+            }
+            clusterCollection.clear();
+            for (int i = 0; i < lastKnownMarkers.size(); ++i) {
+                addFeature(lastKnownMarkers.get(i), childs.size());
+            }
+        }
     }
 
     private void updateUserLocationIcon() {
