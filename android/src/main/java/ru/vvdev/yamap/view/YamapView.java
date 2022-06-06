@@ -44,6 +44,7 @@ import com.yandex.mapkit.map.ClusterTapListener;
 import com.yandex.mapkit.map.ClusterizedPlacemarkCollection;
 import com.yandex.mapkit.map.IconStyle;
 import com.yandex.mapkit.map.InputListener;
+import com.yandex.mapkit.map.MapObject;
 import com.yandex.mapkit.map.PlacemarkMapObject;
 import com.yandex.mapkit.map.PolygonMapObject;
 import com.yandex.mapkit.map.PolylineMapObject;
@@ -112,7 +113,6 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     private int userLocationAccuracyFillColor = 0;
     private int userLocationAccuracyStrokeColor = 0;
     private float userLocationAccuracyStrokeWidth = 0.f;
-    private List<ReactMapObject> childs = new ArrayList<>();
     private TrafficLayer trafficLayer = null;
 
     // location
@@ -279,8 +279,8 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     public void fitAllMarkers() {
         ArrayList<Point> lastKnownMarkers = new ArrayList<>();
-        for (int i = 0; i < childs.size(); ++i) {
-            ReactMapObject obj = childs.get(i);
+        for (int i = 0; i < getChildCount(); ++i) {
+            ReactMapObject obj = (ReactMapObject) getChildAt(i);
             if (obj instanceof YamapMarker) {
                 YamapMarker marker = (YamapMarker) obj;
                 lastKnownMarkers.add(marker.point);
@@ -443,7 +443,9 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         getMap().setRotateGesturesEnabled(rotateGesturesEnabled);
     }
 
-    public void setFastTapEnabled(Boolean fastTapEnabled) { getMap().setFastTapEnabled(fastTapEnabled); }
+    public void setFastTapEnabled(Boolean fastTapEnabled) {
+        getMap().setFastTapEnabled(fastTapEnabled);
+    }
 
     public void setTiltGesturesEnabled(Boolean tiltGesturesEnabled) {
         getMap().setTiltGesturesEnabled(tiltGesturesEnabled);
@@ -611,12 +613,10 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
             YamapPolygon _child = (YamapPolygon) child;
             PolygonMapObject obj = getMap().getMapObjects().addPolygon(_child.polygon);
             _child.setMapObject(obj);
-            childs.add(_child);
         } else if (child instanceof YamapPolyline) {
             YamapPolyline _child = (YamapPolyline) child;
             PolylineMapObject obj = getMap().getMapObjects().addPolyline(_child.polyline);
             _child.setMapObject(obj);
-            childs.add(_child);
         } else if (child instanceof YamapMarker) {
             YamapMarker _child = (YamapMarker) child;
             if (userClusters) {
@@ -627,22 +627,25 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
                 PlacemarkMapObject obj = getMap().getMapObjects().addPlacemark(_child.point);
                 _child.setMapObject(obj);
             }
-            childs.add(_child);
         } else if (child instanceof YamapCircle) {
             YamapCircle _child = (YamapCircle) child;
             CircleMapObject obj = getMap().getMapObjects().addCircle(_child.circle, 0, 0.f, 0);
             _child.setMapObject(obj);
-            childs.add(_child);
         }
     }
 
     public void removeChild(int index) {
-        if (index < childs.size()) {
-            ReactMapObject child = childs.remove(index);
+        if (getChildAt(index) instanceof ReactMapObject) {
+            final ReactMapObject child = (ReactMapObject) getChildAt(index);
+            if (child == null) return;
+
             if (userClusters) {
                 clusterCollection.remove(child.getMapObject());
             } else {
-                getMap().getMapObjects().remove(child.getMapObject());
+                final MapObject mapObject = child.getMapObject();
+                if (mapObject == null || !mapObject.isValid()) return;
+
+                getMap().getMapObjects().remove(mapObject);
             }
         }
     }
@@ -666,40 +669,39 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     private void updateUserMarkers() {
         ArrayList<YamapMarker> lastKnownMarkers = new ArrayList<>();
-        for (int i = 0; i < childs.size(); ++i) {
-            ReactMapObject obj = childs.get(i);
+        for (int i = 0; i < getChildCount(); ++i) {
+            ReactMapObject obj = (ReactMapObject) getChildAt(i);
             if (obj instanceof YamapMarker) {
                 lastKnownMarkers.add((YamapMarker) obj);
-                ReactMapObject removeMarker = childs.remove(i);
+
                 if (!userClusters) {
-                    clusterCollection.remove(removeMarker.getMapObject());
+                    clusterCollection.remove(obj.getMapObject());
                 } else {
-                    getMap().getMapObjects().remove(removeMarker.getMapObject());
+                    getMap().getMapObjects().remove(obj.getMapObject());
                 }
                 --i;
             }
         }
         clusterCollection.clear();
         for (int i = 0; i < lastKnownMarkers.size(); ++i) {
-            addFeature(lastKnownMarkers.get(i), childs.size());
+            addFeature(lastKnownMarkers.get(i), getChildCount());
         }
     }
 
     private void updateUserMarkersColor() {
         if (userClusters) {
             ArrayList<YamapMarker> lastKnownMarkers = new ArrayList<>();
-            for (int i = 0; i < childs.size(); ++i) {
-                ReactMapObject obj = childs.get(i);
+            for (int i = 0; i < getChildCount(); ++i) {
+                ReactMapObject obj = (ReactMapObject) getChildAt(i);
                 if (obj instanceof YamapMarker) {
                     lastKnownMarkers.add((YamapMarker) obj);
-                    ReactMapObject removeMarker = childs.remove(i);
-                    clusterCollection.remove(removeMarker.getMapObject());
+                    clusterCollection.remove(obj.getMapObject());
                     --i;
                 }
             }
             clusterCollection.clear();
             for (int i = 0; i < lastKnownMarkers.size(); ++i) {
-                addFeature(lastKnownMarkers.get(i), childs.size());
+                addFeature(lastKnownMarkers.get(i), getChildCount());
             }
         }
     }
