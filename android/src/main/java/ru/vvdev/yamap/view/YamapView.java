@@ -669,40 +669,39 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     private void updateUserMarkers() {
         ArrayList<YamapMarker> lastKnownMarkers = new ArrayList<>();
-        for (int i = 0; i < childs.size(); ++i) {
-            ReactMapObject obj = childs.get(i);
+        for (int i = 0; i < getChildCount(); ++i) {
+            ReactMapObject obj = (ReactMapObject) getChildAt(i);
             if (obj instanceof YamapMarker) {
                 lastKnownMarkers.add((YamapMarker) obj);
-                ReactMapObject removeMarker = childs.remove(i);
+
                 if (!userClusters) {
-                    clusterCollection.remove(removeMarker.getMapObject());
+                    clusterCollection.remove(obj.getMapObject());
                 } else {
-                    getMap().getMapObjects().remove(removeMarker.getMapObject());
+                    getMap().getMapObjects().remove(obj.getMapObject());
                 }
                 --i;
             }
         }
         clusterCollection.clear();
         for (int i = 0; i < lastKnownMarkers.size(); ++i) {
-            addFeature(lastKnownMarkers.get(i), childs.size());
+            addFeature(lastKnownMarkers.get(i), getChildCount());
         }
     }
 
     private void updateUserMarkersColor() {
         if (userClusters) {
             ArrayList<YamapMarker> lastKnownMarkers = new ArrayList<>();
-            for (int i = 0; i < childs.size(); ++i) {
-                ReactMapObject obj = childs.get(i);
+            for (int i = 0; i < getChildCount(); ++i) {
+                ReactMapObject obj = (ReactMapObject) getChildAt(i);
                 if (obj instanceof YamapMarker) {
                     lastKnownMarkers.add((YamapMarker) obj);
-                    ReactMapObject removeMarker = childs.remove(i);
-                    clusterCollection.remove(removeMarker.getMapObject());
+                    clusterCollection.remove(obj.getMapObject());
                     --i;
                 }
             }
             clusterCollection.clear();
             for (int i = 0; i < lastKnownMarkers.size(); ++i) {
-                addFeature(lastKnownMarkers.get(i), childs.size());
+                addFeature(lastKnownMarkers.get(i), getChildCount());
             }
         }
     }
