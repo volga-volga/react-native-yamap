@@ -562,13 +562,15 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     }
 
     public void removeChild(int index) {
-        final ReactMapObject child = (ReactMapObject) getChildAt(index);
-        if (child == null) return;
+        if (getChildAt(index) instance of ReactMapObject) {
+            final ReactMapObject child = (ReactMapObject) getChildAt(index);
+            if (child == null) return;
 
-        final MapObject mapObject = child.getMapObject();
-        if (mapObject == null || !mapObject.isValid()) return;
+            final MapObject mapObject = child.getMapObject();
+            if (mapObject == null || !mapObject.isValid()) return;
 
-        getMap().getMapObjects().remove(mapObject);
+            getMap().getMapObjects().remove(mapObject);
+        }
     }
 
     // location listener implementation
