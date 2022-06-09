@@ -89,7 +89,7 @@ public class RNYamapModule extends ReactContextBaseJavaModule {
             @Override
             public void run() {
                 I18nManagerFactory.setLocale(null);
-                successCb.invoke(null);
+                successCb.invoke();
             }
         }));
     }

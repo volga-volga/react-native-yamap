@@ -670,14 +670,15 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     private void updateUserMarkers() {
         ArrayList<YamapMarker> lastKnownMarkers = new ArrayList<>();
         for (int i = 0; i < getChildCount(); ++i) {
-            ReactMapObject obj = (ReactMapObject) getChildAt(i);
+            View obj = getChildAt(i);
             if (obj instanceof YamapMarker) {
+                YamapMarker marker = (YamapMarker) obj;
                 lastKnownMarkers.add((YamapMarker) obj);
 
                 if (!userClusters) {
-                    clusterCollection.remove(obj.getMapObject());
+                    clusterCollection.remove(marker.getMapObject());
                 } else {
-                    getMap().getMapObjects().remove(obj.getMapObject());
+                    getMap().getMapObjects().remove(marker.getMapObject());
                 }
                 --i;
             }
@@ -692,11 +693,10 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         if (userClusters) {
             ArrayList<YamapMarker> lastKnownMarkers = new ArrayList<>();
             for (int i = 0; i < getChildCount(); ++i) {
-                ReactMapObject obj = (ReactMapObject) getChildAt(i);
+                View obj = getChildAt(i);
                 if (obj instanceof YamapMarker) {
-                    lastKnownMarkers.add((YamapMarker) obj);
-                    clusterCollection.remove(obj.getMapObject());
-                    --i;
+                    YamapMarker marker = (YamapMarker) obj;
+                    lastKnownMarkers.add(marker);
                 }
             }
             clusterCollection.clear();
