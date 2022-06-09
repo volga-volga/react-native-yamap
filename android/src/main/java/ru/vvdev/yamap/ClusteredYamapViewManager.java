@@ -11,20 +11,22 @@ import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
+import com.facebook.react.views.view.ReactViewGroup;
 import com.yandex.mapkit.MapKitFactory;
 import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.map.CameraPosition;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import ru.vvdev.yamap.view.ClusteredYamapView;
 import ru.vvdev.yamap.view.YamapView;
 
-public class YamapViewManager extends ViewGroupManager<YamapView> {
-    public static final String REACT_CLASS = "YamapView";
+public class ClusteredYamapViewManager extends ViewGroupManager<ClusteredYamapView> {
+    public static final String REACT_CLASS = "ClusteredYamapView";
 
     private static final int SET_CENTER = 1;
     private static final int FIT_ALL_MARKERS = 2;
@@ -33,14 +35,6 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     private static final int GET_CAMERA_POSITION = 5;
     private static final int GET_VISIBLE_REGION = 6;
     private static final int SET_TRAFFIC_VISIBLE = 7;
-
-    YamapViewManager() {
-    }
-
-    @Override
-    public String getName() {
-        return REACT_CLASS;
-    }
 
     @Override
     public Map<String, Object> getExportedCustomDirectEventTypeConstants() {
@@ -80,7 +74,7 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
 
     @Override
     public void receiveCommand(
-            @NonNull YamapView view,
+            @NonNull ClusteredYamapView view,
             String commandType,
             @Nullable ReadableArray args) {
         Assertions.assertNotNull(view);
@@ -125,14 +119,25 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         }
     }
 
-    private YamapView castToYaMapView(View view) {
-        return (YamapView) view;
+    @ReactProp(name = "clusteredMarkers")
+    public void setClusteredMarkers(View view, ReadableArray points) {
+        castToYaMapView(view).setClusteredMarkers(points.toArrayList());
     }
 
-    @Nonnull
+    private ClusteredYamapView castToYaMapView(View view) {
+        return (ClusteredYamapView) view;
+    }
+
+    @NonNull
     @Override
-    public YamapView createViewInstance(@Nonnull ThemedReactContext context) {
-        YamapView view = new YamapView(context);
+    public String getName() {
+        return REACT_CLASS;
+    }
+
+    @NonNull
+    @Override
+    protected ClusteredYamapView createViewInstance(@NonNull ThemedReactContext context) {
+        ClusteredYamapView view = new ClusteredYamapView(context);
         MapKitFactory.getInstance().onStart();
         view.onStart();
         return view;
@@ -242,14 +247,15 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     }
 
     @Override
-    public void addView(YamapView parent, View child, int index) {
+    public void addView(ClusteredYamapView parent, View child, int index) {
         parent.addFeature(child, index);
         super.addView(parent, child, index);
     }
 
     @Override
-    public void removeViewAt(YamapView parent, int index) {
+    public void removeViewAt(ClusteredYamapView parent, int index) {
         parent.removeChild(index);
         super.removeViewAt(parent, index);
     }
+
 }

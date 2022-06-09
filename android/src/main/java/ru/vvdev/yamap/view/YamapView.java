@@ -87,7 +87,7 @@ import ru.vvdev.yamap.utils.Callback;
 import ru.vvdev.yamap.utils.ImageLoader;
 import ru.vvdev.yamap.utils.RouteManager;
 
-public class YamapView extends MapView implements UserLocationObjectListener, CameraListener, InputListener, TrafficListener, ClusterListener, ClusterTapListener {
+public class YamapView extends MapView implements UserLocationObjectListener, CameraListener, InputListener, TrafficListener {
     // default colors for known vehicles
     // "underground" actually get color considering with his own branch"s color
     private final static Map<String, String> DEFAULT_VEHICLE_COLORS = new HashMap<String, String>() {{
@@ -100,8 +100,6 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         put("walk", "#333333");
     }};
     private String userLocationIcon = "";
-    private Boolean userClusters = false;
-    private int clusterColor = 0;
     private Bitmap userLocationBitmap = null;
 
     private RouteManager routeMng = new RouteManager();
@@ -122,7 +120,6 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         super(context);
         DirectionsFactory.initialize(context);
         drivingRouter = DirectionsFactory.getInstance().createDrivingRouter();
-        clusterCollection = getMap().getMapObjects().addClusterizedPlacemarkCollection(this);
         getMap().addCameraListener(this);
         getMap().addInputListener(this);
     }
@@ -378,16 +375,6 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         });
     }
 
-    public void setClusters(final Boolean with) {
-        userClusters = with;
-        updateUserMarkers();
-    }
-
-    public void setClustersColor(int color) {
-        clusterColor = color;
-        updateUserMarkersColor();
-    }
-
     public void setUserLocationAccuracyFillColor(int color) {
         userLocationAccuracyFillColor = color;
         updateUserLocationIcon();
@@ -619,14 +606,8 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
             _child.setMapObject(obj);
         } else if (child instanceof YamapMarker) {
             YamapMarker _child = (YamapMarker) child;
-            if (userClusters) {
-                PlacemarkMapObject obj = clusterCollection.addPlacemark(_child.point);
-                _child.setMapObject(obj);
-                clusterCollection.clusterPlacemarks(50, 12);
-            } else {
-                PlacemarkMapObject obj = getMap().getMapObjects().addPlacemark(_child.point);
-                _child.setMapObject(obj);
-            }
+            PlacemarkMapObject obj = getMap().getMapObjects().addPlacemark(_child.point);
+            _child.setMapObject(obj);
         } else if (child instanceof YamapCircle) {
             YamapCircle _child = (YamapCircle) child;
             CircleMapObject obj = getMap().getMapObjects().addCircle(_child.circle, 0, 0.f, 0);
@@ -638,15 +619,10 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         if (getChildAt(index) instanceof ReactMapObject) {
             final ReactMapObject child = (ReactMapObject) getChildAt(index);
             if (child == null) return;
+            final MapObject mapObject = child.getMapObject();
+            if (mapObject == null || !mapObject.isValid()) return;
 
-            if (userClusters) {
-                clusterCollection.remove(child.getMapObject());
-            } else {
-                final MapObject mapObject = child.getMapObject();
-                if (mapObject == null || !mapObject.isValid()) return;
-
-                getMap().getMapObjects().remove(mapObject);
-            }
+            getMap().getMapObjects().remove(mapObject);
         }
     }
 
@@ -665,45 +641,6 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     public void onObjectUpdated(@Nonnull UserLocationView _userLocationView, @Nonnull ObjectEvent objectEvent) {
         userLocationView = _userLocationView;
         updateUserLocationIcon();
-    }
-
-    private void updateUserMarkers() {
-        ArrayList<YamapMarker> lastKnownMarkers = new ArrayList<>();
-        for (int i = 0; i < getChildCount(); ++i) {
-            ReactMapObject obj = (ReactMapObject) getChildAt(i);
-            if (obj instanceof YamapMarker) {
-                lastKnownMarkers.add((YamapMarker) obj);
-
-                if (!userClusters) {
-                    clusterCollection.remove(obj.getMapObject());
-                } else {
-                    getMap().getMapObjects().remove(obj.getMapObject());
-                }
-                --i;
-            }
-        }
-        clusterCollection.clear();
-        for (int i = 0; i < lastKnownMarkers.size(); ++i) {
-            addFeature(lastKnownMarkers.get(i), getChildCount());
-        }
-    }
-
-    private void updateUserMarkersColor() {
-        if (userClusters) {
-            ArrayList<YamapMarker> lastKnownMarkers = new ArrayList<>();
-            for (int i = 0; i < getChildCount(); ++i) {
-                ReactMapObject obj = (ReactMapObject) getChildAt(i);
-                if (obj instanceof YamapMarker) {
-                    lastKnownMarkers.add((YamapMarker) obj);
-                    clusterCollection.remove(obj.getMapObject());
-                    --i;
-                }
-            }
-            clusterCollection.clear();
-            for (int i = 0; i < lastKnownMarkers.size(); ++i) {
-                addFeature(lastKnownMarkers.get(i), getChildCount());
-            }
-        }
     }
 
     private void updateUserLocationIcon() {
@@ -761,72 +698,5 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     @Override
     public void onTrafficExpired() {
-    }
-
-    @Override
-    public void onClusterAdded(@NonNull Cluster cluster) {
-        cluster.getAppearance().setIcon(new TextImageProvider(Integer.toString(cluster.getSize())));
-        cluster.addClusterTapListener(this);
-    }
-
-    @Override
-    public boolean onClusterTap(@NonNull Cluster cluster) {
-        fitMarkers(cluster.getPlacemarks());
-        return true;
-    }
-
-
-    private class TextImageProvider extends ImageProvider {
-        private static final float FONT_SIZE = 45;
-        private static final float MARGIN_SIZE = 9;
-        private static final float STROKE_SIZE = 9;
-
-        @Override
-        public String getId() {
-            return "text_" + text;
-        }
-
-        private final String text;
-
-        @Override
-        public Bitmap getImage() {
-            Paint textPaint = new Paint();
-            textPaint.setTextSize(FONT_SIZE);
-            textPaint.setTextAlign(Paint.Align.CENTER);
-            textPaint.setStyle(Paint.Style.FILL);
-            textPaint.setAntiAlias(true);
-
-            float widthF = textPaint.measureText(text);
-            Paint.FontMetrics textMetrics = textPaint.getFontMetrics();
-            float heightF = Math.abs(textMetrics.bottom) + Math.abs(textMetrics.top);
-            float textRadius = (float) Math.sqrt(widthF * widthF + heightF * heightF) / 2;
-            float internalRadius = textRadius + MARGIN_SIZE;
-            float externalRadius = internalRadius + STROKE_SIZE;
-
-            int width = (int) (2 * externalRadius + 0.5);
-
-            Bitmap bitmap = Bitmap.createBitmap(width, width, Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(bitmap);
-
-            Paint backgroundPaint = new Paint();
-            backgroundPaint.setAntiAlias(true);
-            backgroundPaint.setColor(clusterColor);
-            canvas.drawCircle(width / 2, width / 2, externalRadius, backgroundPaint);
-
-            backgroundPaint.setColor(Color.WHITE);
-            canvas.drawCircle(width / 2, width / 2, internalRadius, backgroundPaint);
-
-            canvas.drawText(
-                    text,
-                    width / 2,
-                    width / 2 - (textMetrics.ascent + textMetrics.descent) / 2,
-                    textPaint);
-
-            return bitmap;
-        }
-
-        public TextImageProvider(String text) {
-            this.text = text;
-        }
     }
 }
