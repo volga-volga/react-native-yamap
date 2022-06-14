@@ -13,8 +13,6 @@ import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource'
 import CallbacksManager from '../utils/CallbacksManager';
 import { MapType, Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition, VisibleRegion } from '../interfaces';
 import { processColorProps } from '../utils';
-import { YaMap } from './Yamap';
-import { Marker } from './Marker';
 
 const { yamap: NativeYamapModule } = NativeModules;
 

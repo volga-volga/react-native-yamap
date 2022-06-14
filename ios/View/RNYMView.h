@@ -7,7 +7,7 @@
 
 @class RCTBridge;
 
-@interface RNYMView: YMKMapView<YMKUserLocationObjectListener, YMKMapCameraListener, RCTComponent, YMKClusterListener, YMKClusterTapListener>
+@interface RNYMView: YMKMapView<YMKUserLocationObjectListener, YMKMapCameraListener, RCTComponent>
 
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onRouteFound;
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onCameraPositionReceived;
@@ -27,12 +27,10 @@
 
 // props
 -(void) setNightMode:(BOOL)nightMode;
--(void) setClusters:(BOOL)userClusters;
 -(void) setListenUserLocation:(BOOL)listen;
 -(void) setUserLocationIcon:(NSString*_Nullable) iconSource;
 
 -(void) setUserLocationAccuracyFillColor: (UIColor*_Nullable) color;
--(void) setClusterColor: (UIColor*_Nullable) color;
 -(void) setUserLocationAccuracyStrokeColor: (UIColor*_Nullable) color;
 -(void) setUserLocationAccuracyStrokeWidth: (float) width;
 
