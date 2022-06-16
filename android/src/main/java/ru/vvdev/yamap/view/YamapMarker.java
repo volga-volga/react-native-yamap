@@ -27,6 +27,7 @@ import com.yandex.runtime.image.ImageProvider;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Handler;
@@ -46,6 +47,7 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
     private View _childView;
     private PlacemarkMapObject mapObject;
     private ArrayList<View> childs = new ArrayList<>();
+    static private HashMap<String, ImageProvider> icons = new HashMap<>();
 
     private OnLayoutChangeListener childLayoutListener = new OnLayoutChangeListener() {
         @Override
@@ -119,19 +121,26 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
             }
             if (childs.size() == 0) {
                 if (!iconSource.equals("")) {
-                    ImageLoader.DownloadImageBitmap(getContext(), iconSource, new Callback<Bitmap>() {
-                        @Override
-                        public void invoke(Bitmap bitmap) {
-                            try {
-                                if (mapObject != null) {
-                                    mapObject.setIcon(ImageProvider.fromBitmap(bitmap));
-                                    mapObject.setIconStyle(iconStyle);
+                    if (icons.get(iconSource)==null) {
+                        ImageLoader.DownloadImageBitmap(getContext(), iconSource, new Callback<Bitmap>() {
+                            @Override
+                            public void invoke(Bitmap bitmap) {
+                                try {
+                                    if (mapObject != null) {
+                                        ImageProvider icon = ImageProvider.fromBitmap(bitmap);
+                                        icons.put(iconSource, icon);
+                                        mapObject.setIcon(icon);
+                                        mapObject.setIconStyle(iconStyle);
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
                                 }
-                            } catch (Exception e) {
-                                e.printStackTrace();
                             }
-                        }
-                    });
+                        });
+                    } else {
+                        mapObject.setIcon(icons.get(iconSource));
+                        mapObject.setIconStyle(iconStyle);
+                    }
                 }
             }
         }
