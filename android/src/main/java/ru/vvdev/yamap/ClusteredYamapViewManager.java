@@ -124,6 +124,11 @@ public class ClusteredYamapViewManager extends ViewGroupManager<ClusteredYamapVi
         castToYaMapView(view).setClusteredMarkers(points.toArrayList());
     }
 
+    @ReactProp(name = "clusterColor")
+    public void setClusterColor(View view, int color) {
+        castToYaMapView(view).setClustersColor(color);
+    }
+
     private ClusteredYamapView castToYaMapView(View view) {
         return (ClusteredYamapView) view;
     }

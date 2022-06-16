@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.map.Cluster;
@@ -18,12 +19,16 @@ import com.yandex.mapkit.map.IconStyle;
 import com.yandex.mapkit.map.MapObject;
 import com.yandex.mapkit.map.MapObjectCollection;
 import com.yandex.mapkit.map.PlacemarkMapObject;
+import com.yandex.mapkit.map.internal.PlacemarkMapObjectBinding;
 import com.yandex.runtime.image.ImageProvider;
 import com.yandex.runtime.ui_view.ViewProvider;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import ru.vvdev.yamap.models.ReactMapObject;
 
@@ -31,6 +36,7 @@ public class ClusteredYamapView extends YamapView implements ClusterListener, Cl
     private ClusterizedPlacemarkCollection clusterCollection;
     private int clusterColor = 0;
     private HashMap<String, PlacemarkMapObject> placemarksMap = new HashMap();
+    private ArrayList<Point> pointsList = new ArrayList<>();
 
     public ClusteredYamapView(Context context) {
         super(context);
@@ -46,6 +52,7 @@ public class ClusteredYamapView extends YamapView implements ClusterListener, Cl
             pt.add(new Point(point.get("lat"), point.get("lon")));
         }
         List<PlacemarkMapObject> placemarks = clusterCollection.addPlacemarks(pt, new TextImageProvider(Integer.toString(pt.size())), new IconStyle());
+        pointsList = pt;
         for (int i = 0; i<placemarks.size(); i++) {
             PlacemarkMapObject placemark = placemarks.get(i);
             placemarksMap.put("" + placemark.getGeometry().getLatitude() + placemark.getGeometry().getLongitude(), placemark);
@@ -56,6 +63,25 @@ public class ClusteredYamapView extends YamapView implements ClusterListener, Cl
         }
         clusterCollection.clusterPlacemarks(50, 12);
     }
+
+     public void setClustersColor(int color) {
+        clusterColor = color;
+        updateUserMarkersColor();
+    }
+
+     private void updateUserMarkersColor() {
+         clusterCollection.clear();
+         List<PlacemarkMapObject> placemarks =  clusterCollection.addPlacemarks(pointsList, new TextImageProvider(Integer.toString(pointsList.size())), new IconStyle());
+         for (int i = 0; i<placemarks.size(); i++) {
+             PlacemarkMapObject placemark = placemarks.get(i);
+             placemarksMap.put("" + placemark.getGeometry().getLatitude() + placemark.getGeometry().getLongitude(), placemark);
+             Object child = getChildAt(i);
+             if (child instanceof YamapMarker) {
+                 ((YamapMarker)child).setMapObject(placemark);
+             }
+         }
+         clusterCollection.clusterPlacemarks(50, 12);
+     }
 
     @Override
     public void addFeature(View child, int index) {
@@ -80,13 +106,6 @@ public class ClusteredYamapView extends YamapView implements ClusterListener, Cl
 
     @Override
     public void onClusterAdded(@NonNull Cluster cluster) {
-//        List<PlacemarkMapObject> list = cluster.getPlacemarks();
-//        for (PlacemarkMapObject placemark : list) {
-//            YamapMarker marker = markerMap.get("" + placemark.getGeometry().getLatitude()+placemark.getGeometry().getLongitude());
-//            if (marker!=null) {
-//                marker.setMapObject(placemark);
-//            }
-//        }
         cluster.getAppearance().setIcon(new TextImageProvider(Integer.toString(cluster.getSize())));
         cluster.addClusterTapListener(this);
     }
