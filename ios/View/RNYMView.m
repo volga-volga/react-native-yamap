@@ -594,6 +594,16 @@
     [super insertReactSubview:subview atIndex:atIndex];
 }
 
+- (void)insertMarkerReactSubview:(UIView<RCTComponent>*) subview atIndex:(NSInteger) atIndex {
+    [_reactSubviews insertObject:subview atIndex:atIndex];
+    [super insertReactSubview:subview atIndex:atIndex];
+}
+
+- (void)removeMarkerReactSubview:(UIView<RCTComponent>*) subview {
+    [_reactSubviews removeObject:subview];
+    [super removeReactSubview: subview];
+}
+
 - (void)removeReactSubview:(UIView<RCTComponent>*) subview {
     if ([subview isKindOfClass:[YamapPolygonView class]]) {
         YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;

@@ -13,13 +13,14 @@ import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource'
 import CallbacksManager from '../utils/CallbacksManager';
 import { MapType, Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition, VisibleRegion } from '../interfaces';
 import { processColorProps } from '../utils';
+import { YaMap } from './Yamap';
 
 const { yamap: NativeYamapModule } = NativeModules;
 
-export interface ClusteredYaMapProps extends ViewProps {
+export interface ClusteredYaMapProps<T = any> extends ViewProps {
   userLocationIcon?: ImageSourcePropType;
-  clusteredMarkers: ReadonlyArray<{point: Point, data: any}>
-  renderMarker: (info: {point: Point, data: ListRenderItemInfo<any>}, index: number) => React.ReactElement
+  clusteredMarkers: ReadonlyArray<{point: Point, data: T}>
+  renderMarker: (info: {point: Point, data: ListRenderItemInfo<T>}, index: number) => React.ReactElement
   clusterColor?: string;
   showUserPosition?: boolean;
   nightMode?: boolean;

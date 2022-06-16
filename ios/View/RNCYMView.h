@@ -11,7 +11,7 @@
 @interface RNCYMView: RNYMView<YMKClusterListener, YMKClusterTapListener>
 
 -(void) setClusterColor: (UIColor*_Nullable) color;
--(void) clusteredMarkers:(NSArray<YMKRequestPoint*>*_Nonnull) points;
+-(void) setClusteredMarkers:(NSArray<YMKRequestPoint*>*_Nonnull) points;
 
 @end
 

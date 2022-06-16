@@ -33,6 +33,8 @@
 -(void) setUserLocationAccuracyFillColor: (UIColor*_Nullable) color;
 -(void) setUserLocationAccuracyStrokeColor: (UIColor*_Nullable) color;
 -(void) setUserLocationAccuracyStrokeWidth: (float) width;
+-(void) insertMarkerReactSubview:(UIView *_Nullable)subview atIndex:(NSInteger)atIndex;
+-(void) removeMarkerReactSubview:(UIView*_Nullable) subview;
 
 @end
 

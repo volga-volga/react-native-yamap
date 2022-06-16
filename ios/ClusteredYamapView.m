@@ -49,6 +49,13 @@ RCT_CUSTOM_VIEW_PROPERTY(userLocationAccuracyFillColor, NSNumber, RNCYMView) {
     [view setUserLocationAccuracyFillColor: [RCTConvert UIColor:json]];
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(clusterColor, NSNumber, RNCYMView) {
+    [view setClusterColor: [RCTConvert UIColor:json]];
+}
+
+RCT_CUSTOM_VIEW_PROPERTY(clusteredMarkers, NSArray<YMKRequestPoint*>*_Nonnull, RNCYMView) {
+    [view setClusteredMarkers: [RCTConvert NSArray:json]];
+}
 
 RCT_CUSTOM_VIEW_PROPERTY(userLocationAccuracyStrokeColor, NSNumber, RNCYMView) {
     [view setUserLocationAccuracyStrokeColor: [RCTConvert UIColor:json]];
