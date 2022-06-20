@@ -63,6 +63,28 @@
 	}
 }
 
+
+- (void)updateClusterMarker {
+    if (mapObject != nil && mapObject.valid) {
+        [mapObject setGeometry:_point];
+        [mapObject setZIndex:[zIndex floatValue]];
+        YMKIconStyle* iconStyle = [[YMKIconStyle alloc] init];
+        [iconStyle setScale:scale];
+        [iconStyle setVisible:visible];
+        if (anchor) {
+          [iconStyle setAnchor:anchor];
+        }
+        [iconStyle setRotationType:@1];
+        if ([_reactSubviews count] == 0) {
+            if (![source isEqual:@""]) {
+                    [mapObject setIconWithImage:[self resolveUIImage:source]];
+                    lastSource = source;
+            }
+        }
+        [mapObject setIconStyleWithStyle:iconStyle];
+    }
+}
+
 - (void)setScale:(NSNumber*) _scale {
     scale = _scale;
     [self updateMarker];
@@ -104,6 +126,12 @@
     mapObject = _mapObject;
     [mapObject addTapListenerWithTapListener:self];
     [self updateMarker];
+}
+
+- (void)setClusterMapObject:(YMKPlacemarkMapObject *)_mapObject {
+    mapObject = _mapObject;
+    [mapObject addTapListenerWithTapListener:self];
+    [self updateClusterMarker];
 }
 
 // object tap listener

@@ -88,7 +88,7 @@
             UIView *subview = [_reactSubviews objectAtIndex:i];
             if ([subview isKindOfClass:[YamapMarkerView class]]) {
                 YamapMarkerView* marker = (YamapMarkerView*) subview;
-                [marker setMapObject:[placemarks objectAtIndex:i]];
+                [marker setClusterMapObject:[placemarks objectAtIndex:i]];
             }
         }
     }
@@ -185,7 +185,7 @@
      if ([subview isKindOfClass:[YamapMarkerView class]]) {
         YamapMarkerView* marker = (YamapMarkerView*) subview;
          if (atIndex<[placemarks count]) {
-             [marker setMapObject:[placemarks objectAtIndex:atIndex]];
+             [marker setClusterMapObject:[placemarks objectAtIndex:atIndex]];
          }
     }
     [_reactSubviews insertObject:subview atIndex:atIndex];
@@ -228,7 +228,7 @@
     CGContextFillEllipseInRect(context, CGRectMake(0, 0, externalRadius*2, externalRadius*2));
     CGContextSetFillColorWithColor(context, [UIColor.whiteColor CGColor]);
     CGContextFillEllipseInRect(context, CGRectMake(STROKE_SIZE, STROKE_SIZE, internalRadius*2, internalRadius*2));
-    [text drawInRect:CGRectMake(externalRadius - size.width/2, externalRadius - size.height/2, externalRadius, externalRadius) withAttributes:@{NSFontAttributeName: font, NSForegroundColorAttributeName: UIColor.blackColor }];
+    [text drawInRect:CGRectMake(externalRadius - size.width/2, externalRadius - size.height/2, size.width, size.height) withAttributes:@{NSFontAttributeName: font, NSForegroundColorAttributeName: UIColor.blackColor }];
        UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
        UIGraphicsEndImageContext();
 

@@ -24,6 +24,7 @@
 -(YMKPoint*) getPoint;
 -(YMKPlacemarkMapObject*) getMapObject;
 -(void) setMapObject:(YMKPlacemarkMapObject*) mapObject;
+-(void) setClusterMapObject:(YMKPlacemarkMapObject*) mapObject;
 
 @end
 
