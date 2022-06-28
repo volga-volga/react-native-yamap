@@ -436,69 +436,36 @@
             [lastKnownMarkers addObject:[marker getPoint]];
         }
     }
-    if ([lastKnownMarkers count] == 0) {
-        return;
-    }
-    if ([lastKnownMarkers count] == 1) {
-        YMKPoint *center = [lastKnownMarkers objectAtIndex:0];
-        [self.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:15 azimuth:0 tilt:0]];
-        return;
-    }
-    double minLon = [lastKnownMarkers[0] longitude], maxLon = [lastKnownMarkers[0] longitude];
-    double minLat = [lastKnownMarkers[0] latitude], maxLat = [lastKnownMarkers[0] latitude];
-    for (int i = 0; i < [lastKnownMarkers count]; i++) {
-        if ([lastKnownMarkers[i] longitude] > maxLon) maxLon = [lastKnownMarkers[i] longitude];
-        if ([lastKnownMarkers[i] longitude] < minLon) minLon = [lastKnownMarkers[i] longitude];
-        if ([lastKnownMarkers[i] latitude] > maxLat) maxLat = [lastKnownMarkers[i] latitude];
-        if ([lastKnownMarkers[i] latitude] < minLat) minLat = [lastKnownMarkers[i] latitude];
-    }
-    YMKPoint *southWest = [YMKPoint pointWithLatitude:minLat longitude:minLon];
-    YMKPoint *northEast = [YMKPoint pointWithLatitude:maxLat longitude:maxLon];
-    YMKPoint *rectCenter = [YMKPoint pointWithLatitude:(minLat + maxLat) / 2 longitude:(minLon + maxLon) / 2];
-    CLLocation *centerP = [[CLLocation alloc] initWithLatitude:northEast.latitude longitude:northEast.longitude];
-    CLLocation *edgeP = [[CLLocation alloc] initWithLatitude:rectCenter.latitude longitude:rectCenter.longitude];
-    CLLocationDistance distance = [centerP distanceFromLocation:edgeP];
-    double scale = (distance/2)/80;
-    float zoom = (float) (16 - log(scale) / log(2));
-    YMKBoundingBox *boundingBox = [YMKBoundingBox boundingBoxWithSouthWest:southWest northEast:northEast];
-    YMKCameraPosition *cameraPosition = [self.mapWindow.map cameraPositionWithBoundingBox:boundingBox];
-    cameraPosition = [YMKCameraPosition cameraPositionWithTarget:cameraPosition.target zoom:zoom azimuth:cameraPosition.azimuth tilt:cameraPosition.tilt];
-    [self.mapWindow.map moveWithCameraPosition:cameraPosition animationType:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:1.0] cameraCallback:^(BOOL completed){}];
+    [self fitMarkers:lastKnownMarkers];
 }
 
+- (NSArray<YMKPoint*>*) mapPlacemarksToPoints:(NSArray<YMKPlacemarkMapObject*>*) placemarks {
+    NSMutableArray<YMKPoint*>* points = [[NSMutableArray alloc] init];
+    for (int i = 0; i < [placemarks count]; ++i) {
+            [points addObject:[[placemarks objectAtIndex:i] geometry]];
+    }
+    return points;
+}
 
-- (void)fitMarkers:(NSArray<YMKPlacemarkMapObject*>*) _points {
-    NSMutableArray<YMKPoint*>* lastKnownMarkers = [[NSMutableArray alloc] init];
-    for (int i = 0; i < [_points count]; ++i) {
-            [lastKnownMarkers addObject:[[_points objectAtIndex:i] geometry]];
-    }
-    if ([lastKnownMarkers count] == 0) {
-        return;
-    }
-    if ([lastKnownMarkers count] == 1) {
-        YMKPoint *center = [lastKnownMarkers objectAtIndex:0];
+- (void)fitMarkers:(NSArray<YMKPoint*>*) points {
+    if ([points count] == 1) {
+        YMKPoint *center = [points objectAtIndex:0];
         [self.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:15 azimuth:0 tilt:0]];
         return;
     }
-    double minLon = [lastKnownMarkers[0] longitude], maxLon = [lastKnownMarkers[0] longitude];
-    double minLat = [lastKnownMarkers[0] latitude], maxLat = [lastKnownMarkers[0] latitude];
-    for (int i = 0; i < [lastKnownMarkers count]; i++) {
-        if ([lastKnownMarkers[i] longitude] > maxLon) maxLon = [lastKnownMarkers[i] longitude];
-        if ([lastKnownMarkers[i] longitude] < minLon) minLon = [lastKnownMarkers[i] longitude];
-        if ([lastKnownMarkers[i] latitude] > maxLat) maxLat = [lastKnownMarkers[i] latitude];
-        if ([lastKnownMarkers[i] latitude] < minLat) minLat = [lastKnownMarkers[i] latitude];
+    double minLon = [points[0] longitude], maxLon = [points[0] longitude];
+    double minLat = [points[0] latitude], maxLat = [points[0] latitude];
+    for (int i = 0; i < [points count]; i++) {
+        if ([points[i] longitude] > maxLon) maxLon = [points[i] longitude];
+        if ([points[i] longitude] < minLon) minLon = [points[i] longitude];
+        if ([points[i] latitude] > maxLat) maxLat = [points[i] latitude];
+        if ([points[i] latitude] < minLat) minLat = [points[i] latitude];
     }
     YMKPoint *southWest = [YMKPoint pointWithLatitude:minLat longitude:minLon];
     YMKPoint *northEast = [YMKPoint pointWithLatitude:maxLat longitude:maxLon];
-    YMKPoint *rectCenter = [YMKPoint pointWithLatitude:(minLat + maxLat) / 2 longitude:(minLon + maxLon) / 2];
-    CLLocation *centerP = [[CLLocation alloc] initWithLatitude:northEast.latitude longitude:northEast.longitude];
-    CLLocation *edgeP = [[CLLocation alloc] initWithLatitude:rectCenter.latitude longitude:rectCenter.longitude];
-    CLLocationDistance distance = [centerP distanceFromLocation:edgeP];
-    double scale = (distance/2)/140;
-    int zoom = (int) (16 - log(scale) / log(2));
     YMKBoundingBox *boundingBox = [YMKBoundingBox boundingBoxWithSouthWest:southWest northEast:northEast];
     YMKCameraPosition *cameraPosition = [self.mapWindow.map cameraPositionWithBoundingBox:boundingBox];
-    cameraPosition = [YMKCameraPosition cameraPositionWithTarget:cameraPosition.target zoom:zoom azimuth:cameraPosition.azimuth tilt:cameraPosition.tilt];
+    cameraPosition = [YMKCameraPosition cameraPositionWithTarget:cameraPosition.target zoom:cameraPosition.zoom - 0.8f azimuth:cameraPosition.azimuth tilt:cameraPosition.tilt];
     [self.mapWindow.map moveWithCameraPosition:cameraPosition animationType:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:1.0] cameraCallback:^(BOOL completed){}];
 }
 
@@ -706,7 +673,7 @@
 }
 
 - (BOOL)onClusterTapWithCluster:(nonnull YMKCluster *)cluster {
-    [self fitMarkers:[cluster placemarks]];
+    [self fitMarkers:[self mapPlacemarksToPoints:[cluster placemarks]]];
     return YES;
 }
 

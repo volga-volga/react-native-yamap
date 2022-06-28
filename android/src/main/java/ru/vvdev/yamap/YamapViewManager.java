@@ -33,6 +33,7 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     private static final int GET_CAMERA_POSITION = 5;
     private static final int GET_VISIBLE_REGION = 6;
     private static final int SET_TRAFFIC_VISIBLE = 7;
+    private static final int FIT_MARKERS = 8;
 
     YamapViewManager() {
     }
@@ -61,21 +62,16 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
 
     @Override
     public Map<String, Integer> getCommandsMap() {
-        return MapBuilder.of(
-                "setCenter",
-                SET_CENTER,
-                "fitAllMarkers",
-                FIT_ALL_MARKERS,
-                "findRoutes",
-                FIND_ROUTES,
-                "setZoom",
-                SET_ZOOM,
-                "getCameraPosition",
-                GET_CAMERA_POSITION,
-                "getVisibleRegion",
-                GET_VISIBLE_REGION,
-                "setTrafficVisible",
-                SET_TRAFFIC_VISIBLE);
+        Map<String, Integer> map = MapBuilder.newHashMap();
+        map.put("setCenter", SET_CENTER);
+        map.put("fitAllMarkers", FIT_ALL_MARKERS);
+        map.put("findRoutes", FIND_ROUTES);
+        map.put("setZoom", SET_ZOOM);
+        map.put("getCameraPosition", GET_CAMERA_POSITION);
+        map.put("getVisibleRegion", GET_VISIBLE_REGION);
+        map.put("setTrafficVisible", SET_TRAFFIC_VISIBLE);
+        map.put("fitMarkers", FIT_MARKERS);
+        return map;
     }
 
     @Override
@@ -91,6 +87,11 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
                 return;
             case "fitAllMarkers":
                 fitAllMarkers(view);
+                return;
+            case "fitMarkers":
+                if (args != null) {
+                    fitMarkers(view, args.getArray(0));
+                }
                 return;
             case "findRoutes":
                 if (args != null) {
@@ -148,6 +149,19 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
 
     private void fitAllMarkers(View view) {
         castToYaMapView(view).fitAllMarkers();
+    }
+
+    private void fitMarkers(View view, ReadableArray jsPoints) {
+        if (jsPoints != null) {
+            ArrayList<Point> points = new ArrayList<>();
+            for (int i = 0; i < jsPoints.size(); ++i) {
+                ReadableMap point = jsPoints.getMap(i);
+                if (point != null) {
+                    points.add(new Point(point.getDouble("lat"), point.getDouble("lon")));
+                }
+            }
+            castToYaMapView(view).fitMarkers(points);
+        }
     }
 
     private void findRoutes(View view, ReadableArray jsPoints, ReadableArray jsVehicles, String id) {
