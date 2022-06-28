@@ -5,10 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.util.DisplayMetrics;
-import android.view.Display;
 import android.view.View;
-import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
@@ -42,7 +39,6 @@ import com.yandex.mapkit.map.Cluster;
 import com.yandex.mapkit.map.ClusterListener;
 import com.yandex.mapkit.map.ClusterTapListener;
 import com.yandex.mapkit.map.ClusterizedPlacemarkCollection;
-import com.yandex.mapkit.map.IconStyle;
 import com.yandex.mapkit.map.InputListener;
 import com.yandex.mapkit.map.MapObject;
 import com.yandex.mapkit.map.PlacemarkMapObject;
@@ -71,7 +67,6 @@ import com.yandex.runtime.image.ImageProvider;
 import com.yandex.mapkit.traffic.TrafficLayer;
 import com.yandex.mapkit.traffic.TrafficListener;
 import com.yandex.mapkit.traffic.TrafficLevel;
-import com.yandex.runtime.ui_view.ViewProvider;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -81,7 +76,6 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import ru.vvdev.yamap.R;
 import ru.vvdev.yamap.models.ReactMapObject;
 import ru.vvdev.yamap.utils.Callback;
 import ru.vvdev.yamap.utils.ImageLoader;
@@ -278,80 +272,49 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     }
 
     public void fitAllMarkers() {
-        ArrayList<Point> lastKnownMarkers = new ArrayList<>();
+        ArrayList<Point> points = new ArrayList<>();
         for (int i = 0; i < getChildCount(); ++i) {
             Object obj = getChildAt(i);
             if (obj instanceof YamapMarker) {
                 YamapMarker marker = (YamapMarker) obj;
-                lastKnownMarkers.add(marker.point);
+                points.add(marker.point);
             }
         }
-        // todo[0]: добавить параметры анимации и дефолтного зума (для одного маркера)
-        if (lastKnownMarkers.size() == 0) {
-            return;
-        }
-        if (lastKnownMarkers.size() == 1) {
-            Point center = new Point(lastKnownMarkers.get(0).getLatitude(), lastKnownMarkers.get(0).getLongitude());
-            getMap().move(new CameraPosition(center, 15, 0, 0));
-            return;
-        }
-        double minLon = lastKnownMarkers.get(0).getLongitude();
-        double maxLon = lastKnownMarkers.get(0).getLongitude();
-        double minLat = lastKnownMarkers.get(0).getLatitude();
-        double maxLat = lastKnownMarkers.get(0).getLatitude();
-        for (int i = 0; i < lastKnownMarkers.size(); i++) {
-            if (lastKnownMarkers.get(i).getLongitude() > maxLon) {
-                maxLon = lastKnownMarkers.get(i).getLongitude();
-            }
-            if (lastKnownMarkers.get(i).getLongitude() < minLon) {
-                minLon = lastKnownMarkers.get(i).getLongitude();
-            }
-            if (lastKnownMarkers.get(i).getLatitude() > maxLat) {
-                maxLat = lastKnownMarkers.get(i).getLatitude();
-            }
-            if (lastKnownMarkers.get(i).getLatitude() < minLat) {
-                minLat = lastKnownMarkers.get(i).getLatitude();
-            }
-        }
-        Point southWest = new Point(minLat, minLon);
-        Point northEast = new Point(maxLat, maxLon);
-
-        BoundingBox boundingBox = new BoundingBox(southWest, northEast);
-        CameraPosition cameraPosition = getMap().cameraPosition(boundingBox);
-        cameraPosition = new CameraPosition(cameraPosition.getTarget(), cameraPosition.getZoom() - 0.8f, cameraPosition.getAzimuth(), cameraPosition.getTilt());
-        getMap().move(cameraPosition, new Animation(Animation.Type.SMOOTH, 0.7f), null);
+        fitMarkers(points);
     }
 
-    public void fitMarkers(List<PlacemarkMapObject> points) {
-        ArrayList<Point> lastKnownMarkers = new ArrayList<Point>();
-        for (int i = 0; i < points.size(); ++i) {
-            lastKnownMarkers.add(points.get(i).getGeometry());
+    private ArrayList<Point> mapPlacemarksToPoints(List<PlacemarkMapObject> placemarks) {
+        ArrayList<Point> points = new ArrayList<Point>();
+        for (int i = 0; i < placemarks.size(); ++i) {
+            points.add(placemarks.get(i).getGeometry());
         }
-        // todo[0]: добавить параметры анимации и дефолтного зума (для одного маркера)
-        if (lastKnownMarkers.size() == 0) {
+        return points;
+    }
+    public void fitMarkers(ArrayList<Point> points) {
+        if (points.size() == 0) {
             return;
         }
-        if (lastKnownMarkers.size() == 1) {
-            Point center = new Point(lastKnownMarkers.get(0).getLatitude(), lastKnownMarkers.get(0).getLongitude());
+        if (points.size() == 1) {
+            Point center = new Point(points.get(0).getLatitude(), points.get(0).getLongitude());
             getMap().move(new CameraPosition(center, 15, 0, 0));
             return;
         }
-        double minLon = lastKnownMarkers.get(0).getLongitude();
-        double maxLon = lastKnownMarkers.get(0).getLongitude();
-        double minLat = lastKnownMarkers.get(0).getLatitude();
-        double maxLat = lastKnownMarkers.get(0).getLatitude();
-        for (int i = 0; i < lastKnownMarkers.size(); i++) {
-            if (lastKnownMarkers.get(i).getLongitude() > maxLon) {
-                maxLon = lastKnownMarkers.get(i).getLongitude();
+        double minLon = points.get(0).getLongitude();
+        double maxLon = points.get(0).getLongitude();
+        double minLat = points.get(0).getLatitude();
+        double maxLat = points.get(0).getLatitude();
+        for (int i = 0; i < points.size(); i++) {
+            if (points.get(i).getLongitude() > maxLon) {
+                maxLon = points.get(i).getLongitude();
             }
-            if (lastKnownMarkers.get(i).getLongitude() < minLon) {
-                minLon = lastKnownMarkers.get(i).getLongitude();
+            if (points.get(i).getLongitude() < minLon) {
+                minLon = points.get(i).getLongitude();
             }
-            if (lastKnownMarkers.get(i).getLatitude() > maxLat) {
-                maxLat = lastKnownMarkers.get(i).getLatitude();
+            if (points.get(i).getLatitude() > maxLat) {
+                maxLat = points.get(i).getLatitude();
             }
-            if (lastKnownMarkers.get(i).getLatitude() < minLat) {
-                minLat = lastKnownMarkers.get(i).getLatitude();
+            if (points.get(i).getLatitude() < minLat) {
+                minLat = points.get(i).getLatitude();
             }
         }
         Point southWest = new Point(minLat, minLon);
@@ -771,7 +734,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     @Override
     public boolean onClusterTap(@NonNull Cluster cluster) {
-        fitMarkers(cluster.getPlacemarks());
+        fitMarkers(mapPlacemarksToPoints(cluster.getPlacemarks()));
         return true;
     }
 
