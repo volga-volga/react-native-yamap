@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
@@ -45,14 +46,31 @@ public class RNYamapModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void init(final String apiKey) {
+    public void init(final String apiKey, final Promise promise) {
         runOnUiThread(new Thread(new Runnable() {
             @Override
             public void run() {
-                MapKitFactory.setApiKey(apiKey);
-                MapKitFactory.initialize(reactContext);
-                TransportFactory.initialize(reactContext);
-                MapKitFactory.getInstance().onStart();
+                Throwable apiKeyException = null;
+                try {
+                    // In case when android application reloads during development
+                    // MapKitFactory is already initialized
+                    // And setting api key leads to crash
+                    try {
+                        MapKitFactory.setApiKey(apiKey);
+                    } catch (Throwable exception) {
+                        apiKeyException = exception;
+                    }
+                    MapKitFactory.initialize(reactContext);
+                    TransportFactory.initialize(reactContext);
+                    MapKitFactory.getInstance().onStart();
+                    promise.resolve(null);
+                } catch (Exception exception) {
+                    if(apiKeyException != null) {
+                        promise.reject(apiKeyException);
+                        return;
+                    }
+                    promise.reject(exception);
+                }
             }
         }));
     }
