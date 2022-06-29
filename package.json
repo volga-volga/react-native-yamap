@@ -3,6 +3,7 @@
   "version": "4.0.17",
   "description": "Yandex.MapKit and Yandex.Geocoder for react-native",
   "main": "build/index.js",
+  "types": "build/index.d.ts",
   "scripts": {
     "prepublishOnly": "rm -rf build && tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
