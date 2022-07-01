@@ -638,15 +638,16 @@
 }
 
 -(UIImage*)clusterImage:(NSNumber*) clusterSize {
-    float FONT_SIZE = 45;
-    float MARGIN_SIZE = 9;
-    float STROKE_SIZE = 9;
+    float FONT_SIZE = 15;
+    float MARGIN_SIZE = 3;
+    float STROKE_SIZE = 3;
+    float scale = UIScreen.mainScreen.scale;
     NSString *text = [clusterSize stringValue];
-    UIFont *font = [UIFont systemFontOfSize:FONT_SIZE];
+    UIFont *font = [UIFont systemFontOfSize:FONT_SIZE * scale];
     CGSize size = [text sizeWithFont:font];
     float textRadius = sqrt(size.height * size.height + size.width * size.width) / 2;
-    float internalRadius = textRadius + MARGIN_SIZE;
-    float externalRadius = internalRadius + STROKE_SIZE;
+    float internalRadius = textRadius + MARGIN_SIZE * scale;
+    float externalRadius = internalRadius + STROKE_SIZE * scale;
     UIImage *someImageView = [UIImage alloc];
     // This function returns a newImage, based on image, that has been:
        // - scaled to fit in (CGRect) rect
@@ -658,8 +659,8 @@
     CGContextSetFillColorWithColor(context, [clusterColor CGColor]);
     CGContextFillEllipseInRect(context, CGRectMake(0, 0, externalRadius*2, externalRadius*2));
     CGContextSetFillColorWithColor(context, [UIColor.whiteColor CGColor]);
-    CGContextFillEllipseInRect(context, CGRectMake(STROKE_SIZE, STROKE_SIZE, internalRadius*2, internalRadius*2));
-    [text drawInRect:CGRectMake(externalRadius - size.width/2, externalRadius - size.height/2, externalRadius, externalRadius) withAttributes:@{NSFontAttributeName: font, NSForegroundColorAttributeName: UIColor.blackColor }];
+    CGContextFillEllipseInRect(context, CGRectMake(externalRadius - internalRadius, externalRadius - internalRadius, internalRadius*2, internalRadius*2));
+    [text drawInRect:CGRectMake(externalRadius - size.width/2, externalRadius - size.height/2, size.width, size.height) withAttributes:@{NSFontAttributeName: font, NSForegroundColorAttributeName: UIColor.blackColor }];
        UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
        UIGraphicsEndImageContext();
 
