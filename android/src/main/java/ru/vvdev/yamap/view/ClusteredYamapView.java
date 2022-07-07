@@ -51,7 +51,7 @@ public class ClusteredYamapView extends YamapView implements ClusterListener, Cl
             HashMap<String, Double> point = (HashMap<String, Double>) points.get(i);
             pt.add(new Point(point.get("lat"), point.get("lon")));
         }
-        List<PlacemarkMapObject> placemarks = clusterCollection.addPlacemarks(pt, new TextImageProvider(Integer.toString(pt.size())), new IconStyle());
+        List<PlacemarkMapObject> placemarks = clusterCollection.addPlacemarks(pt, new TextImageProvider(""), new IconStyle());
         pointsList = pt;
         for (int i = 0; i<placemarks.size(); i++) {
             PlacemarkMapObject placemark = placemarks.get(i);

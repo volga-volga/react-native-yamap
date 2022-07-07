@@ -45,6 +45,7 @@ import com.yandex.mapkit.map.ClusterizedPlacemarkCollection;
 import com.yandex.mapkit.map.IconStyle;
 import com.yandex.mapkit.map.InputListener;
 import com.yandex.mapkit.map.MapObject;
+import com.yandex.mapkit.map.MapObjectVisitor;
 import com.yandex.mapkit.map.PlacemarkMapObject;
 import com.yandex.mapkit.map.PolygonMapObject;
 import com.yandex.mapkit.map.PolylineMapObject;
@@ -77,6 +78,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -112,6 +114,30 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     private int userLocationAccuracyStrokeColor = 0;
     private float userLocationAccuracyStrokeWidth = 0.f;
     private TrafficLayer trafficLayer = null;
+    static private HashMap<String, ImageProvider> icons = new HashMap<>();
+
+    void setImage(String iconSource, PlacemarkMapObject mapObject, IconStyle iconStyle) {
+        if (icons.get(iconSource)==null) {
+            ImageLoader.DownloadImageBitmap(getContext(), iconSource, new Callback<Bitmap>() {
+                @Override
+                public void invoke(Bitmap bitmap) {
+                    try {
+                        if (mapObject != null) {
+                            ImageProvider icon = ImageProvider.fromBitmap(bitmap);
+                            icons.put(iconSource, icon);
+                            mapObject.setIcon(icon);
+                            mapObject.setIconStyle(iconStyle);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        } else {
+            mapObject.setIcon(Objects.requireNonNull(icons.get(iconSource)));
+            mapObject.setIconStyle(iconStyle);
+        }
+    }
 
     // location
     private UserLocationView userLocationView = null;

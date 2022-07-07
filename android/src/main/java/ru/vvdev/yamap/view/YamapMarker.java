@@ -47,7 +47,6 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
     private View _childView;
     private PlacemarkMapObject mapObject;
     private ArrayList<View> childs = new ArrayList<>();
-    static private HashMap<String, ImageProvider> icons = new HashMap<>();
 
     private OnLayoutChangeListener childLayoutListener = new OnLayoutChangeListener() {
         @Override
@@ -121,25 +120,9 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
             }
             if (childs.size() == 0) {
                 if (!iconSource.equals("")) {
-                    if (icons.get(iconSource)==null) {
-                        ImageLoader.DownloadImageBitmap(getContext(), iconSource, new Callback<Bitmap>() {
-                            @Override
-                            public void invoke(Bitmap bitmap) {
-                                try {
-                                    if (mapObject != null) {
-                                        ImageProvider icon = ImageProvider.fromBitmap(bitmap);
-                                        icons.put(iconSource, icon);
-                                        mapObject.setIcon(icon);
-                                        mapObject.setIconStyle(iconStyle);
-                                    }
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        });
-                    } else {
-                        mapObject.setIcon(icons.get(iconSource));
-                        mapObject.setIconStyle(iconStyle);
+                    YamapView parent = (YamapView)getParent();
+                    if (parent!=null) {
+                        parent.setImage(iconSource, mapObject, iconStyle);
                     }
                 }
             }
