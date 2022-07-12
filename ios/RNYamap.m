@@ -19,6 +19,11 @@ static NSString * _selectedMarkerIcon;
     return self;
 }
 
++ (BOOL)requiresMainQueueSetup
+ {
+     return YES;
+ }
+
 - (void)initWithKey:(NSString *) apiKey {
     [YMKMapKit setApiKey: apiKey];
 }
@@ -42,9 +47,8 @@ RCT_EXPORT_METHOD(resetLocale:(RCTResponseSenderBlock)successCb errorCallback:(R
 }
 
 RCT_EXPORT_METHOD(getLocale:(RCTResponseSenderBlock)successCb errorCallback:(RCTResponseSenderBlock) errorCb) {
-    [YRTI18nManagerFactory getLocaleWithLocaleDelegate:^(NSString * _Nonnull locale) {
-        successCb(@[locale]);
-    }];
+    NSString * locale = [YRTI18nManagerFactory getLocale];
+    successCb(@[locale]);
 }
 
 RCT_EXPORT_MODULE()

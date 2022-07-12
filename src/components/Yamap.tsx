@@ -6,7 +6,8 @@ import {
   UIManager,
   findNodeHandle,
   ViewProps,
-  ImageSourcePropType, NativeSyntheticEvent,
+  ImageSourcePropType,
+  NativeSyntheticEvent,
 } from 'react-native';
 // @ts-ignore
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';

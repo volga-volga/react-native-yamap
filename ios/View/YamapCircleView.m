@@ -37,6 +37,11 @@
     return self;
 }
 
++ (BOOL)requiresMainQueueSetup
+ {
+     return YES;
+ }
+
 -(void) updateCircle {
     if (mapObject != nil) {
         [mapObject setGeometry:circle];

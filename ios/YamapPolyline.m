@@ -26,6 +26,11 @@ RCT_EXPORT_MODULE()
     return self;
 }
 
++ (BOOL)requiresMainQueueSetup
+ {
+     return YES;
+ }
+
 - (UIView *_Nullable)view {
     return [[YamapPolylineView alloc] init];
 }

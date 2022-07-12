@@ -30,6 +30,11 @@ RCT_EXPORT_MODULE()
     return [[YamapMarkerView alloc] init];
 }
 
++ (BOOL)requiresMainQueueSetup
+ {
+     return YES;
+ }
+
 // props
 RCT_EXPORT_VIEW_PROPERTY(onPress, RCTBubblingEventBlock)
 

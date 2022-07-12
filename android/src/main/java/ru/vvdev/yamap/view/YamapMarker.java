@@ -116,6 +116,7 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
                 mapObject.setGeometry(point);
                 mapObject.setZIndex(zIndex);
                 mapObject.setIconStyle(iconStyle);
+                mapObject.setOpacity(1);
             } catch (Exception e) {
                 e.printStackTrace();
             }

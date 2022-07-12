@@ -25,7 +25,7 @@
     YMKDrivingRouter* drivingRouter;
     YMKDrivingSession* drivingSession;
     YMKPedestrianRouter *pedestrianRouter;
-    YMKMasstransitOptions *masstransitOptions;
+    YMKTransitOptions *masstransitOptions;
     YMKMasstransitSessionRouteHandler routeHandler;
     NSMutableArray<UIView*>* _reactSubviews;
     NSMutableArray *routes;
@@ -61,7 +61,7 @@
     masstransitRouter = [[YMKTransport sharedInstance] createMasstransitRouter];
     drivingRouter = [[YMKDirections sharedInstance] createDrivingRouter];
     pedestrianRouter = [[YMKTransport sharedInstance] createPedestrianRouter];
-    masstransitOptions = [YMKMasstransitOptions masstransitOptionsWithAvoidTypes:[[NSArray alloc] init] acceptTypes:[[NSArray alloc] init] timeOptions:[[YMKTimeOptions alloc] init]];
+    masstransitOptions = [YMKTransitOptions transitOptionsWithAvoid:YMKFilterVehicleTypesNone timeOptions:[[YMKTimeOptions alloc] init]];
     acceptVehicleTypes = [[NSMutableArray<NSString *> alloc] init];
     routes = [[NSMutableArray alloc] init];
     currentRouteInfo = [[NSMutableArray alloc] init];
@@ -95,6 +95,11 @@
 
     return self;
 }
+
++ (BOOL)requiresMainQueueSetup
+ {
+     return YES;
+ }
 
 -(NSDictionary*) convertDrivingRouteSection:(YMKDrivingRoute*) route withSection:(YMKDrivingSection*) section {
     int routeIndex = 0;
@@ -157,7 +162,7 @@
     [routeMetadata setObject:routeWeightData forKey:@"routeInfo"];
     [routeMetadata setObject:@(routeIndex) forKey:@"routeIndex"];
     for (YMKMasstransitRouteStop *stop in section.stops) {
-        [stops addObject:stop.stop.name];
+        [stops addObject:stop.position];
     }
     [routeMetadata setObject:stops forKey:@"stops"];
     if (data.transports != nil) {
@@ -281,8 +286,8 @@
         walkSession = [pedestrianRouter requestRoutesWithPoints:_points timeOptions:[[YMKTimeOptions alloc] init] routeHandler:_routeHandler];
         return;
     }
-    YMKMasstransitOptions* _masstransitOptions =[YMKMasstransitOptions masstransitOptionsWithAvoidTypes:[[NSArray alloc] init] acceptTypes:vehicles timeOptions:[[YMKTimeOptions alloc] init]];
-    masstransitSession = [masstransitRouter requestRoutesWithPoints:_points masstransitOptions:_masstransitOptions routeHandler:_routeHandler];
+    YMKTransitOptions* _masstransitOptions = [YMKTransitOptions transitOptionsWithAvoid:YMKFilterVehicleTypesNone timeOptions:[[YMKTimeOptions alloc] init]];
+    masstransitSession = [masstransitRouter requestRoutesWithPoints:_points transitOptions:_masstransitOptions routeHandler:_routeHandler];
 }
 
 -(UIImage*) resolveUIImage:(NSString*) uri {
@@ -646,7 +651,7 @@
         if ([subview isKindOfClass:[YamapMarkerView class]]) {
             YamapMarkerView* marker = (YamapMarkerView*) subview;
             YMKPlacemarkMapObject* obj = [marker getMapObject];
-            [collection removeWithPlacemark:obj];
+            [collection removeWithMapObject:obj];
         }
     } else {
         if ([subview isKindOfClass:[YamapPolygonView class]]) {
@@ -678,7 +683,7 @@
 
 - (UIImage*) clusterImage:(NSInteger*)clusterSize {
     CGFloat scale;
-    CGFloat FONT_SIZE = 10;
+    CGFloat FONT_SIZE = 6;
     CGFloat MARGIN_SIZE = 2;
     CGFloat internalRadius;
     CGFloat externalRadius;
@@ -687,10 +692,10 @@
     NSString *text;
 
     scale = [UIScreen mainScreen].scale;
-    if (clusterSize > 100) {
+    if ((long) clusterSize > 100) {
         text = [NSString stringWithFormat:@"%i+", 99];
     } else {
-        text = [NSString stringWithFormat:@"%i", clusterSize];
+        text = [NSString stringWithFormat:@"%ld", (long) clusterSize];
     }
     UIFont *font = [UIFont systemFontOfSize:FONT_SIZE * scale];
     CGSize size = [text sizeWithAttributes:@{NSFontAttributeName:font}];
@@ -740,7 +745,7 @@
 
 - (void) viewCollection {
     if (clusteredMap == YES) {
-        [collection clusterPlacemarksWithClusterRadius:60 minZoom:15];
+        [collection clusterPlacemarksWithClusterRadius:40 minZoom:16];
     }
 }
 
@@ -749,5 +754,7 @@
 }
 
 @synthesize reactTag;
+
+@synthesize rootTag;
 
 @end

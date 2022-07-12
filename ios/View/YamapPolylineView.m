@@ -38,11 +38,16 @@
     return self;
 }
 
++ (BOOL)requiresMainQueueSetup
+ {
+     return YES;
+ }
+
 -(void) updatePolyline {
     if (mapObject != nil) {
         [mapObject setGeometry:polyline];
         [mapObject setZIndex:[zIndex floatValue]];
-        [mapObject setStrokeColor:strokeColor];
+        [mapObject setStrokeColorWithColor:strokeColor];
         [mapObject setStrokeWidth:[strokeWidth floatValue]];
         [mapObject setDashLength:[dashLength floatValue]];
         [mapObject setGapLength:[gapLength floatValue]];

@@ -38,6 +38,11 @@
     return self;
 }
 
++ (BOOL)requiresMainQueueSetup
+ {
+     return YES;
+ }
+
 -(void) updateMarker {
     if (mapObject != nil) {
         [mapObject setGeometry:_point];

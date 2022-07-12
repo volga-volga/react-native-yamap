@@ -37,6 +37,11 @@
     return self;
 }
 
++ (BOOL)requiresMainQueueSetup
+ {
+     return YES;
+ }
+
 -(void) updatePolygon {
     if (mapObject != nil) {
         [mapObject setGeometry:polygon];

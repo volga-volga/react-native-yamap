@@ -33,6 +33,11 @@ RCT_EXPORT_MODULE()
     [map setCenter: pos withDuration: duration withAnimation: animation];
 }
 
++ (BOOL)requiresMainQueueSetup
+ {
+     return YES;
+ }
+
 // props
 RCT_EXPORT_VIEW_PROPERTY(onRouteFound, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onCameraPositionReceived, RCTBubblingEventBlock)
