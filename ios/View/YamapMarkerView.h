@@ -15,7 +15,13 @@
 -(void) setSource:(NSString*) _source;
 -(void) setPoint:(YMKPoint*) _points;
 -(void) setAnchor:(NSValue*) _anchor;
+
 -(void) setSectionType:(NSString*) _sectionType;
+-(void) setVisible:(NSNumber*) _visible;
+
+// ref
+-(void) animatedMoveTo:(YMKPoint*) point withDuration:(float) duration;
+-(void) animatedRotateTo:(float) angle withDuration:(float) duration;
 
 -(YMKPoint*) getPoint;
 -(YMKPlacemarkMapObject*) getMapObject;

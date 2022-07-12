@@ -34,6 +34,7 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     private static final int GET_VISIBLE_REGION = 6;
     private static final int SET_TRAFFIC_VISIBLE = 7;
     private static final int INIT_CLUSTER = 8;
+    private static final int FIT_MARKERS = 8;
 
     YamapViewManager() {
     }
@@ -62,6 +63,20 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     }
 
     @Override
+    public Map<String, Integer> getCommandsMap() {
+        Map<String, Integer> map = MapBuilder.newHashMap();
+        map.put("setCenter", SET_CENTER);
+        map.put("fitAllMarkers", FIT_ALL_MARKERS);
+        map.put("findRoutes", FIND_ROUTES);
+        map.put("setZoom", SET_ZOOM);
+        map.put("getCameraPosition", GET_CAMERA_POSITION);
+        map.put("getVisibleRegion", GET_VISIBLE_REGION);
+        map.put("setTrafficVisible", SET_TRAFFIC_VISIBLE);
+        map.put("fitMarkers", FIT_MARKERS);
+        return map;
+    }
+
+    @Override
     public void receiveCommand(
             @NonNull YamapView view,
             String commandType,
@@ -78,6 +93,10 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
                 return;
             case "updateCluster":
                 updateCluster(view);
+            case "fitMarkers":
+                if (args != null) {
+                    fitMarkers(view, args.getArray(0));
+                }
                 return;
             case "findRoutes":
                 if (args != null) {
@@ -137,8 +156,22 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         castToYaMapView(view).fitAllMarkers();
     }
 
+
     private void updateCluster(View view) {
         castToYaMapView(view).updateCluster();
+    }
+    
+    private void fitMarkers(View view, ReadableArray jsPoints) {
+        if (jsPoints != null) {
+            ArrayList<Point> points = new ArrayList<>();
+            for (int i = 0; i < jsPoints.size(); ++i) {
+                ReadableMap point = jsPoints.getMap(i);
+                if (point != null) {
+                    points.add(new Point(point.getDouble("lat"), point.getDouble("lon")));
+                }
+            }
+            castToYaMapView(view).fitMarkers(points);
+        }
     }
 
     private void findRoutes(View view, ReadableArray jsPoints, ReadableArray jsVehicles, String id) {
@@ -166,6 +199,16 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         if (icon != null) {
             castToYaMapView(view).setUserLocationIcon(icon);
         }
+    }
+
+    @ReactProp(name = "withClusters")
+    public void setClusters(View view, Boolean with) {
+            castToYaMapView(view).setClusters(with);
+    }
+
+    @ReactProp(name = "clusterColor")
+    public void setClusterColor(View view, int color) {
+            castToYaMapView(view).setClustersColor(color);
     }
 
     @ReactProp(name = "userLocationAccuracyFillColor")
@@ -218,10 +261,22 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         castToYaMapView(view).setTiltGesturesEnabled(tiltGesturesEnabled == true);
     }
 
+    @ReactProp(name = "fastTapEnabled")
+    public void setFastTapEnabled(View view, Boolean fastTapEnabled) {
+        castToYaMapView(view).setFastTapEnabled(fastTapEnabled == true);
+    }
+
     @ReactProp(name = "mapStyle")
     public void setMapStyle(View view, String style) {
         if (style != null) {
             castToYaMapView(view).setMapStyle(style);
+        }
+    }
+
+    @ReactProp(name = "mapType")
+    public void setMapType(View view, String type) {
+        if (type != null) {
+            castToYaMapView(view).setMapType(type);
         }
     }
 

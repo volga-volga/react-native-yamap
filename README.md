@@ -1,6 +1,11 @@
+
 ## Добавлен параметр clusteredMap
 
 Параметр включает кластеризацию на карте
+
+## React Native Yandex Maps (Яндекс Карты)
+
+Библиотека для интеграции Yandex Maps (Яндекс Карт) в react-native 
 
 ## Пример
 
@@ -125,6 +130,8 @@ export type MasstransitVehicles = 'bus' | 'trolleybus' | 'tramway' | 'minibus' |
 
 export type Vehicles = MasstransitVehicles | 'walk' | 'car';
 
+export type MapType = 'none' | 'raster' | 'vector';
+
 
 export interface DrivingInfo {
   time: string;
@@ -193,6 +200,9 @@ export type VisibleRegion = {
 - `tiltGesturesEnabled?: boolean` - включены ли жесты наклона камеры двумя пальцами. По умолчанию true.
 - `rotateGesturesEnabled?: boolean` - включены ли жесты вращения. По умолчанию true.
 - `clusteredMap?: boolean` - включает кластеризацию. По умолчанию false.
+- `fastTapEnabled?: boolean` - убрана ли задержка в 300мс при клике/тапе. По умолчанию true.
+- `mapType?: string` - тип карты. По умолчанию vector.
+- `mapStyle?: string` - стили карты согласно [документации](https://yandex.ru/dev/maps/archive/doc/mapkit/3.0/concepts/style.html)
 
 #### Методы
 - `fitAllMarkers` - подобрать положение камеры, чтобы вместить все маркеры
@@ -237,6 +247,7 @@ interface MarkerProps {
   onPress?: () => void;
   anchor: { x: number, y: number }; // Якорь иконки маркера. Координаты принимают значения от 0 до 1. По умолчанию { x: 0.5, y: 0.5 } - центр иконки указывает на точку с координатами point
   zIndex?: number;
+  visible?: boolean; // отображение маркера на карте
 }
 ```
 

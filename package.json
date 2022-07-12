@@ -16,6 +16,11 @@
     "polygon",
     "polyline",
     "marker",
+    "map",
+    "maps",
+    "react-native-maps",
+    "yandexmap",
+    "yandexmaps",
     "geocoder"
   ],
   "author": "Nikita Sirotkin / Change Alexey Zolotarev",

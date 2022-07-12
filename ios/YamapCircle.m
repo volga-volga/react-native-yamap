@@ -25,6 +25,10 @@ RCT_EXPORT_MODULE()
     self = [super init];
     return self;
 }
++ (BOOL)requiresMainQueueSetup
+{
+    return YES;
+}
 
 + (BOOL)requiresMainQueueSetup
  {

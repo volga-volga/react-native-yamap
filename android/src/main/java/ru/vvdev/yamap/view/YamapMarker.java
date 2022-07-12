@@ -1,5 +1,7 @@
 package ru.vvdev.yamap.view;
 
+import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
@@ -9,6 +11,9 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.view.View;
 import android.widget.ImageView;
+import android.os.Looper;
+import android.view.View;
+import android.view.animation.LinearInterpolator;
 
 import androidx.annotation.NonNull;
 
@@ -23,12 +28,17 @@ import com.yandex.mapkit.map.MapObject;
 import com.yandex.mapkit.map.MapObjectCollection;
 import com.yandex.mapkit.map.MapObjectTapListener;
 import com.yandex.mapkit.map.PlacemarkMapObject;
+import com.yandex.mapkit.map.RotationType;
 import com.yandex.runtime.image.ImageProvider;
 import com.yandex.runtime.ui_view.ViewProvider;
 
 import android.graphics.BitmapFactory;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.logging.Handler;
 
 import ru.vvdev.yamap.models.ReactMapObject;
 import ru.vvdev.yamap.utils.Callback;
@@ -38,6 +48,8 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
     public Point point;
     private int zIndex = 1;
     private float scale = 1;
+    private Boolean visible = true;
+    private int YAMAP_FRAMES_PER_SECOND = 25;
     private PointF markerAnchor = null;
     private String iconSource;
     private String lastIconSource;
@@ -81,6 +93,11 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
         updateMarker();
     }
 
+    public void setVisible(Boolean _visible) {
+        visible = _visible;
+        updateMarker();
+    }
+
     public void setIconSource(String source) {
         iconSource = source;
         updateMarker();
@@ -108,6 +125,8 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
         if (mapObject != null && mapObject.isValid()) {
             final IconStyle iconStyle = new IconStyle();
             iconStyle.setScale(scale);
+            iconStyle.setRotationType(RotationType.ROTATE);
+            iconStyle.setVisible(visible);
             if (markerAnchor != null) {
                 iconStyle.setAnchor(markerAnchor);
             }
@@ -194,6 +213,59 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
     public void removeChildView(int index) {
         childs.remove(index);
         setChildView(childs.size() > 0 ? childs.get(0) : null);
+    }
+
+    public void moveAnimationLoop(double lat, double lon) {
+        PlacemarkMapObject placemark = (PlacemarkMapObject) this.getMapObject();
+        placemark.setGeometry(new Point(lat, lon));
+    }
+
+    public void rotateAnimationLoop(float delta) {
+        PlacemarkMapObject placemark = (PlacemarkMapObject) this.getMapObject();
+        placemark.setDirection(delta);
+    }
+
+    public void animatedMoveTo(Point point, final float duration) {
+        PlacemarkMapObject placemark = (PlacemarkMapObject) this.getMapObject();
+        Point p = placemark.getGeometry();
+        final double startLat = p.getLatitude();
+        final double startLon = p.getLongitude();
+        final double deltaLat = point.getLatitude() - startLat;
+        final double deltaLon = point.getLongitude() - startLon;
+        ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, 1);
+        valueAnimator.setDuration((long) duration);
+        valueAnimator.setInterpolator(new LinearInterpolator());
+        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override public void onAnimationUpdate(ValueAnimator animation) {
+                try {
+                    float v = animation.getAnimatedFraction();
+                    moveAnimationLoop(startLat + v*deltaLat, startLon + v*deltaLon);
+                } catch (Exception ex) {
+                    // I don't care atm..
+                }
+            }
+        });
+        valueAnimator.start();
+    }
+
+    public void animatedRotateTo(final float angle, float duration) {
+        PlacemarkMapObject placemark = (PlacemarkMapObject) this.getMapObject();
+        final float startDirection = placemark.getDirection();
+        final float delta = angle - placemark.getDirection();
+        ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, 1);
+        valueAnimator.setDuration((long) duration);
+        valueAnimator.setInterpolator(new LinearInterpolator());
+        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override public void onAnimationUpdate(ValueAnimator animation) {
+                try {
+                    float v = animation.getAnimatedFraction();
+                    rotateAnimationLoop(startDirection + v*delta);
+                } catch (Exception ex) {
+                    // I don't care atm..
+                }
+            }
+        });
+        valueAnimator.start();
     }
 
     @Override

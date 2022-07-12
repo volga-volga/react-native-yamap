@@ -22,12 +22,15 @@ RCT_EXPORT_MODULE()
     self = [super init];
     return self;
 }
++ (BOOL)requiresMainQueueSetup {
+    return YES;
+}
 
 - (UIView *_Nullable)view {
     return [[RNYMView alloc] init];
 }
 
--(void) setCenterForMap: (RNYMView*) map center:(NSDictionary*) _center zoom:(float) zoom azimuth:(float) azimuth tilt:(float) tilt duration:(float) duration animation:(int) animation {
+- (void)setCenterForMap: (RNYMView*) map center:(NSDictionary*) _center zoom:(float) zoom azimuth:(float) azimuth tilt:(float) tilt duration:(float) duration animation:(int) animation {
     YMKPoint *center = [RCTConvert YMKPoint:_center];
     YMKCameraPosition* pos = [YMKCameraPosition cameraPositionWithTarget:center zoom:zoom azimuth:azimuth tilt:tilt];
     [map setCenter: pos withDuration: duration withAnimation: animation];
@@ -53,6 +56,16 @@ RCT_CUSTOM_VIEW_PROPERTY(userLocationAccuracyFillColor, NSNumber, RNYMView) {
 
 RCT_CUSTOM_VIEW_PROPERTY(userLocationAccuracyStrokeColor, NSNumber, RNYMView) {
     [view setUserLocationAccuracyStrokeColor: [RCTConvert UIColor:json]];
+}
+
+RCT_CUSTOM_VIEW_PROPERTY(withClusters, BOOL, RNYMView) {
+    if (view) {
+        [view setClusters: json ? [json boolValue] : NO];
+    }
+}
+
+RCT_CUSTOM_VIEW_PROPERTY(clusterColor, NSNumber, RNYMView) {
+    [view setClusterColor: [RCTConvert UIColor:json]];
 }
 
 
@@ -114,6 +127,18 @@ RCT_CUSTOM_VIEW_PROPERTY(clusteredMap, BOOL, RNYMView) {
     }
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(fastTapEnabled, BOOL, RNYMView) {
+    if (view) {
+        view.mapWindow.map.fastTapEnabled = json ? [json boolValue] : YES;
+    }
+}
+
+RCT_CUSTOM_VIEW_PROPERTY(mapType, NSString, RNYMView) {
+    if (view) {
+        [view setMapType: json];
+    }
+}
+
 // ref
 RCT_EXPORT_METHOD(fitAllMarkers:(nonnull NSNumber*) reactTag) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
@@ -123,6 +148,17 @@ RCT_EXPORT_METHOD(fitAllMarkers:(nonnull NSNumber*) reactTag) {
             return;
         }
         [view fitAllMarkers];
+    }];
+}
+RCT_EXPORT_METHOD(fitMarkers:(nonnull NSNumber*) reactTag json:(id) json) {
+    [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
+        RNYMView *view = (RNYMView*) viewRegistry[reactTag];
+        if (!view || ![view isKindOfClass:[RNYMView class]]) {
+            RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
+            return;
+        }
+        NSArray<YMKPoint*>* points = [RCTConvert Points:json];
+        [view fitMarkers: points];
     }];
 }
 
@@ -166,7 +202,7 @@ RCT_EXPORT_METHOD(setZoom:(nonnull NSNumber*) reactTag zoom:(NSNumber*_Nonnull) 
     }];
 }
 
-RCT_EXPORT_METHOD(getCameraPosition:(nonnull NSNumber*) reactTag _id:(NSString*_Nonnull) _id ) {
+RCT_EXPORT_METHOD(getCameraPosition:(nonnull NSNumber*) reactTag _id:(NSString*_Nonnull) _id) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
         RNYMView *view = (RNYMView*) viewRegistry[reactTag];
         if (!view || ![view isKindOfClass:[RNYMView class]]) {
@@ -177,7 +213,7 @@ RCT_EXPORT_METHOD(getCameraPosition:(nonnull NSNumber*) reactTag _id:(NSString*_
     }];
 }
 
-RCT_EXPORT_METHOD(getVisibleRegion:(nonnull NSNumber*) reactTag _id:(NSString*_Nonnull) _id ) {
+RCT_EXPORT_METHOD(getVisibleRegion:(nonnull NSNumber*) reactTag _id:(NSString*_Nonnull) _id) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
         RNYMView *view = (RNYMView*) viewRegistry[reactTag];
         if (!view || ![view isKindOfClass:[RNYMView class]]) {

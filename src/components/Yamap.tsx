@@ -12,16 +12,19 @@ import {
 // @ts-ignore
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 import CallbacksManager from '../utils/CallbacksManager';
-import { Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition, VisibleRegion } from '../interfaces';
+import { MapType, Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition, VisibleRegion } from '../interfaces';
 import { processColorProps } from '../utils';
 
 const { yamap: NativeYamapModule } = NativeModules;
 
 export interface YaMapProps extends ViewProps {
   userLocationIcon?: ImageSourcePropType;
+  withClusters?: boolean;
+  clusterColor?: string;
   showUserPosition?: boolean;
   nightMode?: boolean;
   mapStyle?: string;
+  mapType?: MapType;
   onCameraPositionChange?: (event: NativeSyntheticEvent<CameraPosition>) => void;
   onMapPress?: (event: NativeSyntheticEvent<Point>) => void;
   onMapLongPress?: (event: NativeSyntheticEvent<Point>) => void;
@@ -33,6 +36,7 @@ export interface YaMapProps extends ViewProps {
   tiltGesturesEnabled?: boolean;
   rotateGesturesEnabled?: boolean;
   clusteredMap?: boolean;
+  fastTapEnabled?: boolean;
 }
 
 const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');
@@ -41,6 +45,7 @@ export class YaMap extends React.Component<YaMapProps> {
   static defaultProps = {
     showUserPosition: true,
     clusteredMap: false
+    clusterColor: 'red',
   };
 
   // @ts-ignore
@@ -58,8 +63,8 @@ export class YaMap extends React.Component<YaMapProps> {
     'funicular',
   ];
 
-  public static init(apiKey: string) {
-    NativeYamapModule.init(apiKey);
+  public static init(apiKey: string): Promise<void> {
+    return NativeYamapModule.init(apiKey);
   }
 
   public static setLocale(locale: string): Promise<void> {
@@ -114,9 +119,17 @@ export class YaMap extends React.Component<YaMapProps> {
 
   public setTrafficVisible(isVisible: boolean) {
     UIManager.dispatchViewManagerCommand(
-        findNodeHandle(this),
-        this.getCommand('setTrafficVisible'),
-        [isVisible],
+      findNodeHandle(this),
+      this.getCommand('setTrafficVisible'),
+      [isVisible],
+    );
+  }
+
+  public fitMarkers(points: Point[]) {
+    UIManager.dispatchViewManagerCommand(
+      findNodeHandle(this),
+      this.getCommand('fitMarkers'),
+      [points],
     );
   }
 
@@ -150,8 +163,8 @@ export class YaMap extends React.Component<YaMapProps> {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('getVisibleRegion'),
-      [callbackId]
-    )
+      [callbackId],
+    );
   }
 
   private _findRoutes(points: Point[], vehicles: Vehicles[], callback: ((event: RoutesFoundEvent<DrivingInfo | MasstransitInfo>) => void) | ((event: RoutesFoundEvent<DrivingInfo>) => void) | ((event: RoutesFoundEvent<MasstransitInfo>) => void)) {
@@ -185,7 +198,7 @@ export class YaMap extends React.Component<YaMapProps> {
   }
 
   private processVisibleRegion(event: NativeSyntheticEvent<{id: string} & VisibleRegion>) {
-    const {id, ...visibleRegion} = event.nativeEvent;
+    const { id, ...visibleRegion } = event.nativeEvent;
     CallbacksManager.call(id, visibleRegion);
   }
 
@@ -201,6 +214,7 @@ export class YaMap extends React.Component<YaMapProps> {
       onVisibleRegionReceived: this.processVisibleRegion,
       userLocationIcon: this.props.userLocationIcon ? this.resolveImageUri(this.props.userLocationIcon) : undefined,
     };
+    processColorProps(props, 'clusterColor' as keyof YaMapProps);
     processColorProps(props, 'userLocationAccuracyFillColor' as keyof YaMapProps);
     processColorProps(props, 'userLocationAccuracyStrokeColor' as keyof YaMapProps);
     return props;
