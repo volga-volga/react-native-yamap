@@ -60,8 +60,8 @@ export class YaMap extends React.Component<YaMapProps> {
     'funicular',
   ];
 
-  public static init(apiKey: string) {
-    NativeYamapModule.init(apiKey);
+  public static init(apiKey: string): Promise<void> {
+    return NativeYamapModule.init(apiKey);
   }
 
   public static setLocale(locale: string): Promise<void> {
@@ -111,6 +111,14 @@ export class YaMap extends React.Component<YaMapProps> {
       findNodeHandle(this),
       this.getCommand('setTrafficVisible'),
       [isVisible],
+    );
+  }
+
+  public fitMarkers(points: Point[]) {
+    UIManager.dispatchViewManagerCommand(
+      findNodeHandle(this),
+      this.getCommand('fitMarkers'),
+      [points],
     );
   }
 
