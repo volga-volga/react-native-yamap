@@ -25,6 +25,7 @@
 -(void) fitAllMarkers;
 -(void) fitMarkers: (NSArray<YMKPoint*>*_Nonnull) points;
 -(void) findRoutes:(NSArray<YMKRequestPoint*>*_Nonnull) points vehicles:(NSArray<NSString*>*_Nonnull) vehicles withId:(NSString*_Nonnull)_id;
+-(YMKBoundingBox*_Nonnull)calculateBoundingBox:(NSArray<YMKPoint*>*_Nonnull) points;
 
 // props
 -(void) setNightMode:(BOOL)nightMode;

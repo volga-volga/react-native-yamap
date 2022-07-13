@@ -5,7 +5,10 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
@@ -39,6 +42,7 @@ import com.yandex.mapkit.map.Cluster;
 import com.yandex.mapkit.map.ClusterListener;
 import com.yandex.mapkit.map.ClusterTapListener;
 import com.yandex.mapkit.map.ClusterizedPlacemarkCollection;
+import com.yandex.mapkit.map.IconStyle;
 import com.yandex.mapkit.map.InputListener;
 import com.yandex.mapkit.map.MapObject;
 import com.yandex.mapkit.map.MapObjectVisitor;
@@ -68,6 +72,7 @@ import com.yandex.runtime.image.ImageProvider;
 import com.yandex.mapkit.traffic.TrafficLayer;
 import com.yandex.mapkit.traffic.TrafficListener;
 import com.yandex.mapkit.traffic.TrafficLevel;
+import com.yandex.runtime.ui_view.ViewProvider;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,6 +83,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import ru.vvdev.yamap.R;
 import ru.vvdev.yamap.models.ReactMapObject;
 import ru.vvdev.yamap.utils.Callback;
 import ru.vvdev.yamap.utils.ImageLoader;
@@ -313,15 +319,8 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         }
         return points;
     }
-    public void fitMarkers(ArrayList<Point> points) {
-        if (points.size() == 0) {
-            return;
-        }
-        if (points.size() == 1) {
-            Point center = new Point(points.get(0).getLatitude(), points.get(0).getLongitude());
-            getMap().move(new CameraPosition(center, 15, 0, 0));
-            return;
-        }
+
+    BoundingBox calculateBoundingBox(ArrayList<Point> points) {
         double minLon = points.get(0).getLongitude();
         double maxLon = points.get(0).getLongitude();
         double minLat = points.get(0).getLatitude();
@@ -344,7 +343,19 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         Point northEast = new Point(maxLat, maxLon);
 
         BoundingBox boundingBox = new BoundingBox(southWest, northEast);
-        CameraPosition cameraPosition = getMap().cameraPosition(boundingBox);
+        return boundingBox;
+    }
+
+    public void fitMarkers(ArrayList<Point> points) {
+        if (points.size() == 0) {
+            return;
+        }
+        if (points.size() == 1) {
+            Point center = new Point(points.get(0).getLatitude(), points.get(0).getLongitude());
+            getMap().move(new CameraPosition(center, 15, 0, 0));
+            return;
+        }
+        CameraPosition cameraPosition = getMap().cameraPosition(calculateBoundingBox(points));
         cameraPosition = new CameraPosition(cameraPosition.getTarget(), cameraPosition.getZoom() - 0.8f, cameraPosition.getAzimuth(), cameraPosition.getTilt());
         getMap().move(cameraPosition, new Animation(Animation.Type.SMOOTH, 0.7f), null);
     }

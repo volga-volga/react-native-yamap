@@ -412,12 +412,7 @@
     return points;
 }
 
-- (void)fitMarkers:(NSArray<YMKPoint*>*) points {
-    if ([points count] == 1) {
-        YMKPoint *center = [points objectAtIndex:0];
-        [self.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:15 azimuth:0 tilt:0]];
-        return;
-    }
+-(YMKBoundingBox*)calculateBoundingBox:(NSArray<YMKPoint*>*) points {
     double minLon = [points[0] longitude], maxLon = [points[0] longitude];
     double minLat = [points[0] latitude], maxLat = [points[0] latitude];
     for (int i = 0; i < [points count]; i++) {
@@ -429,7 +424,16 @@
     YMKPoint *southWest = [YMKPoint pointWithLatitude:minLat longitude:minLon];
     YMKPoint *northEast = [YMKPoint pointWithLatitude:maxLat longitude:maxLon];
     YMKBoundingBox *boundingBox = [YMKBoundingBox boundingBoxWithSouthWest:southWest northEast:northEast];
-    YMKCameraPosition *cameraPosition = [self.mapWindow.map cameraPositionWithBoundingBox:boundingBox];
+    return boundingBox;
+}
+
+- (void)fitMarkers:(NSArray<YMKPoint*>*) points {
+    if ([points count] == 1) {
+        YMKPoint *center = [points objectAtIndex:0];
+        [self.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:15 azimuth:0 tilt:0]];
+        return;
+    }
+    YMKCameraPosition *cameraPosition = [self.mapWindow.map cameraPositionWithBoundingBox:[self calculateBoundingBox:points]];
     cameraPosition = [YMKCameraPosition cameraPositionWithTarget:cameraPosition.target zoom:cameraPosition.zoom - 0.8f azimuth:cameraPosition.azimuth tilt:cameraPosition.tilt];
     [self.mapWindow.map moveWithCameraPosition:cameraPosition animationType:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:1.0] cameraCallback:^(BOOL completed){}];
 }
