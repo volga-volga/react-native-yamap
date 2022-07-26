@@ -75,6 +75,11 @@ public class YamapMarkerManager extends ViewGroupManager<YamapMarker> {
         castToMarkerView(view).setScale(scale);
     }
 
+    @ReactProp(name = "rotated")
+    public void setRotated(View view, Boolean rotated) {
+        castToMarkerView(view).setRotated(rotated != null ? rotated : true);
+    }
+
     @ReactProp(name = "visible")
     public void setVisible(View view, Boolean visible) {
         castToMarkerView(view).setVisible(visible != null ? visible : true);

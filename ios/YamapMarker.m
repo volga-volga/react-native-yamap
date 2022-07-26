@@ -47,6 +47,10 @@ RCT_CUSTOM_VIEW_PROPERTY(scale, NSNumber, YamapMarkerView) {
     [view setScale: json];
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(rotated, NSNumber, YamapMarkerView) {
+    [view setRotated: json];
+}
+
 RCT_CUSTOM_VIEW_PROPERTY(visible, NSNumber, YamapMarkerView) {
     [view setVisible: json];
 }

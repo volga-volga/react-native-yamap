@@ -21,6 +21,7 @@
     YMKPlacemarkMapObject* mapObject;
     NSNumber* zIndex;
     NSNumber* scale;
+    NSNumber* rotated;
     NSString* source;
     NSString* lastSource;
     NSValue* anchor;
@@ -33,6 +34,7 @@
     self = [super init];
     zIndex = [[NSNumber alloc] initWithInt:1];
     scale = [[NSNumber alloc] initWithInt:1];
+    rotated = [[NSNumber alloc] initWithInt:0];
     visible = [[NSNumber alloc] initWithInt:1];
     _reactSubviews = [[NSMutableArray alloc] init];
     source = @"";
@@ -50,7 +52,7 @@
         if (anchor) {
           [iconStyle setAnchor:anchor];
         }
-        [iconStyle setRotationType:@1];
+        [iconStyle setRotationType:rotated];
 		if ([_reactSubviews count] == 0) {
 			if (![source isEqual:@""]) {
 				if (![source isEqual:lastSource]) {
@@ -74,7 +76,7 @@
         if (anchor) {
           [iconStyle setAnchor:anchor];
         }
-        [iconStyle setRotationType:@1];
+        [iconStyle setRotationType:rotated];
         if ([_reactSubviews count] == 0) {
             if (![source isEqual:@""]) {
                     [mapObject setIconWithImage:[self resolveUIImage:source]];
@@ -87,6 +89,10 @@
 
 - (void)setScale:(NSNumber*) _scale {
     scale = _scale;
+    [self updateMarker];
+}
+- (void)setRotated:(NSNumber*) _rotated {
+    rotated = _rotated;
     [self updateMarker];
 }
 - (void)setZIndex:(NSNumber*) _zIndex {
@@ -159,10 +165,10 @@
             [_childView setOpaque:false];
             YRTViewProvider* v = [[YRTViewProvider alloc] initWithUIView:_childView];
             if (v != nil) {
-				if (mapObject.isValid) {
-					[mapObject setViewWithView:v];
+                if (mapObject.isValid) {
+                    [mapObject setViewWithView:v];
                     [self updateMarker];
-				}
+                }
             }
         }
     } else {
