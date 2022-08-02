@@ -25,7 +25,7 @@
     YMKDrivingRouter* drivingRouter;
     YMKDrivingSession* drivingSession;
     YMKPedestrianRouter *pedestrianRouter;
-    YMKMasstransitOptions *masstransitOptions;
+    YMKTransitOptions *transitOptions;
     YMKMasstransitSessionRouteHandler routeHandler;
     NSMutableArray<UIView*>* _reactSubviews;
     NSMutableArray *routes;
@@ -50,8 +50,7 @@
     masstransitRouter = [[YMKTransport sharedInstance] createMasstransitRouter];
     drivingRouter = [[YMKDirections sharedInstance] createDrivingRouter];
     pedestrianRouter = [[YMKTransport sharedInstance] createPedestrianRouter];
-    masstransitOptions = [YMKMasstransitOptions masstransitOptionsWithAvoidTypes:[[NSArray alloc] init] acceptTypes:[[NSArray alloc] init] timeOptions:[[YMKTimeOptions alloc] init]];
-    acceptVehicleTypes = [[NSMutableArray<NSString *> alloc] init];
+    transitOptions = [YMKTransitOptions transitOptionsWithAvoid:YMKFilterVehicleTypesNone timeOptions:[[YMKTimeOptions alloc] init]];    acceptVehicleTypes = [[NSMutableArray<NSString *> alloc] init];
     routes = [[NSMutableArray alloc] init];
     currentRouteInfo = [[NSMutableArray alloc] init];
     lastKnownRoutePoints = [[NSMutableArray alloc] init];
@@ -136,7 +135,7 @@
     [routeMetadata setObject:routeWeightData forKey:@"routeInfo"];
     [routeMetadata setObject:@(routeIndex) forKey:@"routeIndex"];
     for (YMKMasstransitRouteStop *stop in section.stops) {
-        [stops addObject:stop.stop.name];
+        [stops addObject:stop.metadata.stop.name];
     }
     [routeMetadata setObject:stops forKey:@"stops"];
     if (data.transports != nil) {
@@ -260,8 +259,8 @@
         walkSession = [pedestrianRouter requestRoutesWithPoints:_points timeOptions:[[YMKTimeOptions alloc] init] routeHandler:_routeHandler];
         return;
     }
-    YMKMasstransitOptions* _masstransitOptions =[YMKMasstransitOptions masstransitOptionsWithAvoidTypes:[[NSArray alloc] init] acceptTypes:vehicles timeOptions:[[YMKTimeOptions alloc] init]];
-    masstransitSession = [masstransitRouter requestRoutesWithPoints:_points masstransitOptions:_masstransitOptions routeHandler:_routeHandler];
+    YMKTransitOptions* _transitOptions = [YMKTransitOptions transitOptionsWithAvoid:YMKFilterVehicleTypesNone timeOptions:[[YMKTimeOptions alloc] init]];
+    masstransitSession = [masstransitRouter requestRoutesWithPoints:_points transitOptions:_transitOptions routeHandler:_routeHandler];
 }
 
 - (UIImage*)resolveUIImage:(NSString*) uri {
@@ -397,7 +396,7 @@
             YamapMarkerView* marker = (YamapMarkerView*) view;
             [lastKnownMarkers addObject:marker];
             if (!userClusters) {
-                [clusterCollection removeWithPlacemark:[marker getMapObject]];
+                [clusterCollection removeWithMapObject:[marker getMapObject]];
             } else {
             YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
             [objects removeWithMapObject:[marker getMapObject]];
@@ -619,7 +618,7 @@
         YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
         YamapMarkerView* marker = (YamapMarkerView*) subview;
         if (userClusters) {
-            [clusterCollection removeWithPlacemark:[marker getMapObject]];
+            [clusterCollection removeWithMapObject:[marker getMapObject]];
         } else {
         [objects removeWithMapObject:[marker getMapObject]];
         }
