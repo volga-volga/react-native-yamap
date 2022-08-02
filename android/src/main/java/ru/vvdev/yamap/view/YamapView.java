@@ -48,7 +48,7 @@ import com.yandex.mapkit.map.VisibleRegion;
 import com.yandex.mapkit.map.MapType;
 import com.yandex.mapkit.mapview.MapView;
 import com.yandex.mapkit.transport.TransportFactory;
-import com.yandex.mapkit.transport.masstransit.MasstransitOptions;
+import com.yandex.mapkit.transport.masstransit.FilterVehicleTypes;
 import com.yandex.mapkit.transport.masstransit.MasstransitRouter;
 import com.yandex.mapkit.transport.masstransit.PedestrianRouter;
 import com.yandex.mapkit.transport.masstransit.Route;
@@ -57,6 +57,7 @@ import com.yandex.mapkit.transport.masstransit.Section;
 import com.yandex.mapkit.transport.masstransit.SectionMetadata;
 import com.yandex.mapkit.transport.masstransit.Session;
 import com.yandex.mapkit.transport.masstransit.TimeOptions;
+import com.yandex.mapkit.transport.masstransit.TransitOptions;
 import com.yandex.mapkit.transport.masstransit.Transport;
 import com.yandex.mapkit.transport.masstransit.Weight;
 import com.yandex.mapkit.user_location.UserLocationLayer;
@@ -267,8 +268,8 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
             pedestrianRouter.requestRoutes(_points, new TimeOptions(), listener);
             return;
         }
-        MasstransitOptions masstransitOptions = new MasstransitOptions(new ArrayList<String>(), vehicles, new TimeOptions());
-        masstransitRouter.requestRoutes(_points, masstransitOptions, listener);
+        TransitOptions transitOptions = new TransitOptions(FilterVehicleTypes.NONE.value, new TimeOptions());
+        masstransitRouter.requestRoutes(_points, transitOptions, listener);
     }
 
     public void fitAllMarkers() {
@@ -460,7 +461,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         routeMetadata.putInt("routeIndex", routeIndex);
         final WritableArray stops = new WritableNativeArray();
         for (RouteStop stop : section.getStops()) {
-            stops.pushString(stop.getStop().getName());
+            stops.pushString(stop.getMetadata().getStop().getName());
         }
         routeMetadata.putArray("stops", stops);
         if (data.getTransports() != null) {
