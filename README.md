@@ -190,7 +190,7 @@ export type VisibleRegion = {
 | mapType | string | 'vector' | Тип карты. |
 | mapStyle | string | {} | Стили карты согласно [документации](https://yandex.ru/dev/maps/mapkit/doc/dg/concepts/style.html). |
 
-#### Методы
+#### Доступные методы для компонента **MapView**:
 
 -  `fitAllMarkers` - подобрать положение камеры, чтобы вместить все маркеры (если возможно);
 -  `setCenter(center: { lon: number, lat: number }, zoom: number = 10, azimuth: number = 0, tilt: number = 0, duration: number = 0, animation: Animation = Animation.SMOOTH)` - устанавливает камеру в точку с заданным zoom, поворотом по азимуту и наклоном карты (`tilt`). Можно параметризовать анимацию: длительность и тип. Если длительность установить 0, то переход будет без анимации. Возможные типы анимаций `Animation.SMOOTH` и `Animation.LINEAR`;
@@ -232,6 +232,11 @@ import { Marker } from 'react-native-yamap';
 | anchor | {  x:  number,  y:  number  } | Якорь иконки маркера. Координаты принимают значения от 0 до 1. |
 | zIndex | number | Отображение элемента по оси Z. |
 | visible | boolean | Отображение маркера на карте. |
+
+#### Доступные методы для примитива **Marker**:
+
+-  `animatedMoveTo(point: Point, duration: number)` - плавное изменение позиции маркера;
+-  `animatedRotateTo(angle: number, duration: number)` - плавное вращение маркера.
 
 ### Circle
 
