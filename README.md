@@ -54,12 +54,12 @@ YaMap.init('API_KEY');
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-	...
+  ...
 
-	[YMKMapKit setLocale:@"ru_RU"];
-	[YMKMapKit setApiKey:@"API_KEY"];
+  [YMKMapKit setLocale:@"ru_RU"];
+  [YMKMapKit setApiKey:@"API_KEY"];
 
-	return YES;
+  return YES;
 }
 ```
 
@@ -93,12 +93,12 @@ import React from 'react';
 import YaMap from 'react-native-yamap';
 
 const Map = () => {
-	return (
-		<YaMap
-			userLocationIcon={{ uri: 'https://www.clipartmax.com/png/middle/180-1801760_pin-png.png' }}
-			style={{ flex: 1 }}
-		/>
-	);
+  return (
+    <YaMap
+      userLocationIcon={{ uri: 'https://www.clipartmax.com/png/middle/180-1801760_pin-png.png' }}
+      style={{ flex: 1 }}
+    />
+  );
 };
 ```
 
@@ -106,8 +106,8 @@ const Map = () => {
 
 ```typescript
 interface Point {
-	lat: Number;
-	lon: Number;
+  lat: Number;
+  lon: Number;
 }
 
 
@@ -119,51 +119,51 @@ export type MapType = 'none' | 'raster' | 'vector';
 
 
 export interface DrivingInfo {
-	time: string;
-	timeWithTraffic: string;
-	distance: number;
+  time: string;
+  timeWithTraffic: string;
+  distance: number;
 }
 
 export interface MasstransitInfo {
-	time:  string;
-	transferCount:  number;
-	walkingDistance:  number;
+  time:  string;
+  transferCount:  number;
+  walkingDistance:  number;
 }
 
 export interface RouteInfo<T extends(DrivingInfo | MasstransitInfo)> {
-	id: string;
-	sections: {
-		points: Point[];
-		sectionInfo: T;
-		routeInfo: T;
-		routeIndex: number;
-		stops: any[];
-		type: string;
-		transports?: any;
-		sectionColor?: string;
-	}
+  id: string;
+  sections: {
+    points: Point[];
+    sectionInfo: T;
+    routeInfo: T;
+    routeIndex: number;
+    stops: any[];
+    type: string;
+    transports?: any;
+    sectionColor?: string;
+  }
 }
 
 export interface RoutesFoundEvent<T extends(DrivingInfo | MasstransitInfo)> {
-	nativeEvent:  {
-		status: 'success' | 'error';
-		id: string;
-		routes: RouteInfo<T>[];
-	};
+  nativeEvent:  {
+    status: 'success' | 'error';
+    id: string;
+    routes: RouteInfo<T>[];
+  };
 }
 
 export interface CameraPosition {
-	zoom: number;
-	tilt: number;
-	azimuth: number;
-	point: Point;
+  zoom: number;
+  tilt: number;
+  azimuth: number;
+  point: Point;
 }
 
 export type VisibleRegion = {
-	bottomLeft: Point;
-	bottomRight: Point;
-	topLeft: Point;
-	topRight: Point;
+  bottomLeft: Point;
+  bottomRight: Point;
+  topLeft: Point;
+  topRight: Point;
 }
 ```
 
@@ -216,7 +216,7 @@ export type VisibleRegion = {
 import { Marker } from 'react-native-yamap';
 
 <YaMap>
-	<Marker point={{ lat: 50, lon: 50 }}/>
+  <Marker point={{ lat: 50, lon: 50 }}/>
 </YaMap>
 ```
 
@@ -239,7 +239,7 @@ import { Marker } from 'react-native-yamap';
 import { Circle } from 'react-native-yamap';
 
 <YaMap>
-	<Circle center={{ lat: 50, lon: 50 }} radius={300} />
+  <Circle center={{ lat: 50, lon: 50 }} radius={300} />
 </YaMap>
 ```
 
@@ -261,13 +261,13 @@ import { Circle } from 'react-native-yamap';
 import { Polyline } from 'react-native-yamap';
 
 <YaMap>
-	<Polyline
-		points={[
-			{ lat: 50, lon: 50 },
-			{ lat: 50, lon: 20 },
-			{ lat: 20, lon: 20 },
-		]}
-	/>
+  <Polyline
+    points={[
+      { lat: 50, lon: 50 },
+      { lat: 50, lon: 20 },
+      { lat: 20, lon: 20 },
+    ]}
+  />
 </YaMap>
 ```
 
@@ -292,13 +292,13 @@ import { Polyline } from 'react-native-yamap';
 import { Polygon } from 'react-native-yamap';
 
 <YaMap>
-	<Polygon
-		points={[
-			{ lat: 50, lon: 50 },
-			{ lat: 50, lon: 20 },
-			{ lat: 20, lon: 20 },
-		]}
-	/>
+  <Polygon
+    points={[
+      { lat: 50, lon: 50 },
+      { lat: 50, lon: 20 },
+      { lat: 20, lon: 20 },
+    ]}
+  />
 </YaMap>
 ```
 
@@ -374,13 +374,13 @@ Geocoder.geoToAddress(geo: Point);
 
 ```typescript
 interface Address {
-	country_code: string;
-	formatted: string;
-	postal_code: string;
-	Components: {
-		kind: string,
-		name: string
-	}[];
+  country_code: string;
+  formatted: string;
+  postal_code: string;
+  Components: {
+    kind: string,
+    name: string
+  }[];
 }
 ```
 
@@ -411,25 +411,25 @@ Geocoder.addressToGeo(address: string);
 import { Suggest } from 'react-native-yamap';
 
 const find = async (query: string) => {
-	const suggestions = await Suggest.suggest(query);
+  const suggestions = await Suggest.suggest(query);
 
-	// suggestion = [{
-	// 		subtitle: "Москва, Россия"
-	// 		title: "улица Льва Толстого, 16"
-	// 		uri: "ymapsbm1://geo?ll=37.587093%2C55.733974&spn=0.001000%2C0.001000&text=%D0%A0%D0%BE%D1%81%D1%81%D0%B8%D1%8F%2C%20%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0%2C%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%20%D0%9B%D1%8C%D0%B2%D0%B0%20%D0%A2%D0%BE%D0%BB%D1%81%D1%82%D0%BE%D0%B3%D0%BE%2C%2016"
-	// }, ...]
+  // suggestion = [{
+  //   subtitle: "Москва, Россия"
+  //   title: "улица Льва Толстого, 16"
+  //   uri: "ymapsbm1://geo?ll=37.587093%2C55.733974&spn=0.001000%2C0.001000&text=%D0%A0%D0%BE%D1%81%D1%81%D0%B8%D1%8F%2C%20%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0%2C%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%20%D0%9B%D1%8C%D0%B2%D0%B0%20%D0%A2%D0%BE%D0%BB%D1%81%D1%82%D0%BE%D0%B3%D0%BE%2C%2016"
+  // }, ...]
 
-	const suggestionsWithCoards = await Suggest.suggestWithCoords(query);
+  const suggestionsWithCoards = await Suggest.suggestWithCoords(query);
 
-	// suggestionsWithCoards = [{
-	// 		subtitle: "Москва, Россия"
-	// 		title: "улица Льва Толстого, 16"
-	// 		lat: 55.733974
-	// 		lon: 37.587093
-	// 		uri: "ymapsbm1://geo?ll=37.587093%2C55.733974&spn=0.001000%2C0.001000&text=%D0%A0%D0%BE%D1%81%D1%81%D0%B8%D1%8F%2C%20%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0%2C%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%20%D0%9B%D1%8C%D0%B2%D0%B0%20%D0%A2%D0%BE%D0%BB%D1%81%D1%82%D0%BE%D0%B3%D0%BE%2C%2016"
-	// }, ...]
+  // suggestionsWithCoards = [{
+  //   subtitle: "Москва, Россия"
+  //   title: "улица Льва Толстого, 16"
+  //   lat: 55.733974
+  //   lon: 37.587093
+  //   uri: "ymapsbm1://geo?ll=37.587093%2C55.733974&spn=0.001000%2C0.001000&text=%D0%A0%D0%BE%D1%81%D1%81%D0%B8%D1%8F%2C%20%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0%2C%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%20%D0%9B%D1%8C%D0%B2%D0%B0%20%D0%A2%D0%BE%D0%BB%D1%81%D1%82%D0%BE%D0%B3%D0%BE%2C%2016"
+  // }, ...]
 
-	// After searh session is finished
-	Suggest.reset();
+  // After searh session is finished
+  Suggest.reset();
 }
 ```
