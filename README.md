@@ -223,7 +223,7 @@ import { Marker } from 'react-native-yamap';
 #### Доступные `props` для примитива **Marker**:
 
 | Название | Тип | Описание |
-|--|--|--|--|
+|--|--|--|
 | point | Point | Координаты точки для отображения маркера. |
 | scale | number | Масштабирование иконки маркера. Не работает если использовать children у маркера. |
 | source | ImageSource | Данные для изображения маркера. |
@@ -251,7 +251,7 @@ import { Circle } from 'react-native-yamap';
 #### Доступные `props` для примитива **Circle**:
 
 | Название | Тип | Описание |
-|--|--|--|--|
+|--|--|--|
 | center | Point | Координаты центра круга. |
 | radius | number | Радиус круга в метрах. |
 | fillColor | string | Цвет заливки. |
@@ -279,7 +279,7 @@ import { Polyline } from 'react-native-yamap';
 #### Доступные `props` для примитива **Polyline**:
 
 | Название | Тип | Описание |
-|--|--|--|--|
+|--|--|--|
 | points | Point[] | Массив точек линии. |
 | strokeColor | string | Цвет линии. |
 | strokeWidth | number | Толщина линии. |
@@ -310,7 +310,7 @@ import { Polygon } from 'react-native-yamap';
 #### Доступные `props` для примитива **Polygon**:
 
 | Название | Тип | Описание |
-|--|--|--|--|
+|--|--|--|
 | points | Point[] | Массив точек линии. |
 | fillColor | string | Цвет заливки. |
 | strokeWidth | number | Толщина границы. |
