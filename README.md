@@ -175,6 +175,7 @@ export type VisibleRegion = {
 | userLocationIcon | ImageSource | false | Иконка для позиции пользователя. Доступны те же значения что и у компонента Image из React Native. |
 | nightMode | boolean | false | Использование ночного режима. |
 | onCameraPositionChange | function | | Колбек на изменение положения камеры. |
+| onCameraPositionChangeEnd | function | | Колбек при завершении изменения положения камеры. |
 | onMapPress | function | | Событие нажития на карту. Возвращает координаты точки на которую нажали. |
 | onMapLongPress | function | | Событие долгого нажития на карту. Возвращает координаты точки на которую нажали. |
 | userLocationAccuracyFillColor | string |  | Цвет фона зоны точности определения позиции пользователя. |
