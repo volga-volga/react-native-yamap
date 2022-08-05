@@ -691,9 +691,14 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     @Override
     public void onCameraPositionChanged(@NonNull com.yandex.mapkit.map.Map map, @NonNull CameraPosition cameraPosition, CameraUpdateReason reason, boolean finished) {
-        WritableMap position = positionToJSON(cameraPosition, reason, finished);
+        WritableMap positionStart = positionToJSON(cameraPosition, reason, finished);
+        WritableMap positionFinish = positionToJSON(cameraPosition, reason, finished);
         ReactContext reactContext = (ReactContext) getContext();
-        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "cameraPositionChanged", position);
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "cameraPositionChange", positionStart);
+
+        if (finished) {
+            reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "cameraPositionChangeEnd", positionFinish);
+        }
     }
 
     @Override

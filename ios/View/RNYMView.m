@@ -370,11 +370,15 @@
 }
 
 - (void)onCameraPositionChangedWithMap:(nonnull YMKMap *) map
-                        cameraPosition:(nonnull YMKCameraPosition *)cameraPosition
-                    cameraUpdateReason:(YMKCameraUpdateReason)cameraUpdateReason
-                              finished:(BOOL)finished {
+                        cameraPosition:(nonnull YMKCameraPosition *) cameraPosition
+                    cameraUpdateReason:(YMKCameraUpdateReason) cameraUpdateReason
+                              finished:(BOOL) finished {
     if (self.onCameraPositionChange) {
         self.onCameraPositionChange([self cameraPositionToJSON:cameraPosition reason:cameraUpdateReason finished:finished]);
+    }
+
+    if (self.onCameraPositionChangeEnd && finished) {
+        self.onCameraPositionChangeEnd([self cameraPositionToJSON:cameraPosition reason:cameraUpdateReason finished:finished]);
     }
 }
 
@@ -636,7 +640,7 @@
     [super removeReactSubview: subview];
 }
 
--(UIImage*)clusterImage:(NSNumber*) clusterSize {
+- (UIImage*)clusterImage:(NSNumber*) clusterSize {
     float FONT_SIZE = 15;
     float MARGIN_SIZE = 3;
     float STROKE_SIZE = 3;
@@ -649,11 +653,11 @@
     float externalRadius = internalRadius + STROKE_SIZE * scale;
     UIImage *someImageView = [UIImage alloc];
     // This function returns a newImage, based on image, that has been:
-       // - scaled to fit in (CGRect) rect
-       // - and cropped within a circle of radius: rectWidth/2
+    // - scaled to fit in (CGRect) rect
+    // - and cropped within a circle of radius: rectWidth/2
 
-       //Create the bitmap graphics context
-       UIGraphicsBeginImageContextWithOptions(CGSizeMake(externalRadius*2, externalRadius*2), NO, 1.0);
+    //Create the bitmap graphics context
+    UIGraphicsBeginImageContextWithOptions(CGSizeMake(externalRadius*2, externalRadius*2), NO, 1.0);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextSetFillColorWithColor(context, [clusterColor CGColor]);
     CGContextFillEllipseInRect(context, CGRectMake(0, 0, externalRadius*2, externalRadius*2));
