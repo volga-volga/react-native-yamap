@@ -1,6 +1,14 @@
 export interface Point {
-  lat: number,
-  lon: number,
+  lat: number;
+  lon: number;
+}
+
+export interface InitialRegion {
+  lat: number;
+  lon: number;
+  zoom?: number;
+  azimuth?: number;
+  tilt?: number;
 }
 
 export type MasstransitVehicles = 'bus' | 'trolleybus' | 'tramway' | 'minibus' | 'suburban' | 'underground' | 'ferry' | 'cable' | 'funicular';
@@ -43,11 +51,6 @@ export interface RoutesFoundEvent<T extends (DrivingInfo | MasstransitInfo)> {
   };
 }
 
-export enum Animation {
-  SMOOTH,
-  LINEAR,
-}
-
 export interface CameraPosition {
   zoom: number;
   tilt: number;
@@ -61,4 +64,9 @@ export type VisibleRegion = {
   bottomRight: Point;
   topLeft: Point;
   topRight: Point;
+}
+
+export enum Animation {
+  SMOOTH,
+  LINEAR
 }

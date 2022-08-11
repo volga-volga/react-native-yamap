@@ -11,7 +11,7 @@ import {
 // @ts-ignore
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 import CallbacksManager from '../utils/CallbacksManager';
-import { MapType, Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition, VisibleRegion } from '../interfaces';
+import { InitialRegion, MapType, Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition, VisibleRegion } from '../interfaces';
 import { processColorProps } from '../utils';
 
 const { yamap: NativeYamapModule } = NativeModules;
@@ -36,6 +36,7 @@ export interface YaMapProps extends ViewProps {
   tiltGesturesEnabled?: boolean;
   rotateGesturesEnabled?: boolean;
   fastTapEnabled?: boolean;
+  initialRegion?: InitialRegion;
 }
 
 const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');
@@ -44,6 +45,13 @@ export class YaMap extends React.Component<YaMapProps> {
   static defaultProps = {
     showUserPosition: true,
     clusterColor: 'red',
+    initialRegion: {
+      lat: 50,
+      lon: 50,
+      zoom: 10,
+      azimuth: 0,
+      tilt: 0
+    }
   };
 
   // @ts-ignore
@@ -204,9 +212,12 @@ export class YaMap extends React.Component<YaMapProps> {
       onVisibleRegionReceived: this.processVisibleRegion,
       userLocationIcon: this.props.userLocationIcon ? this.resolveImageUri(this.props.userLocationIcon) : undefined,
     };
+
     processColorProps(props, 'clusterColor' as keyof YaMapProps);
     processColorProps(props, 'userLocationAccuracyFillColor' as keyof YaMapProps);
     processColorProps(props, 'userLocationAccuracyStrokeColor' as keyof YaMapProps);
+    processColorProps(props, 'initialRegion' as keyof YaMapProps);
+
     return props;
   }
 

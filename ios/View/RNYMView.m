@@ -42,6 +42,7 @@
     YMKClusterizedPlacemarkCollection *clusterCollection;
     UIColor* clusterColor;
     BOOL userClusters;
+    NSDictionary* initialRegion;
 }
 
 - (instancetype)init {

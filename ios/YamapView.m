@@ -130,6 +130,17 @@ RCT_CUSTOM_VIEW_PROPERTY(mapType, NSString, RNYMView) {
     }
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(initialRegion, NSDictionary, RNYMView) {
+    if (view) {
+        YMKPoint* center = [RCTConvert YMKPoint:json];
+        float zoom = [RCTConvert Zoom:json];
+        float azimuth = [RCTConvert Azimuth:json];
+        float tilt = [RCTConvert Tilt:json];
+        YMKCameraPosition* position = [YMKCameraPosition cameraPositionWithTarget:center zoom:zoom azimuth:azimuth tilt:tilt];
+        [view setCenter:position withDuration:0 withAnimation:0];
+    }
+}
+
 // ref
 RCT_EXPORT_METHOD(fitAllMarkers:(nonnull NSNumber*) reactTag) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
