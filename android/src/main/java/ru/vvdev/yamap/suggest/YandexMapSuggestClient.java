@@ -21,7 +21,6 @@ import java.util.List;
 import ru.vvdev.yamap.utils.Callback;
 
 public class YandexMapSuggestClient implements MapSuggestClient {
-
     private SearchManager searchManager;
     private SuggestOptions suggestOptions = new SuggestOptions();
     private SuggestSession suggestSession;
@@ -46,34 +45,35 @@ public class YandexMapSuggestClient implements MapSuggestClient {
         if (suggestSession == null) {
             suggestSession = searchManager.createSuggestSession();
         }
+
         suggestSession.suggest(
-                text,
-                defaultGeometry,
-                suggestOptions,
-                new SuggestSession.SuggestListener() {
-                    @Override
-                    public void onResponse(@NonNull List<SuggestItem> list) {
-                        List<MapSuggestItem> result = new ArrayList<>(list.size());
-                        for (int i = 0; i < list.size(); i++) {
-                            SuggestItem rawSuggest = list.get(i);
-                            MapSuggestItem suggest = new MapSuggestItem();
-                            suggest.setSearchText(rawSuggest.getSearchText());
-                            suggest.setTitle(rawSuggest.getTitle().getText());
-                            if (rawSuggest.getSubtitle() != null) {
-                                suggest.setSubtitle(rawSuggest.getSubtitle().getText());
-                            }
-                            suggest.setUri(rawSuggest.getUri());
-                            result.add(suggest);
-
+            text,
+            defaultGeometry,
+            suggestOptions,
+            new SuggestSession.SuggestListener() {
+                @Override
+                public void onResponse(@NonNull List<SuggestItem> list) {
+                    List<MapSuggestItem> result = new ArrayList<>(list.size());
+                    for (int i = 0; i < list.size(); i++) {
+                        SuggestItem rawSuggest = list.get(i);
+                        MapSuggestItem suggest = new MapSuggestItem();
+                        suggest.setSearchText(rawSuggest.getSearchText());
+                        suggest.setTitle(rawSuggest.getTitle().getText());
+                        if (rawSuggest.getSubtitle() != null) {
+                            suggest.setSubtitle(rawSuggest.getSubtitle().getText());
                         }
-                        onSuccess.invoke(result);
-                    }
+                        suggest.setUri(rawSuggest.getUri());
+                        result.add(suggest);
 
-                    @Override
-                    public void onError(@NonNull Error error) {
-                        onError.invoke(new IllegalStateException("suggest error: " + error));
                     }
+                    onSuccess.invoke(result);
                 }
+
+                @Override
+                public void onError(@NonNull Error error) {
+                    onError.invoke(new IllegalStateException("suggest error: " + error));
+                }
+            }
         );
     }
 

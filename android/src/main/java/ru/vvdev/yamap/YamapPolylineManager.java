@@ -50,7 +50,7 @@ public class YamapPolylineManager extends ViewGroupManager<YamapPolyline> {
         return new YamapPolyline(context);
     }
 
-    // props
+    // PROPS
     @ReactProp(name = "points")
     public void setPoints(View view, ReadableArray points) {
         if (points != null) {

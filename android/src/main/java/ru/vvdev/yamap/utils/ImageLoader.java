@@ -15,7 +15,6 @@ import java.net.URLConnection;
 
 public class ImageLoader {
     private static int getResId(String resName, Class<?> c) {
-
         try {
             Field idField = c.getDeclaredField(resName);
             return idField.getInt(idField);
@@ -38,7 +37,8 @@ public class ImageLoader {
             return bitmap;
         }
         int id = context.getResources().getIdentifier(url, "drawable", context.getPackageName());
-        return BitmapFactory.decodeResource(context.getResources(), id);//getResId(url, R.drawable.class));
+
+        return BitmapFactory.decodeResource(context.getResources(), id); //getResId(url, R.drawable.class));
     }
 
     public static void DownloadImageBitmap(final Context context, final String url, final Callback<Bitmap> cb) {

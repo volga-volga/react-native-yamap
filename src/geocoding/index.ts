@@ -29,12 +29,14 @@ export class Geocoder {
         headers: {
           'content-type': 'application/json',
           accept: 'application/json',
-        },
-      },
+        }
+      }
     );
+
     if (res.status !== 200) {
       throw new GeocodingApiError(res);
     }
+
     return res.json();
   }
 
@@ -54,6 +56,7 @@ export class Geocoder {
       skip,
       lang,
     });
+
     return Geocoder.requestWithQuery(query);
   }
 
@@ -70,29 +73,34 @@ export class Geocoder {
       spn: spn ? `${spn[0]},${spn[1]}` : undefined,
       bbox: bbox
         ? `${bbox[0].lat},${bbox[0].lon}-${bbox[1].lat},${bbox[1].lon}`
-        : undefined,
+        : undefined
     });
+
     return Geocoder.requestWithQuery(query);
   }
 
   static async addressToGeo(address: string): Promise<Point | undefined> {
     const { response } = await Geocoder.reverseGeocode(address);
+
     if (
       response.GeoObjectCollection
       && response.GeoObjectCollection.featureMember
       && response.GeoObjectCollection.featureMember.length > 0
     ) {
       const obj = Geocoder.getFirst(response);
+
       if (obj.Point) {
         const [lon, lat] = obj.Point.pos.split(' ').map(Number);
         return { lon, lat };
       }
     }
+
     return undefined;
   }
 
   static async geoToAddress(geo: Point): Promise<Address | undefined> {
     const { response } = await Geocoder.geocode(geo);
+
     if (
       response.GeoObjectCollection
       && response.GeoObjectCollection.featureMember
@@ -101,6 +109,7 @@ export class Geocoder {
       const obj = Geocoder.getFirst(response);
       return obj.metaDataProperty.GeocoderMetaData.Address;
     }
+
     return undefined;
   }
 }

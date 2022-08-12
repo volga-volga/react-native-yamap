@@ -49,7 +49,7 @@ public class YamapPolygonManager extends ViewGroupManager<YamapPolygon> {
         return new YamapPolygon(context);
     }
 
-    // props
+    // PROPS
     @ReactProp(name = "points")
     public void setPoints(View view, ReadableArray points) {
         if (points != null) {
@@ -100,10 +100,12 @@ public class YamapPolygonManager extends ViewGroupManager<YamapPolygon> {
     public void setStrokeColor(View view, int color) {
         castToPolygonView(view).setStrokeColor(color);
     }
+
     @ReactProp(name = "fillColor")
     public void setFillColor(View view, int color) {
         castToPolygonView(view).setFillColor(color);
     }
+
     @ReactProp(name = "zIndex")
     public void setZIndex(View view, int zIndex) {
         castToPolygonView(view).setZIndex(zIndex);

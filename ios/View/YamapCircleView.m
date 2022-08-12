@@ -29,15 +29,16 @@
     self = [super init];
     fillColor = UIColor.blackColor;
     strokeColor = UIColor.blackColor;
-    zIndex =  [[NSNumber alloc] initWithInt:1];
-    strokeWidth =  [[NSNumber alloc] initWithInt:1];
+    zIndex = [[NSNumber alloc] initWithInt:1];
+    strokeWidth = [[NSNumber alloc] initWithInt:1];
     center = [YMKPoint pointWithLatitude:0 longitude:0];
     radius = 0.f;
     circle = [YMKCircle circleWithCenter:center radius:radius];
+
     return self;
 }
 
--(void) updateCircle {
+- (void)updateCircle {
     if (mapObject != nil) {
         [mapObject setGeometry:circle];
         [mapObject setZIndex:[zIndex floatValue]];
@@ -47,52 +48,62 @@
     }
 }
 
--(void) setFillColor:(UIColor*) color {
+- (void)setFillColor:(UIColor*)color {
     fillColor = color;
     [self updateCircle];
 }
--(void) setStrokeColor:(UIColor*) color {
+
+- (void)setStrokeColor:(UIColor*)color {
     strokeColor = color;
     [self updateCircle];
 }
--(void) setStrokeWidth:(NSNumber*) width {
+
+- (void)setStrokeWidth:(NSNumber*)width {
     strokeWidth = width;
     [self updateCircle];
 }
--(void) setZIndex:(NSNumber*) _zIndex {
+
+- (void)setZIndex:(NSNumber*)_zIndex {
     zIndex = _zIndex;
     [self updateCircle];
 }
--(void) updateGeometry {
+
+- (void)updateGeometry {
     if (center) {
         circle = [YMKCircle circleWithCenter:center radius:radius];
     }
 }
--(void) setCircleCenter:(YMKPoint*) point {
+
+- (void)setCircleCenter:(YMKPoint*)point {
     center = point;
     [self updateGeometry];
     [self updateCircle];
 }
--(void) setRadius:(float)_radius {
+
+- (void)setRadius:(float)_radius {
     radius = _radius;
     [self updateGeometry];
     [self updateCircle];
 }
--(void) setMapObject:(YMKCircleMapObject *)_mapObject {
+
+- (void)setMapObject:(YMKCircleMapObject*)_mapObject {
     mapObject = _mapObject;
     [mapObject addTapListenerWithTapListener:self];
     [self updateCircle];
 }
-- (YMKCircle*) getCircle {
+
+- (YMKCircle*)getCircle {
     return circle;
 }
-// object tap listener
-- (BOOL)onMapObjectTapWithMapObject:(nonnull YMKMapObject *)mapObject point:(nonnull YMKPoint *)point {
-    if (self.onPress) self.onPress(@{});
+
+- (BOOL)onMapObjectTapWithMapObject:(nonnull YMKMapObject*)mapObject point:(nonnull YMKPoint*)point {
+    if (self.onPress)
+        self.onPress(@{});
+
     return YES;
 }
 
--(YMKCircleMapObject*) getMapObject {
+- (YMKCircleMapObject*)getMapObject {
     return mapObject;
 }
 

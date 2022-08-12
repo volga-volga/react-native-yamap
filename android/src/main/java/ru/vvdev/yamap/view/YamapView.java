@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
@@ -83,8 +84,6 @@ import ru.vvdev.yamap.utils.ImageLoader;
 import ru.vvdev.yamap.utils.RouteManager;
 
 public class YamapView extends MapView implements UserLocationObjectListener, CameraListener, InputListener, TrafficListener, ClusterListener, ClusterTapListener {
-    // default colors for known vehicles
-    // "underground" actually get color considering with his own branch"s color
     private final static Map<String, String> DEFAULT_VEHICLE_COLORS = new HashMap<String, String>() {{
         put("bus", "#59ACFF");
         put("railway", "#F8634F");
@@ -110,7 +109,6 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     private float userLocationAccuracyStrokeWidth = 0.f;
     private TrafficLayer trafficLayer = null;
 
-    // location
     private UserLocationView userLocationView = null;
 
     public YamapView(Context context) {
@@ -122,7 +120,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         getMap().addInputListener(this);
     }
 
-    // ref methods
+    // REF
     public void setCenter(CameraPosition position, float duration, int animation) {
         if (duration > 0) {
             Animation.Type anim = animation == 0 ? Animation.Type.SMOOTH : Animation.Type.LINEAR;
@@ -144,6 +142,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         cameraPosition.putMap("point", target);
         cameraPosition.putString("reason", reason.toString());
         cameraPosition.putBoolean("finished", finished);
+
         return cameraPosition;
     }
 
@@ -286,38 +285,48 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     private ArrayList<Point> mapPlacemarksToPoints(List<PlacemarkMapObject> placemarks) {
         ArrayList<Point> points = new ArrayList<Point>();
+
         for (int i = 0; i < placemarks.size(); ++i) {
             points.add(placemarks.get(i).getGeometry());
         }
+
         return points;
     }
+
     public void fitMarkers(ArrayList<Point> points) {
         if (points.size() == 0) {
             return;
         }
+
         if (points.size() == 1) {
             Point center = new Point(points.get(0).getLatitude(), points.get(0).getLongitude());
             getMap().move(new CameraPosition(center, 15, 0, 0));
             return;
         }
+
         double minLon = points.get(0).getLongitude();
         double maxLon = points.get(0).getLongitude();
         double minLat = points.get(0).getLatitude();
         double maxLat = points.get(0).getLatitude();
+
         for (int i = 0; i < points.size(); i++) {
             if (points.get(i).getLongitude() > maxLon) {
                 maxLon = points.get(i).getLongitude();
             }
+
             if (points.get(i).getLongitude() < minLon) {
                 minLon = points.get(i).getLongitude();
             }
+
             if (points.get(i).getLatitude() > maxLat) {
                 maxLat = points.get(i).getLatitude();
             }
+
             if (points.get(i).getLatitude() < minLat) {
                 minLat = points.get(i).getLatitude();
             }
         }
+
         Point southWest = new Point(minLat, minLon);
         Point northEast = new Point(maxLat, maxLon);
 
@@ -327,7 +336,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         getMap().move(cameraPosition, new Animation(Animation.Type.SMOOTH, 0.7f), null);
     }
 
-    // props
+    // PROPS
     public void setUserLocationIcon(final String iconSource) {
         // todo[0]: можно устанавливать разные иконки на покой и движение. Дополнительно можно устанавливать стиль иконки, например scale
         userLocationIcon = iconSource;
@@ -391,6 +400,28 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         }
     }
 
+    public void setInitialRegion (@Nullable ReadableMap params) {
+        if ((!params.hasKey("lat") || params.isNull("lat")) || (!params.hasKey("lon") && params.isNull("lon")))
+            return;
+
+        Float initialRegionZoom = 10.f;
+        Float initialRegionAzimuth = 0.f;
+        Float initialRegionTilt = 0.f;
+
+        if (params.hasKey("zoom") && !params.isNull("zoom"))
+            initialRegionZoom = (float) params.getDouble("zoom");
+
+        if (params.hasKey("azimuth") && !params.isNull("azimuth"))
+            initialRegionAzimuth = (float) params.getDouble("azimuth");
+
+        if (params.hasKey("tilt") && !params.isNull("tilt"))
+            initialRegionTilt = (float) params.getDouble("tilt");
+
+        Point initialPosition = new Point(params.getDouble("lat"), params.getDouble("lon"));
+        CameraPosition initialCameraPosition = new CameraPosition(initialPosition, initialRegionZoom, initialRegionAzimuth, initialRegionTilt);
+        setCenter(initialCameraPosition, 0.f, 0);
+    }
+
     public void setNightMode(Boolean nightMode) {
         getMap().setNightModeEnabled(nightMode);
     }
@@ -415,11 +446,11 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         getMap().setTiltGesturesEnabled(tiltGesturesEnabled);
     }
 
-
     public void setTrafficVisible(Boolean isVisible) {
         if (trafficLayer == null) {
             trafficLayer = MapKitFactory.getInstance().createTrafficLayer(getMapWindow());
         }
+
         if (isVisible) {
             trafficLayer.addTrafficListener(this);
             trafficLayer.setTrafficVisible(true);
@@ -433,6 +464,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         if (userLocationLayer == null) {
             userLocationLayer = MapKitFactory.getInstance().createUserLocationLayer(getMapWindow());
         }
+
         if (show) {
             userLocationLayer.setObjectListener(this);
             userLocationLayer.setVisible(true);
@@ -460,10 +492,13 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         routeMetadata.putMap("routeInfo", routeWeightData);
         routeMetadata.putInt("routeIndex", routeIndex);
         final WritableArray stops = new WritableNativeArray();
+
         for (RouteStop stop : section.getStops()) {
             stops.pushString(stop.getMetadata().getStop().getName());
         }
+
         routeMetadata.putArray("stops", stops);
+
         if (data.getTransports() != null) {
             for (Transport transport : data.getTransports()) {
                 for (String type : transport.getLine().getVehicleTypes()) {
@@ -498,21 +533,27 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
                 routeMetadata.putString("type", "walk");
             }
         }
+
         WritableMap wTransports = Arguments.createMap();
+
         for (Map.Entry<String, ArrayList<String>> entry : transports.entrySet()) {
             wTransports.putArray(entry.getKey(), Arguments.fromList(entry.getValue()));
         }
+
         routeMetadata.putMap("transports", wTransports);
         Polyline subpolyline = SubpolylineHelper.subpolyline(route.getGeometry(), section.getGeometry());
         List<Point> linePoints = subpolyline.getPoints();
         WritableArray jsonPoints = Arguments.createArray();
+
         for (Point point : linePoints) {
             WritableMap jsonPoint = Arguments.createMap();
             jsonPoint.putDouble("lat", point.getLatitude());
             jsonPoint.putDouble("lon", point.getLongitude());
             jsonPoints.pushMap(jsonPoint);
         }
+
         routeMetadata.putArray("points", jsonPoints);
+
         return routeMetadata;
     }
 
@@ -534,23 +575,28 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         final WritableArray stops = new WritableNativeArray();
         routeMetadata.putArray("stops", stops);
         routeMetadata.putString("sectionColor", formatColor(Color.DKGRAY));
+
         if (section.getMetadata().getWeight().getDistance().getValue() == 0) {
             routeMetadata.putString("type", "waiting");
         } else {
             routeMetadata.putString("type", "car");
         }
+
         WritableMap wTransports = Arguments.createMap();
         routeMetadata.putMap("transports", wTransports);
         Polyline subpolyline = SubpolylineHelper.subpolyline(route.getGeometry(), section.getGeometry());
         List<Point> linePoints = subpolyline.getPoints();
         WritableArray jsonPoints = Arguments.createArray();
+
         for (Point point : linePoints) {
             WritableMap jsonPoint = Arguments.createMap();
             jsonPoint.putDouble("lat", point.getLatitude());
             jsonPoint.putDouble("lon", point.getLongitude());
             jsonPoints.pushMap(jsonPoint);
         }
+
         routeMetadata.putArray("points", jsonPoints);
+
         return routeMetadata;
     }
 
@@ -571,7 +617,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         return String.format("#%06X", (0xFFFFFF & color));
     }
 
-    // children
+    // CHILDREN
     public void addFeature(View child, int index) {
         if (child instanceof YamapPolygon) {
             YamapPolygon _child = (YamapPolygon) child;
@@ -741,6 +787,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     @Override
     public boolean onClusterTap(@NonNull Cluster cluster) {
         fitMarkers(mapPlacemarksToPoints(cluster.getPlacemarks()));
+
         return true;
     }
 
@@ -786,10 +833,11 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
             canvas.drawCircle(width / 2, width / 2, internalRadius, backgroundPaint);
 
             canvas.drawText(
-                    text,
-                    width / 2,
-                    width / 2 - (textMetrics.ascent + textMetrics.descent) / 2,
-                    textPaint);
+                text,
+                width / 2,
+                width / 2 - (textMetrics.ascent + textMetrics.descent) / 2,
+                textPaint
+            );
 
             return bitmap;
         }
