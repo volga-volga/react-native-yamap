@@ -37,6 +37,7 @@
     _reactSubviews = [[NSMutableArray alloc] init];
     source = @"";
     lastSource = @"";
+
     return self;
 }
 
@@ -63,29 +64,32 @@
 	}
 }
 
-- (void)setScale:(NSNumber*) _scale {
+- (void)setScale:(NSNumber*)_scale {
     scale = _scale;
     [self updateMarker];
 }
-- (void)setZIndex:(NSNumber*) _zIndex {
+
+- (void)setZIndex:(NSNumber*)_zIndex {
     zIndex = _zIndex;
     [self updateMarker];
 }
-- (void)setVisible:(NSNumber*) _visible {
+
+- (void)setVisible:(NSNumber*)_visible {
     visible = _visible;
     [self updateMarker];
 }
 
-- (void)setPoint:(YMKPoint*) point {
+- (void)setPoint:(YMKPoint*)point {
     _point = point;
     [self updateMarker];
 }
 
-- (UIImage*)resolveUIImage:(NSString*) uri {
+- (UIImage*)resolveUIImage:(NSString*)uri {
     UIImage *icon;
+
     if ([uri rangeOfString:@"http://"].location == NSNotFound && [uri rangeOfString:@"https://"].location == NSNotFound) {
         if ([uri rangeOfString:@"file://"].location != NSNotFound){
-            NSString *file = [uri substringFromIndex:8];
+            NSString* file = [uri substringFromIndex:8];
             icon = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL fileURLWithPath:file]]];
         } else {
             icon = [UIImage imageNamed:uri];
@@ -93,22 +97,25 @@
     } else {
         icon = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:uri]]];
     }
+
     return icon;
 }
 
-- (void)setSource:(NSString*) _source {
+- (void)setSource:(NSString*)_source {
     source = _source;
     [self updateMarker];
 }
+
 - (void)setMapObject:(YMKPlacemarkMapObject *)_mapObject {
     mapObject = _mapObject;
     [mapObject addTapListenerWithTapListener:self];
     [self updateMarker];
 }
 
-// object tap listener
-- (BOOL)onMapObjectTapWithMapObject:(nonnull YMKMapObject *)_mapObject point:(nonnull YMKPoint *)point {
-    if (self.onPress) self.onPress(@{});
+- (BOOL)onMapObjectTapWithMapObject:(nonnull YMKMapObject*)_mapObject point:(nonnull YMKPoint*)point {
+    if (self.onPress)
+        self.onPress(@{});
+
     return YES;
 }
 
@@ -147,21 +154,23 @@
         [self setChildView];
     });
 }
-- (void)insertReactSubview:(UIView*) subview atIndex:(NSInteger)atIndex {
+
+- (void)insertReactSubview:(UIView*)subview atIndex:(NSInteger)atIndex {
     [_reactSubviews insertObject:subview atIndex: atIndex];
     [super insertReactSubview:subview atIndex:atIndex];
 }
 
-- (void)removeReactSubview:(UIView*) subview {
+- (void)removeReactSubview:(UIView*)subview {
     [_reactSubviews removeObject:subview];
     [super removeReactSubview: subview];
 }
 
-- (void) moveAnimationLoop: (NSInteger) frame withTotalFrames:(NSInteger) totalFrames withDeltaLat:(double)deltaLat withDeltaLon:(double) deltaLon {
+- (void)moveAnimationLoop:(NSInteger)frame withTotalFrames:(NSInteger)totalFrames withDeltaLat:(double)deltaLat withDeltaLon:(double)deltaLon {
     YMKPlacemarkMapObject *placemark = [self getMapObject];
     YMKPoint* p = placemark.geometry;
     placemark.geometry = [YMKPoint pointWithLatitude:p.latitude + deltaLat/totalFrames
                                            longitude:p.longitude + deltaLon/totalFrames];
+
     if (frame < totalFrames) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC / YAMAP_FRAMES_PER_SECOND), dispatch_get_main_queue(), ^{
             [self moveAnimationLoop: frame+1 withTotalFrames:totalFrames withDeltaLat:deltaLat withDeltaLon:deltaLon];
@@ -169,9 +178,10 @@
     }
 }
 
-- (void) rotateAnimationLoop: (NSInteger) frame withTotalFrames:(NSInteger) totalFrames withDelta:(double)delta {
+- (void)rotateAnimationLoop:(NSInteger)frame withTotalFrames:(NSInteger)totalFrames withDelta:(double)delta {
     YMKPlacemarkMapObject *placemark = [self getMapObject];
     [placemark setDirection:placemark.direction+(delta / totalFrames)];
+
     if (frame < totalFrames) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC / YAMAP_FRAMES_PER_SECOND), dispatch_get_main_queue(), ^{
             [self rotateAnimationLoop: frame+1 withTotalFrames:totalFrames withDelta:delta];
@@ -179,16 +189,16 @@
     }
 }
 
-- (void) animatedMoveTo: (YMKPoint*) point withDuration:(float) duration {
-    YMKPlacemarkMapObject *placemark = [self getMapObject];
+- (void)animatedMoveTo:(YMKPoint*)point withDuration:(float)duration {
+    YMKPlacemarkMapObject* placemark = [self getMapObject];
     YMKPoint* p = placemark.geometry;
     double deltaLat = point.latitude - p.latitude;
     double deltaLon = point.longitude - p.longitude;
     [self moveAnimationLoop: 0 withTotalFrames:[@(duration / YAMAP_FRAMES_PER_SECOND) integerValue] withDeltaLat:deltaLat withDeltaLon:deltaLon];
 }
 
-- (void) animatedRotateTo:(float) angle withDuration:(float) duration {
-    YMKPlacemarkMapObject *placemark = [self getMapObject];
+- (void)animatedRotateTo:(float)angle withDuration:(float)duration {
+    YMKPlacemarkMapObject* placemark = [self getMapObject];
     double delta = angle - placemark.direction;
     [self rotateAnimationLoop: 0 withTotalFrames:[@(duration / YAMAP_FRAMES_PER_SECOND) integerValue] withDelta:delta];
 }

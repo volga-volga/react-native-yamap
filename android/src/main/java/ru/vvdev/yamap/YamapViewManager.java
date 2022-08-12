@@ -72,58 +72,68 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         map.put("getVisibleRegion", GET_VISIBLE_REGION);
         map.put("setTrafficVisible", SET_TRAFFIC_VISIBLE);
         map.put("fitMarkers", FIT_MARKERS);
+
         return map;
     }
 
     @Override
     public void receiveCommand(
-            @NonNull YamapView view,
-            String commandType,
-            @Nullable ReadableArray args) {
-        Assertions.assertNotNull(view);
-        Assertions.assertNotNull(args);
-        switch (commandType) {
-            case "setCenter":
-                setCenter(castToYaMapView(view), args.getMap(0), (float) args.getDouble(1), (float) args.getDouble(2), (float) args.getDouble(3), (float) args.getDouble(4), args.getInt(5));
-                return;
-            case "fitAllMarkers":
-                fitAllMarkers(view);
-                return;
-            case "fitMarkers":
-                if (args != null) {
-                    fitMarkers(view, args.getArray(0));
-                }
-                return;
-            case "findRoutes":
-                if (args != null) {
-                    findRoutes(view, args.getArray(0), args.getArray(1), args.getString(2));
-                }
-                return;
-            case "setZoom":
-                if (args != null) {
-                    view.setZoom((float)args.getDouble(0), (float)args.getDouble(1), args.getInt(2));
-                }
-                return;
-            case "getCameraPosition":
-                if (args != null) {
-                    view.emitCameraPositionToJS(args.getString(0));
-                }
-                return;
-            case "getVisibleRegion":
-                if (args != null) {
-                    view.emitVisibleRegionToJS(args.getString(0));
-                }
-                return;
-            case "setTrafficVisible":
-                if (args != null) {
-                   view.setTrafficVisible(args.getBoolean(0));
-                }
-                return;
-            default:
-                throw new IllegalArgumentException(String.format(
-                        "Unsupported command %d received by %s.",
-                        commandType,
-                        getClass().getSimpleName()));
+        @NonNull YamapView view,
+        String commandType,
+        @Nullable ReadableArray args) {
+            Assertions.assertNotNull(view);
+            Assertions.assertNotNull(args);
+
+            switch (commandType) {
+                case "setCenter":
+                    setCenter(castToYaMapView(view), args.getMap(0), (float) args.getDouble(1), (float) args.getDouble(2), (float) args.getDouble(3), (float) args.getDouble(4), args.getInt(5));
+                    break;
+
+                case "fitAllMarkers":
+                    fitAllMarkers(view);
+                    break;
+
+                case "fitMarkers":
+                    if (args != null) {
+                        fitMarkers(view, args.getArray(0));
+                    }
+                    break;
+
+                case "findRoutes":
+                    if (args != null) {
+                        findRoutes(view, args.getArray(0), args.getArray(1), args.getString(2));
+                    }
+                    break;
+
+                case "setZoom":
+                    if (args != null) {
+                        view.setZoom((float)args.getDouble(0), (float)args.getDouble(1), args.getInt(2));
+                    }
+                    break;
+
+                case "getCameraPosition":
+                    if (args != null) {
+                        view.emitCameraPositionToJS(args.getString(0));
+                    }
+                    break;
+
+                case "getVisibleRegion":
+                    if (args != null) {
+                        view.emitVisibleRegionToJS(args.getString(0));
+                    }
+                    break;
+
+                case "setTrafficVisible":
+                    if (args != null) {
+                        view.setTrafficVisible(args.getBoolean(0));
+                    }
+                    break;
+
+                default:
+                    throw new IllegalArgumentException(String.format(
+                            "Unsupported command %d received by %s.",
+                            commandType,
+                            getClass().getSimpleName()));
         }
     }
 
@@ -137,6 +147,7 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         YamapView view = new YamapView(context);
         MapKitFactory.getInstance().onStart();
         view.onStart();
+
         return view;
     }
 
@@ -155,12 +166,14 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     private void fitMarkers(View view, ReadableArray jsPoints) {
         if (jsPoints != null) {
             ArrayList<Point> points = new ArrayList<>();
+
             for (int i = 0; i < jsPoints.size(); ++i) {
                 ReadableMap point = jsPoints.getMap(i);
                 if (point != null) {
                     points.add(new Point(point.getDouble("lat"), point.getDouble("lon")));
                 }
             }
+
             castToYaMapView(view).fitMarkers(points);
         }
     }
@@ -168,23 +181,27 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     private void findRoutes(View view, ReadableArray jsPoints, ReadableArray jsVehicles, String id) {
         if (jsPoints != null) {
             ArrayList<Point> points = new ArrayList<>();
+
             for (int i = 0; i < jsPoints.size(); ++i) {
                 ReadableMap point = jsPoints.getMap(i);
                 if (point != null) {
                     points.add(new Point(point.getDouble("lat"), point.getDouble("lon")));
                 }
             }
+
             ArrayList<String> vehicles = new ArrayList<>();
+
             if (jsVehicles != null) {
                 for (int i = 0; i < jsVehicles.size(); ++i) {
                     vehicles.add(jsVehicles.getString(i));
                 }
             }
+
             castToYaMapView(view).findRoutes(points, vehicles, id);
         }
     }
 
-    // props
+    // PROPS
     @ReactProp(name = "userLocationIcon")
     public void setUserLocationIcon(View view, String icon) {
         if (icon != null) {
@@ -194,12 +211,12 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
 
     @ReactProp(name = "withClusters")
     public void setClusters(View view, Boolean with) {
-            castToYaMapView(view).setClusters(with);
+        castToYaMapView(view).setClusters(with);
     }
 
     @ReactProp(name = "clusterColor")
     public void setClusterColor(View view, int color) {
-            castToYaMapView(view).setClustersColor(color);
+        castToYaMapView(view).setClustersColor(color);
     }
 
     @ReactProp(name = "userLocationAccuracyFillColor")
@@ -263,6 +280,13 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     public void setMapType(View view, String type) {
         if (type != null) {
             castToYaMapView(view).setMapType(type);
+        }
+    }
+
+    @ReactProp(name = "initialRegion")
+    public void setInitialRegion(View view, ReadableMap params) {
+        if (params != null) {
+            castToYaMapView(view).setInitialRegion(params);
         }
     }
 

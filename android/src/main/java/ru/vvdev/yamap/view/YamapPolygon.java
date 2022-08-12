@@ -40,7 +40,7 @@ public class YamapPolygon extends ViewGroup implements MapObjectTapListener, Rea
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
     }
 
-    // props
+    // PROPS
     public void setPolygonPoints(ArrayList<Point> points) {
         _points = (points !=  null) ? points :new ArrayList<Point>();
         updatePolygonGeometry();
@@ -107,6 +107,7 @@ public class YamapPolygon extends ViewGroup implements MapObjectTapListener, Rea
     public boolean onMapObjectTap(@NonNull MapObject mapObject, @NonNull Point point) {
         WritableMap e = Arguments.createMap();
         ((ReactContext) getContext()).getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onPress", e);
+
         return false;
     }
 }

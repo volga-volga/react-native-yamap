@@ -42,7 +42,7 @@ public class YamapPolyline extends ViewGroup implements MapObjectTapListener, Re
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
     }
 
-    // props
+    // PROPS
     public void setPolygonPoints(ArrayList<Point> points) {
         _points = points != null ? points : new ArrayList<Point>();
         polyline = new Polyline(_points);
@@ -117,6 +117,7 @@ public class YamapPolyline extends ViewGroup implements MapObjectTapListener, Re
     public boolean onMapObjectTap(@NonNull MapObject mapObject, @NonNull Point point) {
         WritableMap e = Arguments.createMap();
         ((ReactContext) getContext()).getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onPress", e);
+
         return false;
     }
 }

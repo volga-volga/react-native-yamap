@@ -111,7 +111,7 @@ export class YaMap extends React.Component<YaMapProps> {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('fitAllMarkers'),
-      [],
+      []
     );
   }
 
@@ -119,7 +119,7 @@ export class YaMap extends React.Component<YaMapProps> {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('setTrafficVisible'),
-      [isVisible],
+      [isVisible]
     );
   }
 
@@ -127,7 +127,7 @@ export class YaMap extends React.Component<YaMapProps> {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('fitMarkers'),
-      [points],
+      [points]
     );
   }
 
@@ -135,7 +135,7 @@ export class YaMap extends React.Component<YaMapProps> {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('setCenter'),
-      [center, zoom, azimuth, tilt, duration, animation],
+      [center, zoom, azimuth, tilt, duration, animation]
     );
   }
 
@@ -143,7 +143,7 @@ export class YaMap extends React.Component<YaMapProps> {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('setZoom'),
-      [zoom, duration, animation],
+      [zoom, duration, animation]
     );
   }
 
@@ -152,7 +152,7 @@ export class YaMap extends React.Component<YaMapProps> {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('getCameraPosition'),
-      [cbId],
+      [cbId]
     );
   }
 
@@ -161,20 +161,20 @@ export class YaMap extends React.Component<YaMapProps> {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('getVisibleRegion'),
-      [callbackId],
+      [callbackId]
     );
   }
 
   private _findRoutes(points: Point[], vehicles: Vehicles[], callback: ((event: RoutesFoundEvent<DrivingInfo | MasstransitInfo>) => void) | ((event: RoutesFoundEvent<DrivingInfo>) => void) | ((event: RoutesFoundEvent<MasstransitInfo>) => void)) {
     const cbId = CallbacksManager.addCallback(callback);
-    const args
-      = Platform.OS === 'ios'
-        ? [{ points, vehicles, id: cbId }]
-        : [points, vehicles, cbId];
+    const args = Platform.OS === 'ios'
+                ? [{ points, vehicles, id: cbId }]
+                : [points, vehicles, cbId];
+
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('findRoutes'),
-      args,
+      args
     );
   }
 

@@ -35,10 +35,11 @@
     dashOffset =  [[NSNumber alloc] initWithInt:0];
     _points = [[NSMutableArray alloc] init];
     polyline = [YMKPolyline polylineWithPoints:_points];
+
     return self;
 }
 
--(void) updatePolyline {
+- (void)updatePolyline {
     if (mapObject != nil) {
         [mapObject setGeometry:polyline];
         [mapObject setZIndex:[zIndex floatValue]];
@@ -52,65 +53,74 @@
     }
 }
 
--(void) setStrokeColor:(UIColor*) color {
+- (void)setStrokeColor:(UIColor*)color {
     strokeColor = color;
     [self updatePolyline];
 }
--(void) setStrokeWidth:(NSNumber*) width {
+
+- (void)setStrokeWidth:(NSNumber*)width {
     strokeWidth = width;
     [self updatePolyline];
 }
--(void) setOutlineWidth:(NSNumber*) width {
+
+- (void)setOutlineWidth:(NSNumber*)width {
     outlineWidth = width;
     [self updatePolyline];
 }
 
--(void) setDashLength:(NSNumber*) length {
+- (void)setDashLength:(NSNumber*)length {
     dashLength = length;
     [self updatePolyline];
 }
--(void) setDashOffset:(NSNumber*) offset {
+
+- (void)setDashOffset:(NSNumber*)offset {
     dashOffset = offset;
     [self updatePolyline];
 }
--(void) setGapLength:(NSNumber*) length {
+
+- (void)setGapLength:(NSNumber*)length {
     gapLength = length;
     [self updatePolyline];
 }
--(void) setOutlineColor:(UIColor*) color {
+
+- (void)setOutlineColor:(UIColor*)color {
     outlineColor = color;
     [self updatePolyline];
 }
--(void) setZIndex:(NSNumber*) _zIndex {
+
+- (void)setZIndex:(NSNumber*)_zIndex {
     zIndex = _zIndex;
     [self updatePolyline];
 }
--(void) setPolylinePoints:(NSMutableArray<YMKPoint*>*) points {
+
+- (void)setPolylinePoints:(NSMutableArray<YMKPoint*>*)points {
     _points = points;
     polyline = [YMKPolyline polylineWithPoints:points];
     [self updatePolyline];
 }
 
--(void) setMapObject:(YMKPolylineMapObject *)_mapObject {
+- (void)setMapObject:(YMKPolylineMapObject*)_mapObject {
     mapObject = _mapObject;
     [mapObject addTapListenerWithTapListener:self];
     [self updatePolyline];
 }
-// object tap listener
-- (BOOL)onMapObjectTapWithMapObject:(nonnull YMKMapObject *)mapObject point:(nonnull YMKPoint *)point {
-    if (self.onPress) self.onPress(@{});
+
+- (BOOL)onMapObjectTapWithMapObject:(nonnull YMKMapObject*)mapObject point:(nonnull YMKPoint*)point {
+    if (self.onPress)
+        self.onPress(@{});
+
     return YES;
 }
 
--(NSMutableArray<YMKPoint*>*) getPoints {
+- (NSMutableArray<YMKPoint*>*)getPoints {
     return _points;
 }
 
--(YMKPolyline*) getPolyline {
+- (YMKPolyline*)getPolyline {
     return polyline;
 }
 
--(YMKPolylineMapObject*) getMapObject {
+- (YMKPolylineMapObject*)getMapObject {
     return mapObject;
 }
 

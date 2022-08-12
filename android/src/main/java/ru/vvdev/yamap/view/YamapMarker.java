@@ -62,7 +62,7 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
     }
 
-    // props
+    // PROPS
     public void setPoint(Point _point) {
         point = _point;
         updateMarker();
@@ -225,6 +225,7 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
     public boolean onMapObjectTap(@NonNull MapObject mapObject, @NonNull Point point) {
         WritableMap e = Arguments.createMap();
         ((ReactContext) getContext()).getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onPress", e);
+
         return false;
     }
 }

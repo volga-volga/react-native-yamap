@@ -96,6 +96,13 @@ const Map = () => {
   return (
     <YaMap
       userLocationIcon={{ uri: 'https://www.clipartmax.com/png/middle/180-1801760_pin-png.png' }}
+      initialRegion={{
+        lat: 50,
+        lon: 50,
+        zoom: 10,
+        azimuth: 80,
+        tilt: 100
+      }}
       style={{ flex: 1 }}
     />
   );
@@ -110,27 +117,35 @@ interface Point {
   lon: Number;
 }
 
+interface InitialRegion {
+  lat: number;
+  lon: number;
+  zoom?: number;
+  azimuth?: number;
+  tilt?: number;
+}
 
-export type MasstransitVehicles = 'bus' | 'trolleybus' | 'tramway' | 'minibus' | 'suburban' | 'underground' | 'ferry' | 'cable' | 'funicular';
 
-export type Vehicles = MasstransitVehicles | 'walk' | 'car';
+type MasstransitVehicles = 'bus' | 'trolleybus' | 'tramway' | 'minibus' | 'suburban' | 'underground' | 'ferry' | 'cable' | 'funicular';
 
-export type MapType = 'none' | 'raster' | 'vector';
+type Vehicles = MasstransitVehicles | 'walk' | 'car';
+
+type MapType = 'none' | 'raster' | 'vector';
 
 
-export interface DrivingInfo {
+interface DrivingInfo {
   time: string;
   timeWithTraffic: string;
   distance: number;
 }
 
-export interface MasstransitInfo {
+interface MasstransitInfo {
   time:  string;
   transferCount:  number;
   walkingDistance:  number;
 }
 
-export interface RouteInfo<T extends(DrivingInfo | MasstransitInfo)> {
+interface RouteInfo<T extends(DrivingInfo | MasstransitInfo)> {
   id: string;
   sections: {
     points: Point[];
@@ -144,7 +159,7 @@ export interface RouteInfo<T extends(DrivingInfo | MasstransitInfo)> {
   }
 }
 
-export interface RoutesFoundEvent<T extends(DrivingInfo | MasstransitInfo)> {
+interface RoutesFoundEvent<T extends(DrivingInfo | MasstransitInfo)> {
   nativeEvent:  {
     status: 'success' | 'error';
     id: string;
@@ -152,14 +167,14 @@ export interface RoutesFoundEvent<T extends(DrivingInfo | MasstransitInfo)> {
   };
 }
 
-export interface CameraPosition {
+interface CameraPosition {
   zoom: number;
   tilt: number;
   azimuth: number;
   point: Point;
 }
 
-export type VisibleRegion = {
+type VisibleRegion = {
   bottomLeft: Point;
   bottomRight: Point;
   topLeft: Point;
@@ -173,6 +188,7 @@ export type VisibleRegion = {
 |--|--|--|--|
 | showUserPosition | boolean | true | Отслеживание геоданных и отображение позиции пользователя. |
 | userLocationIcon | ImageSource | false | Иконка для позиции пользователя. Доступны те же значения что и у компонента Image из React Native. |
+| initialRegion | InitialRegion | | Изначальное местоположение карты при загрузке. |
 | nightMode | boolean | false | Использование ночного режима. |
 | onCameraPositionChange | function | | Колбек на изменение положения камеры. |
 | onCameraPositionChangeEnd | function | | Колбек при завершении изменения положения камеры. |
@@ -208,7 +224,7 @@ export type VisibleRegion = {
 **ВАЖНО**
 
 - Компонент карт стилизуется, как и `View` из React Native. Если карта не отображается, после инициализации с валидным ключем API, вероятно необходимо прописать стиль, который опишет размеры компонента (`height + width` или `flex`);
-- При использовании изображений из JS (через `require('./img.png')`) в дебаге и релизе на андроиде могут быть разные размеры маркера. Рекомендуется проверять рендер в релизной сборке.
+- При использовании изображений из JS (через `require('./img.png')`) в дебаге и релизе на Android могут быть разные размеры маркера. Рекомендуется проверять рендер в релизной сборке.
 
 ## Отображение примитивов
 

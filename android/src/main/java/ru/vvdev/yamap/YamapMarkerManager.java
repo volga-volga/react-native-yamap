@@ -54,7 +54,7 @@ public class YamapMarkerManager extends ViewGroupManager<YamapMarker> {
         return new YamapMarker(context);
     }
 
-    // props
+    // PROPS
     @ReactProp(name = "point")
     public void setPoint(View view, ReadableMap markerPoint) {
         if (markerPoint != null) {
@@ -130,5 +130,4 @@ public class YamapMarkerManager extends ViewGroupManager<YamapMarker> {
                         getClass().getSimpleName()));
         }
     }
-
 }
