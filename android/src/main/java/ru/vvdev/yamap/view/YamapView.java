@@ -33,6 +33,7 @@ import com.yandex.mapkit.geometry.Polyline;
 import com.yandex.mapkit.geometry.SubpolylineHelper;
 import com.yandex.mapkit.layers.ObjectEvent;
 import com.yandex.mapkit.map.CameraListener;
+import com.yandex.mapkit.map.MapLoadedListener;
 import com.yandex.mapkit.map.CameraPosition;
 import com.yandex.mapkit.map.CameraUpdateReason;
 import com.yandex.mapkit.map.CircleMapObject;
@@ -83,7 +84,7 @@ import ru.vvdev.yamap.utils.Callback;
 import ru.vvdev.yamap.utils.ImageLoader;
 import ru.vvdev.yamap.utils.RouteManager;
 
-public class YamapView extends MapView implements UserLocationObjectListener, CameraListener, InputListener, TrafficListener, ClusterListener, ClusterTapListener {
+public class YamapView extends MapView implements UserLocationObjectListener, CameraListener, InputListener, TrafficListener, ClusterListener, ClusterTapListener, MapLoadedListener {
     private final static Map<String, String> DEFAULT_VEHICLE_COLORS = new HashMap<String, String>() {{
         put("bus", "#59ACFF");
         put("railway", "#F8634F");
@@ -118,6 +119,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         clusterCollection = getMap().getMapObjects().addClusterizedPlacemarkCollection(this);
         getMap().addCameraListener(this);
         getMap().addInputListener(this);
+        getMap().setMapLoadedListener(this);
     }
 
     // REF
@@ -763,6 +765,13 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         data.putDouble("lon", point.getLongitude());
         ReactContext reactContext = (ReactContext) getContext();
         reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onMapLongPress", data);
+    }
+
+    @Override
+    public void onMapLoaded(MapLoadStatistics statistics) {
+        WritableMap data = Arguments.createMap();
+        ReactContext reactContext = (ReactContext) getContext();
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onMapLoaded",data);
     }
 
     //trafficListener implementation

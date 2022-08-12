@@ -72,7 +72,7 @@
     [self.mapWindow.map addCameraListenerWithCameraListener:self];
     [self.mapWindow.map addInputListenerWithInputListener:(id<YMKMapInputListener>) self];
     clusterCollection = [self.mapWindow.map.mapObjects addClusterizedPlacemarkCollectionWithClusterListener:self];
-
+    [self.mapWindow.map setMapLoadedListenerWithMapLoadedListener:self];
     return self;
 }
 
@@ -757,6 +757,11 @@
     [self fitMarkers:[self mapPlacemarksToPoints:[cluster placemarks]]];
 
     return YES;
+}
+-(void) onMapLoadedWithStatistics:(YMKMapLoadStatistics *)statistics {
+	if(self.onMapLoaded){
+		self.onMapLoaded(@{});
+	}
 }
 
 @synthesize reactTag;
