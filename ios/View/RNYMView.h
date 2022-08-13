@@ -7,14 +7,16 @@
 
 @class RCTBridge;
 
-@interface RNYMView: YMKMapView<YMKUserLocationObjectListener, YMKMapCameraListener, RCTComponent, YMKClusterListener, YMKClusterTapListener>
+@interface RNYMView: YMKMapView<YMKUserLocationObjectListener, YMKMapCameraListener, RCTComponent, YMKClusterListener, YMKClusterTapListener, YMKMapLoadedListener>
 
+@property (nonatomic, assign) CGRect mapFrame;
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onRouteFound;
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onCameraPositionReceived;
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onVisibleRegionReceived;
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onCameraPositionChange;
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onMapPress;
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onMapLongPress;
+@property (nonatomic, copy) RCTBubblingEventBlock _Nullable onMapLoaded;
 
 // ref
 -(void) emitCameraPositionToJS:(NSString*_Nonnull) _id;
