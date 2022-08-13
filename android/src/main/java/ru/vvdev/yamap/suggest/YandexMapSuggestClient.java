@@ -3,7 +3,11 @@ package ru.vvdev.yamap.suggest;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
+import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableType;
 import com.yandex.mapkit.geometry.BoundingBox;
 import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.search.SearchFactory;
@@ -13,6 +17,7 @@ import com.yandex.mapkit.search.SearchType;
 import com.yandex.mapkit.search.SuggestItem;
 import com.yandex.mapkit.search.SuggestOptions;
 import com.yandex.mapkit.search.SuggestSession;
+import com.yandex.mapkit.search.SuggestType;
 import com.yandex.runtime.Error;
 
 import java.util.ArrayList;
@@ -40,41 +45,109 @@ public class YandexMapSuggestClient implements MapSuggestClient {
         suggestOptions.setSuggestTypes(SearchType.GEO.value);
     }
 
-    @Override
-    public void suggest(final String text, final Callback<List<MapSuggestItem>> onSuccess, final Callback<Throwable> onError) {
+    public void suggestHandler(final String text, final SuggestOptions options, final Callback<List<MapSuggestItem>> onSuccess, final Callback<Throwable> onError) {
         if (suggestSession == null) {
             suggestSession = searchManager.createSuggestSession();
         }
 
         suggestSession.suggest(
-            text,
-            defaultGeometry,
-            suggestOptions,
-            new SuggestSession.SuggestListener() {
-                @Override
-                public void onResponse(@NonNull List<SuggestItem> list) {
-                    List<MapSuggestItem> result = new ArrayList<>(list.size());
-                    for (int i = 0; i < list.size(); i++) {
-                        SuggestItem rawSuggest = list.get(i);
-                        MapSuggestItem suggest = new MapSuggestItem();
-                        suggest.setSearchText(rawSuggest.getSearchText());
-                        suggest.setTitle(rawSuggest.getTitle().getText());
-                        if (rawSuggest.getSubtitle() != null) {
-                            suggest.setSubtitle(rawSuggest.getSubtitle().getText());
+                text,
+                defaultGeometry,
+                options,
+                new SuggestSession.SuggestListener() {
+                    @Override
+                    public void onResponse(@NonNull List<SuggestItem> list) {
+                        List<MapSuggestItem> result = new ArrayList<>(list.size());
+                        for (int i = 0; i < list.size(); i++) {
+                            SuggestItem rawSuggest = list.get(i);
+                            MapSuggestItem suggest = new MapSuggestItem();
+                            suggest.setSearchText(rawSuggest.getSearchText());
+                            suggest.setTitle(rawSuggest.getTitle().getText());
+                            if (rawSuggest.getSubtitle() != null) {
+                                suggest.setSubtitle(rawSuggest.getSubtitle().getText());
+                            }
+                            suggest.setUri(rawSuggest.getUri());
+                            result.add(suggest);
+
                         }
-                        suggest.setUri(rawSuggest.getUri());
-                        result.add(suggest);
-
+                        onSuccess.invoke(result);
                     }
-                    onSuccess.invoke(result);
-                }
 
-                @Override
-                public void onError(@NonNull Error error) {
-                    onError.invoke(new IllegalStateException("suggest error: " + error));
+                    @Override
+                    public void onError(@NonNull Error error) {
+                        onError.invoke(new IllegalStateException("suggest error: " + error));
+                    }
+                }
+        );
+    }
+
+    @Override
+    public void suggest(final String text, final Callback<List<MapSuggestItem>> onSuccess, final Callback<Throwable> onError) {
+        this.suggestHandler(text, this.suggestOptions, onSuccess, onError);
+    }
+
+    @Override
+    public void suggest(final String text, final ReadableMap options, final Callback<List<MapSuggestItem>> onSuccess, final Callback<Throwable> onError) {
+        String userPositionKey = "userPosition";
+        String lonKey = "lon";
+        String latKey = "lat";
+        String suggestWordsKey = "suggestWords";
+        String suggestTypesKey = "suggestTypes";
+
+        SuggestOptions options_ = new SuggestOptions();
+
+        int suggestType = SuggestType.UNSPECIFIED.value;
+
+        if (options.hasKey(suggestWordsKey) && !options.isNull(suggestWordsKey)) {
+            if (options.getType(suggestWordsKey) != ReadableType.Boolean) {
+                onError.invoke(new IllegalStateException("suggest error: " + suggestWordsKey + " isn't Boolean"));
+                return;
+            }
+            boolean suggestWords = options.getBoolean(suggestWordsKey);
+
+            options_.setSuggestWords(suggestWords);
+        }
+
+        if (options.hasKey(userPositionKey) && !options.isNull(userPositionKey)) {
+            if (options.getType(userPositionKey) != ReadableType.Map) {
+                onError.invoke(new IllegalStateException("suggest error: " + userPositionKey + " isn't Object"));
+                return;
+            }
+            ReadableMap userPositionMap = options.getMap(userPositionKey);
+
+            if (!userPositionMap.hasKey(latKey) || !userPositionMap.hasKey(lonKey)) {
+                onError.invoke(new IllegalStateException("suggest error: " + userPositionKey + " doesn't have lat or lon"));
+                return;
+            }
+
+            if (userPositionMap.getType(latKey) != ReadableType.Number || userPositionMap.getType(lonKey) != ReadableType.Number) {
+                onError.invoke(new IllegalStateException("suggest error: lat or lon isn't Number"));
+                return;
+            }
+
+            double lat = userPositionMap.getDouble(latKey);
+            double lon = userPositionMap.getDouble(lonKey);
+            Point userPosition = new Point(lat, lon);
+
+            options_.setUserPosition(userPosition);
+        }
+
+        if (options.hasKey(suggestTypesKey) && !options.isNull(suggestTypesKey)) {
+            if (options.getType(suggestTypesKey) != ReadableType.Array) {
+                onError.invoke(new IllegalStateException("suggest error: " + suggestTypesKey + " isn't Array"));
+                return;
+            }
+            ReadableArray suggestTypesArray = options.getArray(suggestTypesKey);
+            for (int i = 0; i < suggestTypesArray.size(); i++) {
+                if (suggestTypesArray.getType(i) == ReadableType.Number) {
+                    int value = suggestTypesArray.getInt(i);
+                    suggestType = suggestType | value;
                 }
             }
-        );
+            options_.setSuggestTypes(suggestType);
+        }
+
+        this.suggestHandler(text, options_, onSuccess, onError);
     }
 
     @Override
