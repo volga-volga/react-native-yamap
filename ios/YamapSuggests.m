@@ -89,29 +89,63 @@ RCT_EXPORT_METHOD(suggest:(nonnull NSString*) searchQuery resolver:(RCTPromiseRe
 })
 
 RCT_EXPORT_METHOD(suggestWithOptions:(nonnull NSString*) searchQuery options:(NSDictionary *) options resolver:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock) reject {
-	NSDictionary *userPosition = options[@"userPosition"];
-	bool suggestWords = options[@"suggestWords"] || NO;
 	NSArray *suggestTypes = options[@"suggestTypes"];
+	NSDictionary *userPosition = options[@"userPosition"];
 
-    YMKPoint *userPoint = nil;
-	YMKSuggestType suggestType = YMKSuggestTypeUnspecified;
+	YMKSuggestOptions *opt = [[YMKSuggestOptions alloc] init];
 
-	if(suggestTypes){
+	if(options[@"suggestWords"] != nil){
+		NSNumber *suggestWords = options[@"suggestWords"];
+		if(![suggestWords isKindOfClass:[NSNumber class]]){
+			reject(ERR_NO_REQUEST_ARG, [NSString stringWithFormat:@"search request: suggestWords must be a Boolean"], nil);
+			return;
+		}
+		[opt setSuggestWords:suggestWords.boolValue];
+	}
+
+	if(suggestTypes != nil){
+		if(![suggestTypes isKindOfClass: [NSArray class]]){
+			reject(ERR_NO_REQUEST_ARG, [NSString stringWithFormat:@"search request: suggestTypes is not an Array"], nil);
+			return;
+		}
+
+		YMKSuggestType suggestType = YMKSuggestTypeUnspecified;
+
 		for(int i = 0; i < [suggestTypes count]; i++){
 			NSNumber *value = suggestTypes[i];
+			if(![value isKindOfClass: [NSNumber class]]){
+				reject(ERR_NO_REQUEST_ARG, [NSString stringWithFormat:@"search request: one or more suggestTypes is not a Number"], nil);
+				return;
+			}
 			suggestType = suggestType | [value unsignedLongValue];
 		}
+
+		[opt setSuggestTypes:suggestType];
 	}
 
-	if(userPosition && userPosition[@"lat"] && userPosition[@"lon"]){
+	if(userPosition != nil) {
+		if(![userPosition isKindOfClass: [NSDictionary class]]){
+			reject(ERR_NO_REQUEST_ARG, [NSString stringWithFormat:@"search request: userPosition is not an Object"], nil);
+			return;
+		}
+		if(userPosition[@"lat"] == nil || userPosition[@"lon"] == nil){
+			reject(ERR_NO_REQUEST_ARG, [NSString stringWithFormat:@"search request: lon and lat cannot be empty"], nil);
+			return;
+		}
+
 		NSNumber *lat =  userPosition[@"lat"];
 		NSNumber *lon =  userPosition[@"lon"];
-		userPoint = [YMKPoint pointWithLatitude:[lat doubleValue] longitude:[lon doubleValue]];
+
+		if(![lat isKindOfClass: [NSNumber class]] || ![lon isKindOfClass:[NSNumber class]]){
+			reject(ERR_NO_REQUEST_ARG, [NSString stringWithFormat:@"search request: lat or lon is not a Number"], nil);
+			return;
+		}
+
+		YMKPoint	*userPoint = [YMKPoint pointWithLatitude:[lat doubleValue] longitude:[lon doubleValue]];
+		[opt setUserPosition:userPoint];
 	}
 
-	YMKSuggestOptions * options_ = [YMKSuggestOptions suggestOptionsWithSuggestTypes: suggestType userPosition:userPoint suggestWords: suggestWords];
-
-	[self suggestHandler:searchQuery options:options_ resolver:resolve rejecter:reject];
+    [self suggestHandler:searchQuery options:opt resolver:resolve rejecter:reject];
 })
 
 RCT_EXPORT_METHOD(resetSuggest: (NSString*) ususedParam resolver:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock) reject {
