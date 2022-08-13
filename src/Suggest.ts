@@ -1,3 +1,4 @@
+import { Point } from './interfaces';
 import { NativeModules } from 'react-native';
 
 const { YamapSuggests } = NativeModules;
@@ -13,12 +14,35 @@ export type YamapCoords = {
 };
 export type YamapSuggestWithCoords = YamapSuggest & Partial<YamapCoords>;
 
-type SuggestFetcher = (query: string) => Promise<Array<YamapSuggest>>;
-const suggest: SuggestFetcher = (query) => YamapSuggests.suggest(query);
+export const SuggestTypes = {
+  YMKSuggestTypeUnspecified: 0b00,
+  /**
+   * Toponyms.
+   */
+  YMKSuggestTypeGeo: 0b01,
+  /**
+   * Companies.
+   */
+  YMKSuggestTypeBiz: 0b01 << 1,
+  /**
+   * Mass transit routes.
+   */
+  YMKSuggestTypeTransit: 0b01 << 2,
+}
 
-type SuggestWithCoordsFetcher = (query: string) => Promise<Array<YamapSuggestWithCoords>>;
-const suggestWithCoords: SuggestWithCoordsFetcher = async (query) => {
-  const suggests = await suggest(query);
+type SuggestOptions = { userPosition?: Point, suggestWords?: boolean, suggestTypes?: Array<keyof typeof SuggestTypes> }
+
+type SuggestFetcher = (query: string, options?: SuggestOptions) => Promise<Array<YamapSuggest>>;
+const suggest: SuggestFetcher = (query, options) => {
+  if (options) {
+    return YamapSuggests.suggestWithOptions(query, options);
+  }
+  return YamapSuggests.suggest(query);
+}
+
+type SuggestWithCoordsFetcher = (query: string, options?: SuggestOptions) => Promise<Array<YamapSuggestWithCoords>>;
+const suggestWithCoords: SuggestWithCoordsFetcher = async (query, options) => {
+  const suggests = await suggest(query, options);
 
   return suggests.map((item) => ({
     ...item,

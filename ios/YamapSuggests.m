@@ -49,39 +49,69 @@ NSString* ERR_SUGGEST_FAILED = @"YANDEX_SUGGEST_ERR_SUGGEST_FAILED";
     return suggestClient;
 }
 
+-(void)suggestHandler: (nonnull NSString*) searchQuery options:(YMKSuggestOptions*) options resolver:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock) reject {
+	@try {
+		YMKSearchSuggestSession* session = [self getSuggestClient];
+
+		dispatch_async(dispatch_get_main_queue(), ^{
+			[session suggestWithText:searchQuery
+												window:self->defaultBoundingBox
+								suggestOptions:options
+							 responseHandler:^(NSArray<YMKSuggestItem *> * _Nullable suggestList, NSError * _Nullable error) {
+				if (error) {
+					reject(ERR_SUGGEST_FAILED, [NSString stringWithFormat:@"search request: %@", searchQuery], error);
+					return;
+				}
+
+				NSMutableArray *suggestsToPass = [NSMutableArray new];
+
+				for (YMKSuggestItem* suggest in suggestList) {
+					NSMutableDictionary *suggestToPass = [NSMutableDictionary new];
+
+					[suggestToPass setValue:[[suggest title] text] forKey:@"title"];
+					[suggestToPass setValue:[[suggest subtitle] text] forKey:@"subtitle"];
+					[suggestToPass setValue:[suggest uri] forKey:@"uri"];
+
+					[suggestsToPass addObject:suggestToPass];
+				}
+
+				resolve(suggestsToPass);
+			}];
+		});
+	}
+	@catch ( NSException *error ) {
+		reject(ERR_NO_REQUEST_ARG, [NSString stringWithFormat:@"search request: %@", searchQuery], nil);
+	}
+}
+
 RCT_EXPORT_METHOD(suggest:(nonnull NSString*) searchQuery resolver:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock) reject {
-    @try {
-        YMKSearchSuggestSession* session = [self getSuggestClient];
+	[self suggestHandler:searchQuery options:self->suggestOptions resolver:resolve rejecter:reject];
+})
 
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [session suggestWithText:searchQuery
-                              window:self->defaultBoundingBox
-                      suggestOptions:self->suggestOptions
-                     responseHandler:^(NSArray<YMKSuggestItem *> * _Nullable suggestList, NSError * _Nullable error) {
-                if (error) {
-                    reject(ERR_SUGGEST_FAILED, [NSString stringWithFormat:@"search request: %@", searchQuery], error);
-                    return;
-                }
-                
-                NSMutableArray *suggestsToPass = [NSMutableArray new];
+RCT_EXPORT_METHOD(suggestWithOptions:(nonnull NSString*) searchQuery options:(NSDictionary *) options resolver:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock) reject {
+	NSDictionary *userPosition = options[@"userPosition"];
+	bool suggestWords = options[@"suggestWords"] || NO;
+	NSArray *suggestTypes = options[@"suggestTypes"];
 
-                for (YMKSuggestItem* suggest in suggestList) {
-                    NSMutableDictionary *suggestToPass = [NSMutableDictionary new];
+    YMKPoint *userPoint = nil;
+	YMKSuggestType suggestType = YMKSuggestTypeUnspecified;
 
-                    [suggestToPass setValue:[[suggest title] text] forKey:@"title"];
-                    [suggestToPass setValue:[[suggest subtitle] text] forKey:@"subtitle"];
-                    [suggestToPass setValue:[suggest uri] forKey:@"uri"];
+	if(suggestTypes){
+		for(int i = 0; i < [suggestTypes count]; i++){
+			NSNumber *value = suggestTypes[i];
+			suggestType = suggestType | [value unsignedLongValue];
+		}
+	}
 
-                    [suggestsToPass addObject:suggestToPass];
-                }
+	if(userPosition && userPosition[@"lat"] && userPosition[@"lon"]){
+		NSNumber *lat =  userPosition[@"lat"];
+		NSNumber *lon =  userPosition[@"lon"];
+		userPoint = [YMKPoint pointWithLatitude:[lat doubleValue] longitude:[lon doubleValue]];
+	}
 
-                resolve(suggestsToPass);
-            }];
-        });
-    }
-    @catch ( NSException *error ) {
-        reject(ERR_NO_REQUEST_ARG, [NSString stringWithFormat:@"search request: %@", searchQuery], nil);
-    }
+	YMKSuggestOptions * options_ = [YMKSuggestOptions suggestOptionsWithSuggestTypes: suggestType userPosition:userPoint suggestWords: suggestWords];
+
+	[self suggestHandler:searchQuery options:options_ resolver:resolve rejecter:reject];
 })
 
 RCT_EXPORT_METHOD(resetSuggest: (NSString*) ususedParam resolver:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock) reject {
