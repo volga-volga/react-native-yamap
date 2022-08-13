@@ -760,7 +760,18 @@
 }
 -(void) onMapLoadedWithStatistics:(YMKMapLoadStatistics *)statistics {
 	if(self.onMapLoaded){
-		self.onMapLoaded(@{});
+        NSDictionary *data = @{
+			@"renderObjectCount": @(statistics.renderObjectCount),
+			@"curZoomModelsLoaded": @(statistics.curZoomModelsLoaded),
+			@"curZoomPlacemarksLoaded": @(statistics.curZoomPlacemarksLoaded),
+			@"curZoomLabelsLoaded": @(statistics.curZoomLabelsLoaded),
+			@"curZoomGeometryLoaded": @(statistics.curZoomGeometryLoaded),
+			@"tileMemoryUsage": @(statistics.tileMemoryUsage),
+			@"delayedGeometryLoaded": @(statistics.delayedGeometryLoaded),
+			@"fullyAppeared": @(statistics.fullyAppeared),
+			@"fullyLoaded": @(statistics.fullyLoaded),
+		};
+		self.onMapLoaded(data);
 	}
 }
 
