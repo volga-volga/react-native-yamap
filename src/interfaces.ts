@@ -2,6 +2,17 @@ export interface Point {
   lat: number;
   lon: number;
 }
+export interface MapLoaded {
+  renderObjectCount: number;
+  curZoomModelsLoaded: number;
+  curZoomPlacemarksLoaded: number;
+  curZoomLabelsLoaded: number;
+  curZoomGeometryLoaded: number;
+  tileMemoryUsage: number;
+  delayedGeometryLoaded: number;
+  fullyAppeared: number;
+  fullyLoaded: number;
+}
 
 export interface InitialRegion {
   lat: number;

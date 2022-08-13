@@ -11,7 +11,7 @@ import {
 // @ts-ignore
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 import CallbacksManager from '../utils/CallbacksManager';
-import { InitialRegion, MapType, Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition, VisibleRegion } from '../interfaces';
+import { InitialRegion, MapType, Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition, VisibleRegion, MapLoaded } from '../interfaces';
 import { processColorProps } from '../utils';
 
 const { yamap: NativeYamapModule } = NativeModules;
@@ -28,7 +28,7 @@ export interface YaMapProps extends ViewProps {
   onCameraPositionChangeEnd?: (event: NativeSyntheticEvent<CameraPosition>) => void;
   onMapPress?: (event: NativeSyntheticEvent<Point>) => void;
   onMapLongPress?: (event: NativeSyntheticEvent<Point>) => void;
-  onMapLoaded?: () => void;
+  onMapLoaded?: (event: NativeSyntheticEvent<MapLoaded>) => void;
   userLocationAccuracyFillColor?: string;
   userLocationAccuracyStrokeColor?: string;
   userLocationAccuracyStrokeWidth?: number;

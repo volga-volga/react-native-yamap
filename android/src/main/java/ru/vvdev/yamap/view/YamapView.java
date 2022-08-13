@@ -33,6 +33,7 @@ import com.yandex.mapkit.geometry.Polyline;
 import com.yandex.mapkit.geometry.SubpolylineHelper;
 import com.yandex.mapkit.layers.ObjectEvent;
 import com.yandex.mapkit.map.CameraListener;
+import com.yandex.mapkit.map.MapLoadStatistics;
 import com.yandex.mapkit.map.MapLoadedListener;
 import com.yandex.mapkit.map.CameraPosition;
 import com.yandex.mapkit.map.CameraUpdateReason;
@@ -770,6 +771,15 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     @Override
     public void onMapLoaded(MapLoadStatistics statistics) {
         WritableMap data = Arguments.createMap();
+        data.putInt("renderObjectCount",statistics.getRenderObjectCount());
+        data.putDouble("curZoomModelsLoaded",statistics.getCurZoomModelsLoaded());
+        data.putDouble("curZoomPlacemarksLoaded",statistics.getCurZoomPlacemarksLoaded());
+        data.putDouble("curZoomLabelsLoaded",statistics.getCurZoomLabelsLoaded());
+        data.putDouble("curZoomGeometryLoaded",statistics.getCurZoomGeometryLoaded());
+        data.putDouble("tileMemoryUsage",statistics.getTileMemoryUsage());
+        data.putDouble("delayedGeometryLoaded",statistics.getDelayedGeometryLoaded());
+        data.putDouble("fullyAppeared",statistics.getFullyAppeared());
+        data.putDouble("fullyLoaded",statistics.getFullyLoaded());
         ReactContext reactContext = (ReactContext) getContext();
         reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onMapLoaded",data);
     }
