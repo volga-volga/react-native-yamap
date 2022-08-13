@@ -100,7 +100,7 @@ public class YandexMapSuggestClient implements MapSuggestClient {
 
         if (options.hasKey(suggestWordsKey) && !options.isNull(suggestWordsKey)) {
             if (options.getType(suggestWordsKey) != ReadableType.Boolean) {
-                onError.invoke(new IllegalStateException("suggest error: " + suggestWordsKey + " isn't Boolean"));
+                onError.invoke(new IllegalStateException("suggest error: " + suggestWordsKey + " is not a Boolean"));
                 return;
             }
             boolean suggestWords = options.getBoolean(suggestWordsKey);
@@ -110,18 +110,18 @@ public class YandexMapSuggestClient implements MapSuggestClient {
 
         if (options.hasKey(userPositionKey) && !options.isNull(userPositionKey)) {
             if (options.getType(userPositionKey) != ReadableType.Map) {
-                onError.invoke(new IllegalStateException("suggest error: " + userPositionKey + " isn't Object"));
+                onError.invoke(new IllegalStateException("suggest error: " + userPositionKey + " is not an Object"));
                 return;
             }
             ReadableMap userPositionMap = options.getMap(userPositionKey);
 
             if (!userPositionMap.hasKey(latKey) || !userPositionMap.hasKey(lonKey)) {
-                onError.invoke(new IllegalStateException("suggest error: " + userPositionKey + " doesn't have lat or lon"));
+                onError.invoke(new IllegalStateException("suggest error: " + userPositionKey + " does not have lat or lon"));
                 return;
             }
 
             if (userPositionMap.getType(latKey) != ReadableType.Number || userPositionMap.getType(lonKey) != ReadableType.Number) {
-                onError.invoke(new IllegalStateException("suggest error: lat or lon isn't Number"));
+                onError.invoke(new IllegalStateException("suggest error: lat or lon is not a Number"));
                 return;
             }
 
@@ -134,15 +134,17 @@ public class YandexMapSuggestClient implements MapSuggestClient {
 
         if (options.hasKey(suggestTypesKey) && !options.isNull(suggestTypesKey)) {
             if (options.getType(suggestTypesKey) != ReadableType.Array) {
-                onError.invoke(new IllegalStateException("suggest error: " + suggestTypesKey + " isn't Array"));
+                onError.invoke(new IllegalStateException("suggest error: " + suggestTypesKey + " is not an Array"));
                 return;
             }
             ReadableArray suggestTypesArray = options.getArray(suggestTypesKey);
             for (int i = 0; i < suggestTypesArray.size(); i++) {
-                if (suggestTypesArray.getType(i) == ReadableType.Number) {
-                    int value = suggestTypesArray.getInt(i);
-                    suggestType = suggestType | value;
+                if(suggestTypesArray.getType(i) != ReadableType.Number){
+                    onError.invoke(new IllegalStateException("suggest error: one or more " + suggestTypesKey + " is not an Number"));
+                    return;
                 }
+                int value = suggestTypesArray.getInt(i);
+                suggestType = suggestType | value;
             }
             options_.setSuggestTypes(suggestType);
         }
