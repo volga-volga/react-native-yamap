@@ -9,6 +9,7 @@
 
 @interface RNYMView: YMKMapView<YMKUserLocationObjectListener, YMKMapCameraListener, RCTComponent, YMKClusterListener, YMKClusterTapListener>
 
+@property (nonatomic, assign) CGRect mapFrame;
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onRouteFound;
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onCameraPositionReceived;
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onVisibleRegionReceived;
