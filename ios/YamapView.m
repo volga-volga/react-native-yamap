@@ -15,7 +15,7 @@
 RCT_EXPORT_MODULE()
 
 - (NSArray<NSString*>*)supportedEvents {
-    return @[@"onRouteFound", @"onCameraPositionReceived", @"onVisibleRegionReceived", @"onCameraPositionChange", @"onCameraPositionChangeEnd", @"onMapPress", @"onMapLongPress"];
+    return @[@"onRouteFound", @"onCameraPositionReceived", @"onVisibleRegionReceived", @"onCameraPositionChange", @"onCameraPositionChangeEnd", @"onMapPress", @"onMapLongPress",@"onMapLoaded"];
 }
 
 - (instancetype)init {
@@ -48,6 +48,7 @@ RCT_EXPORT_VIEW_PROPERTY(onCameraPositionChange, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onCameraPositionChangeEnd, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMapPress, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMapLongPress, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onMapLoaded, RCTBubblingEventBlock)
 
 RCT_CUSTOM_VIEW_PROPERTY(userLocationAccuracyFillColor, NSNumber, RNYMView) {
     [view setUserLocationAccuracyFillColor: [RCTConvert UIColor:json]];

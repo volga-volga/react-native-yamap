@@ -72,7 +72,7 @@
     [self.mapWindow.map addCameraListenerWithCameraListener:self];
     [self.mapWindow.map addInputListenerWithInputListener:(id<YMKMapInputListener>) self];
     clusterCollection = [self.mapWindow.map.mapObjects addClusterizedPlacemarkCollectionWithClusterListener:self];
-
+    [self.mapWindow.map setMapLoadedListenerWithMapLoadedListener:self];
     return self;
 }
 
@@ -757,6 +757,22 @@
     [self fitMarkers:[self mapPlacemarksToPoints:[cluster placemarks]]];
 
     return YES;
+}
+-(void) onMapLoadedWithStatistics:(YMKMapLoadStatistics *)statistics {
+	if(self.onMapLoaded){
+        NSDictionary *data = @{
+			@"renderObjectCount": @(statistics.renderObjectCount),
+			@"curZoomModelsLoaded": @(statistics.curZoomModelsLoaded),
+			@"curZoomPlacemarksLoaded": @(statistics.curZoomPlacemarksLoaded),
+			@"curZoomLabelsLoaded": @(statistics.curZoomLabelsLoaded),
+			@"curZoomGeometryLoaded": @(statistics.curZoomGeometryLoaded),
+			@"tileMemoryUsage": @(statistics.tileMemoryUsage),
+			@"delayedGeometryLoaded": @(statistics.delayedGeometryLoaded),
+			@"fullyAppeared": @(statistics.fullyAppeared),
+			@"fullyLoaded": @(statistics.fullyLoaded),
+		};
+		self.onMapLoaded(data);
+	}
 }
 
 @synthesize reactTag;
