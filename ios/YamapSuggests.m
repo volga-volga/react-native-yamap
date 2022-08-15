@@ -148,7 +148,7 @@ RCT_EXPORT_METHOD(suggestWithOptions:(nonnull NSString*) searchQuery options:(NS
     [self suggestHandler:searchQuery options:opt resolver:resolve rejecter:reject];
 })
 
-RCT_EXPORT_METHOD(resetSuggest: (NSString*) ususedParam resolver:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock) reject {
+RCT_EXPORT_METHOD(reset: (RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock) reject {
     @try {
         if (suggestClient) {
             [suggestClient reset];
