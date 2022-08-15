@@ -180,32 +180,53 @@ type VisibleRegion = {
   topLeft: Point;
   topRight: Point;
 }
+
+
+type YamapSuggest = {
+  title: string;
+  subtitle?: string;
+  uri?: string;
+}
+
+type YamapCoords = {
+  lon: number;
+  lat: number;
+}
+
+type YamapSuggestWithCoords = {
+  lon: number;
+  lat: number;
+  title: string;
+  subtitle?: string;
+  uri?: string;
+}
 ```
 
 #### Доступные `props` для компонента **MapView**:
 
 | Название | Тип | Стандартное значение | Описание |
 |--|--|--|--|
-| showUserPosition | boolean | true | Отслеживание геоданных и отображение позиции пользователя. |
-| userLocationIcon | ImageSource | false | Иконка для позиции пользователя. Доступны те же значения что и у компонента Image из React Native. |
-| initialRegion | InitialRegion | | Изначальное местоположение карты при загрузке. |
-| nightMode | boolean | false | Использование ночного режима. |
-| onCameraPositionChange | function | | Колбек на изменение положения камеры. |
-| onCameraPositionChangeEnd | function | | Колбек при завершении изменения положения камеры. |
-| onMapPress | function | | Событие нажития на карту. Возвращает координаты точки на которую нажали. |
-| onMapLongPress | function | | Событие долгого нажития на карту. Возвращает координаты точки на которую нажали. |
-| userLocationAccuracyFillColor | string |  | Цвет фона зоны точности определения позиции пользователя. |
-| userLocationAccuracyStrokeColor | string |  | Цвет границы зоны точности определения позиции пользователя. |
-| userLocationAccuracyStrokeWidth | number | | Толщина зоны точности определения позиции пользователя. |
-| scrollGesturesEnabled | boolean | true | Включены ли жесты скролла. |
-| zoomGesturesEnabled | boolean | true | Включены ли жесты зума. |
-| tiltGesturesEnabled | boolean | true | Включены ли жесты наклона камеры двумя пальцами. |
-| rotateGesturesEnabled | boolean | true | Включены ли жесты поворота камеры. |
-| fastTapEnabled | boolean | true | Убрана ли задержка в 300мс при клике/тапе. |
-| withClusters | boolean | false | Автоматическая группировка меток на карте в кластеры. |
-| clusterColor | string | 'red' | Цвет фона метки-кластера. |
-| mapType | string | 'vector' | Тип карты. |
-| mapStyle | string | {} | Стили карты согласно [документации](https://yandex.ru/dev/maps/mapkit/doc/dg/concepts/style.html). |
+| showUserPosition | boolean | true | Отслеживание геоданных и отображение позиции пользователя |
+| userLocationIcon | ImageSource | false | Иконка для позиции пользователя. Доступны те же значения что и у компонента Image из React Native |
+| initialRegion | InitialRegion | | Изначальное местоположение карты при загрузке |
+| nightMode | boolean | false | Использование ночного режима |
+| onMapLoaded | function | | Колбек на загрузку карты |
+| onCameraPositionChange | function | | Колбек на изменение положения камеры |
+| onCameraPositionChangeEnd | function | | Колбек при завершении изменения положения камеры |
+| onMapPress | function | | Событие нажития на карту. Возвращает координаты точки на которую нажали |
+| onMapLongPress | function | | Событие долгого нажития на карту. Возвращает координаты точки на которую нажали |
+| userLocationAccuracyFillColor | string |  | Цвет фона зоны точности определения позиции пользователя |
+| userLocationAccuracyStrokeColor | string |  | Цвет границы зоны точности определения позиции пользователя |
+| userLocationAccuracyStrokeWidth | number | | Толщина зоны точности определения позиции пользователя |
+| scrollGesturesEnabled | boolean | true | Включены ли жесты скролла |
+| zoomGesturesEnabled | boolean | true | Включены ли жесты зума |
+| tiltGesturesEnabled | boolean | true | Включены ли жесты наклона камеры двумя пальцами |
+| rotateGesturesEnabled | boolean | true | Включены ли жесты поворота камеры |
+| fastTapEnabled | boolean | true | Убрана ли задержка в 300мс при клике/тапе |
+| withClusters | boolean | false | Автоматическая группировка меток на карте в кластеры |
+| clusterColor | string | 'red' | Цвет фона метки-кластера |
+| mapType | string | 'vector' | Тип карты |
+| mapStyle | string | {} | Стили карты согласно [документации](https://yandex.ru/dev/maps/mapkit/doc/dg/concepts/style.html) |
 
 #### Доступные методы для компонента **MapView**:
 
@@ -242,14 +263,14 @@ import { Marker } from 'react-native-yamap';
 
 | Название | Тип | Описание |
 |--|--|--|
-| point | Point | Координаты точки для отображения маркера. |
-| scale | number | Масштабирование иконки маркера. Не работает если использовать children у маркера. |
-| source | ImageSource | Данные для изображения маркера. |
-| children | ReactElement | Рендер маркера как компонента. |
-| onPress | function | Действие при нажатии/клике. |
-| anchor | {  x:  number,  y:  number  } | Якорь иконки маркера. Координаты принимают значения от 0 до 1. |
-| zIndex | number | Отображение элемента по оси Z. |
-| visible | boolean | Отображение маркера на карте. |
+| point | Point | Координаты точки для отображения маркера |
+| scale | number | Масштабирование иконки маркера. Не работает если использовать children у маркера |
+| source | ImageSource | Данные для изображения маркера |
+| children | ReactElement | Рендер маркера как компонента |
+| onPress | function | Действие при нажатии/клике |
+| anchor | {  x:  number,  y:  number  } | Якорь иконки маркера. Координаты принимают значения от 0 до 1 |
+| zIndex | number | Отображение элемента по оси Z |
+| visible | boolean | Отображение маркера на карте |
 
 #### Доступные методы для примитива **Marker**:
 
@@ -270,13 +291,13 @@ import { Circle } from 'react-native-yamap';
 
 | Название | Тип | Описание |
 |--|--|--|
-| center | Point | Координаты центра круга. |
-| radius | number | Радиус круга в метрах. |
-| fillColor | string | Цвет заливки. |
-| strokeColor | string | Цвет границы. |
-| strokeWidth | number | Толщина границы. |
-| onPress | function | Действие при нажатии/клике. |
-| zIndex | number | Отображение элемента по оси Z. |
+| center | Point | Координаты центра круга |
+| radius | number | Радиус круга в метрах |
+| fillColor | string | Цвет заливки |
+| strokeColor | string | Цвет границы |
+| strokeWidth | number | Толщина границы |
+| onPress | function | Действие при нажатии/клике |
+| zIndex | number | Отображение элемента по оси Z |
 
 ### Polyline
 
@@ -298,16 +319,16 @@ import { Polyline } from 'react-native-yamap';
 
 | Название | Тип | Описание |
 |--|--|--|
-| points | Point[] | Массив точек линии. |
-| strokeColor | string | Цвет линии. |
-| strokeWidth | number | Толщина линии. |
-| outlineColor | string | Цвет обводки. |
-| outlineWidth | number | Толщина обводки. |
-| dashLength | number | Длина штриха. |
-| dashOffset | number | Отступ первого штриха от начала полилинии. |
-| gapLength | number | Длина разрыва между штрихами. |
-| onPress | function | Действие при нажатии/клике. |
-| zIndex | number | Отображение элемента по оси Z. |
+| points | Point[] | Массив точек линии |
+| strokeColor | string | Цвет линии |
+| strokeWidth | number | Толщина линии |
+| outlineColor | string | Цвет обводки |
+| outlineWidth | number | Толщина обводки |
+| dashLength | number | Длина штриха |
+| dashOffset | number | Отступ первого штриха от начала полилинии |
+| gapLength | number | Длина разрыва между штрихами |
+| onPress | function | Действие при нажатии/клике |
+| zIndex | number | Отображение элемента по оси Z |
 
 ### Polygon
 
@@ -329,12 +350,12 @@ import { Polygon } from 'react-native-yamap';
 
 | Название | Тип | Описание |
 |--|--|--|
-| points | Point[] | Массив точек линии. |
-| fillColor | string | Цвет заливки. |
-| strokeWidth | number | Толщина границы. |
-| innerRings | (Point[])[] | Массив полилиний, которые образуют отверстия в полигоне. |
-| onPress | function | Действие при нажатии/клике. |
-| zIndex | number | Отображение элемента по оси Z. |
+| points | Point[] | Массив точек линии |
+| fillColor | string | Цвет заливки |
+| strokeWidth | number | Толщина границы |
+| innerRings | (Point[])[] | Массив полилиний, которые образуют отверстия в полигоне |
+| onPress | function | Действие при нажатии/клике |
+| zIndex | number | Отображение элемента по оси Z |
 
 ## Запрос маршрутов
 
@@ -433,8 +454,8 @@ Geocoder.addressToGeo(address: string);
 
 import { Suggest } from 'react-native-yamap';
 
-const find = async (query: string) => {
-  const suggestions = await Suggest.suggest(query);
+const find = async (query: string, options?: SuggestOptions) => {
+  const suggestions = await Suggest.suggest(query, options);
 
   // suggestion = [{
   //   subtitle: "Москва, Россия"
@@ -442,7 +463,7 @@ const find = async (query: string) => {
   //   uri: "ymapsbm1://geo?ll=37.587093%2C55.733974&spn=0.001000%2C0.001000&text=%D0%A0%D0%BE%D1%81%D1%81%D0%B8%D1%8F%2C%20%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0%2C%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%20%D0%9B%D1%8C%D0%B2%D0%B0%20%D0%A2%D0%BE%D0%BB%D1%81%D1%82%D0%BE%D0%B3%D0%BE%2C%2016"
   // }, ...]
 
-  const suggestionsWithCoards = await Suggest.suggestWithCoords(query);
+  const suggestionsWithCoards = await Suggest.suggestWithCoords(query, options);
 
   // suggestionsWithCoards = [{
   //   subtitle: "Москва, Россия"
