@@ -91,6 +91,7 @@ RCT_EXPORT_METHOD(suggest:(nonnull NSString*) searchQuery resolver:(RCTPromiseRe
 RCT_EXPORT_METHOD(suggestWithOptions:(nonnull NSString*) searchQuery options:(NSDictionary *) options resolver:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock) reject {
 	NSArray *suggestTypes = options[@"suggestTypes"];
 	NSDictionary *userPosition = options[@"userPosition"];
+	YMKSuggestType suggestType = YMKSuggestTypeGeo;
 
 	YMKSuggestOptions *opt = [[YMKSuggestOptions alloc] init];
 
@@ -109,7 +110,7 @@ RCT_EXPORT_METHOD(suggestWithOptions:(nonnull NSString*) searchQuery options:(NS
 			return;
 		}
 
-		YMKSuggestType suggestType = YMKSuggestTypeUnspecified;
+		suggestType = YMKSuggestTypeUnspecified;
 
 		for(int i = 0; i < [suggestTypes count]; i++){
 			NSNumber *value = suggestTypes[i];
@@ -119,9 +120,9 @@ RCT_EXPORT_METHOD(suggestWithOptions:(nonnull NSString*) searchQuery options:(NS
 			}
 			suggestType = suggestType | [value unsignedLongValue];
 		}
-
-		[opt setSuggestTypes:suggestType];
 	}
+
+	[opt setSuggestTypes:suggestType];
 
 	if(userPosition != nil) {
 		if(![userPosition isKindOfClass: [NSDictionary class]]){
