@@ -775,6 +775,15 @@
 	}
 }
 
+-(void)reactSetFrame:(CGRect)frame {
+	self.mapFrame = frame;
+	[super reactSetFrame:frame];
+}
+
+-(void)layoutMarginsDidChange {
+	[super reactSetFrame:self.mapFrame];
+}
+
 @synthesize reactTag;
 
 @end
