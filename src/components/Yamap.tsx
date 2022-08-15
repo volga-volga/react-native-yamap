@@ -6,7 +6,8 @@ import {
   UIManager,
   findNodeHandle,
   ViewProps,
-  ImageSourcePropType, NativeSyntheticEvent,
+  ImageSourcePropType,
+  NativeSyntheticEvent
 } from 'react-native';
 // @ts-ignore
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
@@ -44,14 +45,7 @@ const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');
 export class YaMap extends React.Component<YaMapProps> {
   static defaultProps = {
     showUserPosition: true,
-    clusterColor: 'red',
-    initialRegion: {
-      lat: 50,
-      lon: 50,
-      zoom: 10,
-      azimuth: 0,
-      tilt: 0
-    }
+    clusterColor: 'red'
   };
 
   // @ts-ignore
@@ -210,13 +204,12 @@ export class YaMap extends React.Component<YaMapProps> {
       onRouteFound: this.processRoute,
       onCameraPositionReceived: this.processCameraPosition,
       onVisibleRegionReceived: this.processVisibleRegion,
-      userLocationIcon: this.props.userLocationIcon ? this.resolveImageUri(this.props.userLocationIcon) : undefined,
+      userLocationIcon: this.props.userLocationIcon ? this.resolveImageUri(this.props.userLocationIcon) : undefined
     };
 
     processColorProps(props, 'clusterColor' as keyof YaMapProps);
     processColorProps(props, 'userLocationAccuracyFillColor' as keyof YaMapProps);
     processColorProps(props, 'userLocationAccuracyStrokeColor' as keyof YaMapProps);
-    processColorProps(props, 'initialRegion' as keyof YaMapProps);
 
     return props;
   }
