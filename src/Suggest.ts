@@ -30,7 +30,7 @@ export enum SuggestTypes {
   YMKSuggestTypeTransit = 0b01 << 2,
 }
 
-type SuggestOptions = { userPosition?: Point, suggestWords?: boolean, suggestTypes?: Array<keyof SuggestTypes> }
+type SuggestOptions = { userPosition?: Point, suggestWords?: boolean, suggestTypes?: SuggestTypes[] }
 
 type SuggestFetcher = (query: string, options?: SuggestOptions) => Promise<Array<YamapSuggest>>;
 const suggest: SuggestFetcher = (query, options) => {
