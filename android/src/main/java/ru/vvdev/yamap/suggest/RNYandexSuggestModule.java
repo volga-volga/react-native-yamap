@@ -8,6 +8,7 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableMap;
 
 import java.util.List;
 
@@ -55,6 +56,33 @@ public class RNYandexSuggestModule extends ReactContextBaseJavaModule {
                             promise.reject(ERR_SUGGEST_FAILED, "suggest request: " + e.getMessage());
                         }
                     }
+                );
+            }
+        });
+    }
+    @ReactMethod
+    public void suggestWithOptions(final String text, final  ReadableMap options, final Promise promise) {
+        if (text == null) {
+            promise.reject(ERR_NO_REQUEST_ARG, "suggest request: text arg is not provided");
+            return;
+        }
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getSuggestClient(getReactApplicationContext()).suggest(text, options,
+                        new Callback<List<MapSuggestItem>>() {
+                            @Override
+                            public void invoke(List<MapSuggestItem> result) {
+                                promise.resolve(argsHelper.createSuggestsMapFrom(result));
+                            }
+                        },
+                        new Callback<Throwable>() {
+                            @Override
+                            public void invoke(Throwable e) {
+                                promise.reject(ERR_SUGGEST_FAILED, "suggest request: " + e.getMessage());
+                            }
+                        }
                 );
             }
         });
