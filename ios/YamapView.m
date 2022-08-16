@@ -138,6 +138,18 @@ RCT_CUSTOM_VIEW_PROPERTY(initialRegion, NSDictionary, RNYMView) {
     }
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(maxFps, NSNumber, RNYMView) {
+    if (json && view) {
+        [view setMaxFps:[json floatValue]];
+    }
+}
+
+RCT_CUSTOM_VIEW_PROPERTY(interactive, BOOL, RNYMView) {
+    if (json && view) {
+        [view setInteractive:[json boolValue]];
+    }
+}
+
 // REF
 RCT_EXPORT_METHOD(fitAllMarkers:(nonnull NSNumber*)reactTag) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber*, UIView*> *viewRegistry) {
@@ -237,6 +249,19 @@ RCT_EXPORT_METHOD(getVisibleRegion:(nonnull NSNumber*)reactTag _id:(NSString*_No
         }
 
         [view emitVisibleRegionToJS:_id];
+    }];
+}
+
+RCT_EXPORT_METHOD(setTrafficVisible:(nonnull NSNumber*)reactTag traffic:(BOOL)traffic) {
+    [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber*, UIView*> *viewRegistry) {
+        RNYMView *view = (RNYMView*)viewRegistry[reactTag];
+
+        if (!view || ![view isKindOfClass:[RNYMView class]]) {
+            RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
+            return;
+        }
+
+        [view setTrafficVisible:traffic];
     }];
 }
 

@@ -425,6 +425,14 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         setCenter(initialCameraPosition, 0.f, 0);
     }
 
+    public void setMaxFps(float maxFps) {
+        getMapWindow().setMaxFps(maxFps);
+    }
+
+    public void setInteractive(boolean interactive) {
+        setNoninteractive(!interactive);
+    }
+
     public void setNightMode(Boolean nightMode) {
         getMap().setNightModeEnabled(nightMode);
     }

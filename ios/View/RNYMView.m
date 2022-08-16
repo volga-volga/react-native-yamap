@@ -37,6 +37,7 @@
     UIImage* userLocationImage;
     NSArray *acceptVehicleTypes;
     YMKUserLocationLayer *userLayer;
+    YMKTrafficLayer *trafficLayer;
     UIColor* userLocationAccuracyFillColor;
     UIColor* userLocationAccuracyStrokeColor;
     float userLocationAccuracyStrokeWidth;
@@ -339,6 +340,22 @@
         self.mapWindow.map.mapType = YMKMapTypeMap;
     } else {
         self.mapWindow.map.mapType = YMKMapTypeVectorMap;
+    }
+}
+
+- (void)setTrafficVisible:(BOOL)traffic {
+    YMKMapKit* inst = [YMKMapKit sharedInstance];
+
+    if (trafficLayer == nil) {
+        trafficLayer = [inst createTrafficLayerWithMapWindow:self.mapWindow];
+    }
+
+    if (traffic) {
+        [trafficLayer setTrafficVisibleWithOn:YES];
+        [trafficLayer addTrafficListenerWithTrafficListener:self];
+    } else {
+        [trafficLayer setTrafficVisibleWithOn:NO];
+        [trafficLayer removeTrafficListenerWithTrafficListener:self];
     }
 }
 
@@ -758,8 +775,9 @@
 
     return YES;
 }
--(void) onMapLoadedWithStatistics:(YMKMapLoadStatistics *)statistics {
-	if(self.onMapLoaded){
+
+- (void)onMapLoadedWithStatistics:(YMKMapLoadStatistics*)statistics {
+	if (self.onMapLoaded) {
         NSDictionary *data = @{
 			@"renderObjectCount": @(statistics.renderObjectCount),
 			@"curZoomModelsLoaded": @(statistics.curZoomModelsLoaded),
@@ -775,13 +793,21 @@
 	}
 }
 
--(void)reactSetFrame:(CGRect)frame {
+- (void)reactSetFrame:(CGRect)frame {
 	self.mapFrame = frame;
 	[super reactSetFrame:frame];
 }
 
--(void)layoutMarginsDidChange {
+- (void)layoutMarginsDidChange {
 	[super reactSetFrame:self.mapFrame];
+}
+
+- (void)setMaxFps:(float)maxFps {
+    [self.mapWindow setMaxFpsWithFps:maxFps];
+}
+
+- (void)setInteractive:(BOOL)interactive {
+    [self setNoninteractive:!interactive];
 }
 
 @synthesize reactTag;

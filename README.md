@@ -209,6 +209,7 @@ type YamapSuggestWithCoords = {
 | showUserPosition | boolean | true | Отслеживание геоданных и отображение позиции пользователя |
 | userLocationIcon | ImageSource | false | Иконка для позиции пользователя. Доступны те же значения что и у компонента Image из React Native |
 | initialRegion | InitialRegion | | Изначальное местоположение карты при загрузке |
+| interactive | boolean | true | Интерактивная ли карта (перемещение по карте, отслеживание нажатий) |
 | nightMode | boolean | false | Использование ночного режима |
 | onMapLoaded | function | | Колбек на загрузку карты |
 | onCameraPositionChange | function | | Колбек на изменение положения камеры |
@@ -225,6 +226,7 @@ type YamapSuggestWithCoords = {
 | fastTapEnabled | boolean | true | Убрана ли задержка в 300мс при клике/тапе |
 | withClusters | boolean | false | Автоматическая группировка меток на карте в кластеры |
 | clusterColor | string | 'red' | Цвет фона метки-кластера |
+| maxFps | number | 60 | Максимальная частота обновления карты |
 | mapType | string | 'vector' | Тип карты |
 | mapStyle | string | {} | Стили карты согласно [документации](https://yandex.ru/dev/maps/mapkit/doc/dg/concepts/style.html) |
 
@@ -240,7 +242,7 @@ type YamapSuggestWithCoords = {
 -  `findMasstransitRoutes(points: Point[], callback: (event: RoutesFoundEvent<MasstransitInfo>) => void): void` - запрос маршрутов на любом общественном транспорте;
 -  `findPedestrianRoutes(points: Point[], callback: (event: RoutesFoundEvent<MasstransitInfo>) => void): void` - запрос пешеходного маршрута;
 -  `findDrivingRoutes(points: Point[], callback: (event: RoutesFoundEvent<DrivingInfo>) => void): void` - запрос маршрута для автомобиля;
--  **[Только Android]**  `setTrafficVisible(isVisible: boolean): void` - включить/отключить отображение слоя с пробками на картах.
+-  `setTrafficVisible(isVisible: boolean): void` - включить/отключить отображение слоя с пробками на картах.
 
 **ВАЖНО**
 
