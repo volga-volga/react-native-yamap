@@ -291,6 +291,11 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         }
     }
 
+    @ReactProp(name = "maxFps")
+    public void setMaxFps(View view, float maxFps) {
+        castToYaMapView(view).setMaxFps(maxFps);
+    }
+
     @Override
     public void addView(YamapView parent, View child, int index) {
         parent.addFeature(child, index);
