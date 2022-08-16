@@ -14,23 +14,23 @@ export type YamapCoords = {
 };
 export type YamapSuggestWithCoords = YamapSuggest & Partial<YamapCoords>;
 
-export const SuggestTypes = {
-  YMKSuggestTypeUnspecified: 0b00,
+export enum SuggestTypes {
+  YMKSuggestTypeUnspecified = 0b00,
   /**
    * Toponyms.
    */
-  YMKSuggestTypeGeo: 0b01,
+  YMKSuggestTypeGeo = 0b01,
   /**
    * Companies.
    */
-  YMKSuggestTypeBiz: 0b01 << 1,
+  YMKSuggestTypeBiz = 0b01 << 1,
   /**
    * Mass transit routes.
    */
-  YMKSuggestTypeTransit: 0b01 << 2,
+  YMKSuggestTypeTransit = 0b01 << 2,
 }
 
-type SuggestOptions = { userPosition?: Point, suggestWords?: boolean, suggestTypes?: Array<keyof typeof SuggestTypes> }
+type SuggestOptions = { userPosition?: Point, suggestWords?: boolean, suggestTypes?: SuggestTypes[] }
 
 type SuggestFetcher = (query: string, options?: SuggestOptions) => Promise<Array<YamapSuggest>>;
 const suggest: SuggestFetcher = (query, options) => {
