@@ -15,6 +15,13 @@
     return target;
 }
 
++ (YMKScreenPoint*)YMKScreenPoint:(id)json {
+    json = [self NSDictionary:json];
+    YMKScreenPoint *target = [YMKScreenPoint screenPointWithX:[self float:json[@"x"]] y:[self float:json[@"y"]]];
+
+    return target;
+}
+
 + (NSArray*)Vehicles:(id)json {
     return [self NSArray:json];
 }

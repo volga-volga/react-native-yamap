@@ -366,10 +366,24 @@
         @"zoom": [NSNumber numberWithFloat:position.zoom],
         @"point": @{
             @"lat": [NSNumber numberWithDouble:position.target.latitude],
-            @"lon": [NSNumber numberWithDouble:position.target.longitude],
+            @"lon": [NSNumber numberWithDouble:position.target.longitude]
         },
         @"reason": reason == 0 ? @"GESTURES" : @"APPLICATION",
         @"finished": @(finished)
+    };
+}
+
+- (NSDictionary*)worldPointToJSON:(YMKPoint*)point {
+    return @{
+        @"lat": [NSNumber numberWithDouble:point.latitude],
+        @"lon": [NSNumber numberWithDouble:point.longitude]
+    };
+}
+
+- (NSDictionary*)screenPointToJSON:(YMKScreenPoint*)point {
+    return @{
+        @"x": [NSNumber numberWithFloat:point.x],
+        @"y": [NSNumber numberWithFloat:point.y]
     };
 }
 
@@ -377,23 +391,22 @@
     return @{
         @"bottomLeft": @{
             @"lat": [NSNumber numberWithDouble:region.bottomLeft.latitude],
-            @"lon": [NSNumber numberWithDouble:region.bottomLeft.longitude],
+            @"lon": [NSNumber numberWithDouble:region.bottomLeft.longitude]
         },
         @"bottomRight": @{
             @"lat": [NSNumber numberWithDouble:region.bottomRight.latitude],
-            @"lon": [NSNumber numberWithDouble:region.bottomRight.longitude],
+            @"lon": [NSNumber numberWithDouble:region.bottomRight.longitude]
         },
         @"topLeft": @{
             @"lat": [NSNumber numberWithDouble:region.topLeft.latitude],
-            @"lon": [NSNumber numberWithDouble:region.topLeft.longitude],
+            @"lon": [NSNumber numberWithDouble:region.topLeft.longitude]
         },
         @"topRight": @{
             @"lat": [NSNumber numberWithDouble:region.topRight.latitude],
-            @"lon": [NSNumber numberWithDouble:region.topRight.longitude],
-        },
+            @"lon": [NSNumber numberWithDouble:region.topRight.longitude]
+        }
     };
 }
-
 
 - (void)emitCameraPositionToJS:(NSString*)_id {
     YMKCameraPosition* position = self.mapWindow.map.cameraPosition;
@@ -417,6 +430,28 @@
     }
 }
 
+- (void)emitWorldToScreenPoint:(YMKPoint*)point withId:(NSString*)_id {
+    YMKScreenPoint* screenPoint = [self.mapWindow worldToScreenWithWorldPoint:point];
+    NSDictionary* _screenPoint = [self screenPointToJSON:screenPoint];
+    NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:_screenPoint];
+    [response setValue:_id forKey:@"id"];
+
+    if (self.onWorldToScreenPointReceived) {
+        self.onWorldToScreenPointReceived(response);
+    }
+}
+
+- (void)emitScreenToWorldPoint:(YMKScreenPoint*)point withId:(NSString*)_id {
+    YMKPoint* mapPoint = [self.mapWindow screenToWorldWithScreenPoint:point];
+    NSDictionary* _mapPoint = [self worldPointToJSON:mapPoint];
+    NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:_mapPoint];
+    [response setValue:_id forKey:@"id"];
+
+    if (self.onScreenToWorldPointReceived) {
+        self.onScreenToWorldPointReceived(response);
+    }
+}
+
 - (void)onCameraPositionChangedWithMap:(nonnull YMKMap*)map
                         cameraPosition:(nonnull YMKCameraPosition*)cameraPosition
                     cameraUpdateReason:(YMKCameraUpdateReason)cameraUpdateReason
@@ -433,7 +468,6 @@
 - (void)setNightMode:(BOOL)nightMode {
     [self.mapWindow.map setNightModeEnabled:nightMode];
 }
-
 
 - (void)setClusters:(BOOL)useUserClusters {
     userClusters = useUserClusters;

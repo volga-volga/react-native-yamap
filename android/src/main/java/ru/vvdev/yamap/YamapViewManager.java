@@ -34,6 +34,8 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     private static final int GET_VISIBLE_REGION = 6;
     private static final int SET_TRAFFIC_VISIBLE = 7;
     private static final int FIT_MARKERS = 8;
+    private static final int GET_SCREEN_POINT = 9;
+    private static final int GET_WORLD_POINT = 10;
 
     YamapViewManager() {
     }
@@ -46,20 +48,22 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     @Override
     public Map<String, Object> getExportedCustomDirectEventTypeConstants() {
         return MapBuilder.<String, Object>builder()
-                .build();
+            .build();
     }
 
     public Map getExportedCustomBubblingEventTypeConstants() {
         return MapBuilder.builder()
-                .put("routes", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onRouteFound")))
-                .put("cameraPosition", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionReceived")))
-                .put("cameraPositionChange", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionChange")))
-                .put("cameraPositionChangeEnd", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionChangeEnd")))
-                .put("visibleRegion", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onVisibleRegionReceived")))
-                .put("onMapPress", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapPress")))
-                .put("onMapLongPress", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapLongPress")))
-                .put("onMapLoaded", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapLoaded")))
-                .build();
+            .put("routes", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onRouteFound")))
+            .put("cameraPosition", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionReceived")))
+            .put("cameraPositionChange", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionChange")))
+            .put("cameraPositionChangeEnd", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionChangeEnd")))
+            .put("visibleRegion", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onVisibleRegionReceived")))
+            .put("onMapPress", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapPress")))
+            .put("onMapLongPress", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapLongPress")))
+            .put("onMapLoaded", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapLoaded")))
+            .put("screenToWorldPoint", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onScreenToWorldPointReceived")))
+            .put("worldToScreenPoint", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onWorldToScreenPointReceived")))
+            .build();
     }
 
     @Override
@@ -73,6 +77,8 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         map.put("getVisibleRegion", GET_VISIBLE_REGION);
         map.put("setTrafficVisible", SET_TRAFFIC_VISIBLE);
         map.put("fitMarkers", FIT_MARKERS);
+        map.put("getScreenPoint", GET_SCREEN_POINT);
+        map.put("getWorldPoint", GET_WORLD_POINT);
 
         return map;
     }
@@ -127,6 +133,18 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
                 case "setTrafficVisible":
                     if (args != null) {
                         view.setTrafficVisible(args.getBoolean(0));
+                    }
+                    break;
+
+                case "getScreenPoint":
+                    if (args != null) {
+                        view.emitWorldToScreenPoint(args.getMap(0), args.getString(1));
+                    }
+                    break;
+
+                case "getWorldPoint":
+                    if (args != null) {
+                        view.emitScreenToWorldPoint(args.getMap(0), args.getString(1));
                     }
                     break;
 
