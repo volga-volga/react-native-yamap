@@ -240,4 +240,17 @@ RCT_EXPORT_METHOD(getVisibleRegion:(nonnull NSNumber*)reactTag _id:(NSString*_No
     }];
 }
 
+RCT_EXPORT_METHOD(setTrafficVisible:(nonnull NSNumber*)reactTag traffic:(BOOL)traffic) {
+    [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber*, UIView*> *viewRegistry) {
+        RNYMView *view = (RNYMView*)viewRegistry[reactTag];
+
+        if (!view || ![view isKindOfClass:[RNYMView class]]) {
+            RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
+            return;
+        }
+
+        [view setTrafficVisible:traffic];
+    }];
+}
+
 @end

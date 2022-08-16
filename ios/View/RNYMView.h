@@ -7,7 +7,7 @@
 
 @class RCTBridge;
 
-@interface RNYMView: YMKMapView<YMKUserLocationObjectListener, YMKMapCameraListener, RCTComponent, YMKClusterListener, YMKClusterTapListener, YMKMapLoadedListener>
+@interface RNYMView: YMKMapView<YMKUserLocationObjectListener, YMKMapCameraListener, RCTComponent, YMKClusterListener, YMKClusterTapListener, YMKMapLoadedListener, YMKTrafficDelegate>
 
 @property (nonatomic, assign) CGRect mapFrame;
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onRouteFound;
@@ -24,11 +24,10 @@
 - (void)emitVisibleRegionToJS:(NSString*_Nonnull)_id;
 - (void)setCenter:(YMKCameraPosition*_Nonnull)position withDuration:(float)duration withAnimation:(int)animation;
 - (void)setZoom:(float)zoom withDuration:(float)duration withAnimation:(int)animation;
-- (void)setMapType:(NSString*_Nullable)type;
-- (void)setInitialRegion:(NSDictionary*_Nullable)type;
 - (void)fitAllMarkers;
-- (void)fitMarkers: (NSArray<YMKPoint*>*_Nonnull)points;
+- (void)fitMarkers:(NSArray<YMKPoint*>*_Nonnull)points;
 - (void)findRoutes:(NSArray<YMKRequestPoint*>*_Nonnull)points vehicles:(NSArray<NSString*>*_Nonnull)vehicles withId:(NSString*_Nonnull)_id;
+- (void)setTrafficVisible:(BOOL)traffic;
 
 // PROPS
 - (void)setNightMode:(BOOL)nightMode;
@@ -39,6 +38,8 @@
 - (void)setClusterColor:(UIColor*_Nullable)color;
 - (void)setUserLocationAccuracyStrokeColor:(UIColor*_Nullable)color;
 - (void)setUserLocationAccuracyStrokeWidth:(float)width;
+- (void)setMapType:(NSString*_Nullable)type;
+- (void)setInitialRegion:(NSDictionary*_Nullable)initialRegion;
 
 @end
 

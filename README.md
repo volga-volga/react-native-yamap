@@ -240,7 +240,7 @@ type YamapSuggestWithCoords = {
 -  `findMasstransitRoutes(points: Point[], callback: (event: RoutesFoundEvent<MasstransitInfo>) => void): void` - запрос маршрутов на любом общественном транспорте;
 -  `findPedestrianRoutes(points: Point[], callback: (event: RoutesFoundEvent<MasstransitInfo>) => void): void` - запрос пешеходного маршрута;
 -  `findDrivingRoutes(points: Point[], callback: (event: RoutesFoundEvent<DrivingInfo>) => void): void` - запрос маршрута для автомобиля;
--  **[Только Android]**  `setTrafficVisible(isVisible: boolean): void` - включить/отключить отображение слоя с пробками на картах.
+-  `setTrafficVisible(isVisible: boolean): void` - включить/отключить отображение слоя с пробками на картах.
 
 **ВАЖНО**
 
