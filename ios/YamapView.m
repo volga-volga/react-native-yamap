@@ -138,6 +138,12 @@ RCT_CUSTOM_VIEW_PROPERTY(initialRegion, NSDictionary, RNYMView) {
     }
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(maxFps, NSNumber, RNYMView) {
+    if (json && view) {
+        [view setMaxFps:[json floatValue]];
+    }
+}
+
 // REF
 RCT_EXPORT_METHOD(fitAllMarkers:(nonnull NSNumber*)reactTag) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber*, UIView*> *viewRegistry) {

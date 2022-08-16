@@ -775,6 +775,7 @@
 
     return YES;
 }
+
 - (void)onMapLoadedWithStatistics:(YMKMapLoadStatistics*)statistics {
 	if (self.onMapLoaded) {
         NSDictionary *data = @{
@@ -799,6 +800,10 @@
 
 - (void)layoutMarginsDidChange {
 	[super reactSetFrame:self.mapFrame];
+}
+
+- (void)setMaxFps:(float)maxFps {
+    [self.mapWindow setMaxFpsWithFps:maxFps];
 }
 
 @synthesize reactTag;

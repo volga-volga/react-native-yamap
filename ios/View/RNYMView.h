@@ -40,6 +40,7 @@
 - (void)setUserLocationAccuracyStrokeWidth:(float)width;
 - (void)setMapType:(NSString*_Nullable)type;
 - (void)setInitialRegion:(NSDictionary*_Nullable)initialRegion;
+- (void)setMaxFps:(float)maxFps;
 
 @end
 
