@@ -41,6 +41,7 @@
 - (void)setMapType:(NSString*_Nullable)type;
 - (void)setInitialRegion:(NSDictionary*_Nullable)initialRegion;
 - (void)setMaxFps:(float)maxFps;
+- (void)setInteractive:(BOOL)interactive;
 
 @end
 

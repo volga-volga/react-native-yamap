@@ -806,6 +806,10 @@
     [self.mapWindow setMaxFpsWithFps:maxFps];
 }
 
+- (void)setInteractive:(BOOL)interactive {
+    [self setNoninteractive:!interactive];
+}
+
 @synthesize reactTag;
 
 @end

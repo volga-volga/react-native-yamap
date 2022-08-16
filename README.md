@@ -209,6 +209,7 @@ type YamapSuggestWithCoords = {
 | showUserPosition | boolean | true | Отслеживание геоданных и отображение позиции пользователя |
 | userLocationIcon | ImageSource | false | Иконка для позиции пользователя. Доступны те же значения что и у компонента Image из React Native |
 | initialRegion | InitialRegion | | Изначальное местоположение карты при загрузке |
+| interactive | boolean | true | Интерактивная ли карта (перемещение по карте, отслеживание нажатий) |
 | nightMode | boolean | false | Использование ночного режима |
 | onMapLoaded | function | | Колбек на загрузку карты |
 | onCameraPositionChange | function | | Колбек на изменение положения камеры |

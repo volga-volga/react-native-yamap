@@ -144,6 +144,12 @@ RCT_CUSTOM_VIEW_PROPERTY(maxFps, NSNumber, RNYMView) {
     }
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(interactive, BOOL, RNYMView) {
+    if (json && view) {
+        [view setInteractive:[json boolValue]];
+    }
+}
+
 // REF
 RCT_EXPORT_METHOD(fitAllMarkers:(nonnull NSNumber*)reactTag) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber*, UIView*> *viewRegistry) {

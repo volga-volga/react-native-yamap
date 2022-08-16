@@ -296,6 +296,11 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         castToYaMapView(view).setMaxFps(maxFps);
     }
 
+    @ReactProp(name = "interactive")
+    public void setInteractive(View view, boolean interactive) {
+        castToYaMapView(view).setInteractive(interactive);
+    }
+
     @Override
     public void addView(YamapView parent, View child, int index) {
         parent.addFeature(child, index);
