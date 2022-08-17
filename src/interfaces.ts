@@ -2,6 +2,12 @@ export interface Point {
   lat: number;
   lon: number;
 }
+
+export interface ScreenPoint {
+  x: number;
+  y: number;
+}
+
 export interface MapLoaded {
   renderObjectCount: number;
   curZoomModelsLoaded: number;

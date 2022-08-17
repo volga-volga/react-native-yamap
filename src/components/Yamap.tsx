@@ -12,7 +12,7 @@ import {
 // @ts-ignore
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 import CallbacksManager from '../utils/CallbacksManager';
-import { InitialRegion, MapType, Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition, VisibleRegion, MapLoaded } from '../interfaces';
+import { Point, ScreenPoint, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition, VisibleRegion, InitialRegion, MapType, Animation, MapLoaded } from '../interfaces';
 import { processColorProps } from '../utils';
 
 const { yamap: NativeYamapModule } = NativeModules;
@@ -47,7 +47,8 @@ const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');
 export class YaMap extends React.Component<YaMapProps> {
   static defaultProps = {
     showUserPosition: true,
-    clusterColor: 'red'
+    clusterColor: 'red',
+    maxFps: 60
   };
 
   // @ts-ignore
@@ -161,6 +162,24 @@ export class YaMap extends React.Component<YaMapProps> {
     );
   }
 
+  public getScreenPoints(points: Point[], callback: (screenPoint: ScreenPoint) => void) {
+    const cbId = CallbacksManager.addCallback(callback);
+    UIManager.dispatchViewManagerCommand(
+      findNodeHandle(this),
+      this.getCommand('getScreenPoints'),
+      [points, cbId]
+    );
+  }
+
+  public getWorldPoints(points: ScreenPoint[], callback: (point: Point) => void) {
+    const cbId = CallbacksManager.addCallback(callback);
+    UIManager.dispatchViewManagerCommand(
+      findNodeHandle(this),
+      this.getCommand('getWorldPoints'),
+      [points, cbId]
+    );
+  }
+
   private _findRoutes(points: Point[], vehicles: Vehicles[], callback: ((event: RoutesFoundEvent<DrivingInfo | MasstransitInfo>) => void) | ((event: RoutesFoundEvent<DrivingInfo>) => void) | ((event: RoutesFoundEvent<MasstransitInfo>) => void)) {
     const cbId = CallbacksManager.addCallback(callback);
     const args = Platform.OS === 'ios'
@@ -187,13 +206,22 @@ export class YaMap extends React.Component<YaMapProps> {
   }
 
   private processCameraPosition(event: any) {
-    const { id, ...position } = event.nativeEvent;
-    CallbacksManager.call(id, position);
+    CallbacksManager.call(event.nativeEvent.id, event);
   }
 
   private processVisibleRegion(event: NativeSyntheticEvent<{id: string} & VisibleRegion>) {
     const { id, ...visibleRegion } = event.nativeEvent;
     CallbacksManager.call(id, visibleRegion);
+  }
+
+  private processWorldToScreenPointsReceived(event: NativeSyntheticEvent<{id: string} & ScreenPoint[]>) {
+    const { id, ...screenPoints } = event.nativeEvent;
+    CallbacksManager.call(id, screenPoints);
+  }
+
+  private processScreenToWorldPointsReceived(event: NativeSyntheticEvent<{id: string} & Point[]>) {
+    const { id, ...worldPoints } = event.nativeEvent;
+    CallbacksManager.call(id, worldPoints);
   }
 
   private resolveImageUri(img: ImageSourcePropType) {
@@ -206,6 +234,8 @@ export class YaMap extends React.Component<YaMapProps> {
       onRouteFound: this.processRoute,
       onCameraPositionReceived: this.processCameraPosition,
       onVisibleRegionReceived: this.processVisibleRegion,
+      onWorldToScreenPointsReceived: this.processWorldToScreenPointsReceived,
+      onScreenToWorldPointsReceived: this.processScreenToWorldPointsReceived,
       userLocationIcon: this.props.userLocationIcon ? this.resolveImageUri(this.props.userLocationIcon) : undefined
     };
 

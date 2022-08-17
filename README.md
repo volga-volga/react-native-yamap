@@ -117,6 +117,23 @@ interface Point {
   lon: Number;
 }
 
+interface ScreenPoint {
+  x: number;
+  y: number;
+}
+
+interface MapLoaded {
+  renderObjectCount: number;
+  curZoomModelsLoaded: number;
+  curZoomPlacemarksLoaded: number;
+  curZoomLabelsLoaded: number;
+  curZoomGeometryLoaded: number;
+  tileMemoryUsage: number;
+  delayedGeometryLoaded: number;
+  fullyAppeared: number;
+  fullyLoaded: number;
+}
+
 interface InitialRegion {
   lat: number;
   lon: number;
@@ -242,7 +259,9 @@ type YamapSuggestWithCoords = {
 -  `findMasstransitRoutes(points: Point[], callback: (event: RoutesFoundEvent<MasstransitInfo>) => void): void` - запрос маршрутов на любом общественном транспорте;
 -  `findPedestrianRoutes(points: Point[], callback: (event: RoutesFoundEvent<MasstransitInfo>) => void): void` - запрос пешеходного маршрута;
 -  `findDrivingRoutes(points: Point[], callback: (event: RoutesFoundEvent<DrivingInfo>) => void): void` - запрос маршрута для автомобиля;
--  `setTrafficVisible(isVisible: boolean): void` - включить/отключить отображение слоя с пробками на картах.
+-  `setTrafficVisible(isVisible: boolean): void` - включить/отключить отображение слоя с пробками на картах;
+-  `getScreenPoints(point: Point[], callback: (screenPoints: ScreenPoint[]) => void)` - получить кооординаты на экране (x и y) по координатам маркеров;
+-  `getWorldPoints(screenPoint: ScreenPoint[], callback: (worldPoints: Point[]) => void)` - получить координаты точек (lat и lon) по координатам на экране.
 
 **ВАЖНО**
 
@@ -354,6 +373,7 @@ import { Polygon } from 'react-native-yamap';
 |--|--|--|
 | points | Point[] | Массив точек линии |
 | fillColor | string | Цвет заливки |
+| strokeColor | string | Цвет границы |
 | strokeWidth | number | Толщина границы |
 | innerRings | (Point[])[] | Массив полилиний, которые образуют отверстия в полигоне |
 | onPress | function | Действие при нажатии/клике |

@@ -12,10 +12,12 @@ import androidx.annotation.NonNull;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
+import com.yandex.mapkit.ScreenPoint;
 import com.yandex.mapkit.Animation;
 import com.yandex.mapkit.MapKitFactory;
 import com.yandex.mapkit.RequestPoint;
@@ -99,7 +101,6 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     private Boolean userClusters = false;
     private int clusterColor = 0;
     private Bitmap userLocationBitmap = null;
-
     private RouteManager routeMng = new RouteManager();
     private MasstransitRouter masstransitRouter = TransportFactory.getInstance().createMasstransitRouter();
     private DrivingRouter drivingRouter;
@@ -110,6 +111,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     private int userLocationAccuracyStrokeColor = 0;
     private float userLocationAccuracyStrokeWidth = 0.f;
     private TrafficLayer trafficLayer = null;
+    private float maxFps = 60;
 
     private UserLocationView userLocationView = null;
 
@@ -149,12 +151,22 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         return cameraPosition;
     }
 
-    public void emitCameraPositionToJS(String id) {
-        CameraPosition position = getMap().getCameraPosition();
-        WritableMap cameraPosition = positionToJSON(position, CameraUpdateReason.valueOf("APPLICATION"), true);
-        cameraPosition.putString("id", id);
-        ReactContext reactContext = (ReactContext) getContext();
-        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "cameraPosition", cameraPosition);
+    private WritableMap screenPointToJSON(ScreenPoint screenPoint) {
+        WritableMap result = Arguments.createMap();
+
+        result.putDouble("x", (float) screenPoint.getX());
+        result.putDouble("y", (float) screenPoint.getY());
+
+        return result;
+    }
+
+    private WritableMap worldPointToJSON(Point worldPoint) {
+        WritableMap result = Arguments.createMap();
+
+        result.putDouble("lat", worldPoint.getLatitude());
+        result.putDouble("lon", worldPoint.getLongitude());
+
+        return result;
     }
 
     private WritableMap visibleRegionToJSON(VisibleRegion region) {
@@ -183,12 +195,56 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         return result;
     }
 
+    public void emitCameraPositionToJS(String id) {
+        CameraPosition position = getMap().getCameraPosition();
+        WritableMap cameraPosition = positionToJSON(position, CameraUpdateReason.valueOf("APPLICATION"), true);
+        cameraPosition.putString("id", id);
+        ReactContext reactContext = (ReactContext) getContext();
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "cameraPosition", cameraPosition);
+    }
+
     public void emitVisibleRegionToJS(String id) {
         VisibleRegion visibleRegion = getMap().getVisibleRegion();
         WritableMap result = visibleRegionToJSON(visibleRegion);
         result.putString("id", id);
         ReactContext reactContext = (ReactContext) getContext();
         reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "visibleRegion", result);
+    }
+
+    public void emitWorldToScreenPoints(ReadableArray worldPoints, String id) {
+        WritableArray screenPoints = Arguments.createArray();
+
+        for (int i = 0; i < worldPoints.size(); ++i) {
+            ReadableMap p = worldPoints.getMap(i);
+            Point worldPoint = new Point(p.getDouble("lat"), p.getDouble("lon"));
+            ScreenPoint screenPoint = getMapWindow().worldToScreen(worldPoint);
+            screenPoints.pushMap(screenPointToJSON(screenPoint));
+        }
+
+        WritableMap result = Arguments.createMap();
+        result.putString("id", id);
+        result.putArray("screenPoints", screenPoints);
+
+        ReactContext reactContext = (ReactContext) getContext();
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "worldToScreenPoints", result);
+    }
+
+    public void emitScreenToWorldPoints(ReadableArray screenPoints, String id) {
+        WritableArray worldPoints = Arguments.createArray();
+
+        for (int i = 0; i < screenPoints.size(); ++i) {
+            ReadableMap p = screenPoints.getMap(i);
+            ScreenPoint screenPoint = new ScreenPoint((float) p.getDouble("x"), (float) p.getDouble("y"));
+            Point worldPoint = getMapWindow().screenToWorld(screenPoint);
+            worldPoints.pushMap(worldPointToJSON(worldPoint));
+        }
+
+        WritableMap result = Arguments.createMap();
+        result.putString("id", id);
+        result.putArray("worldPoints", worldPoints);
+
+        ReactContext reactContext = (ReactContext) getContext();
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "screenToWorldPoints", result);
     }
 
     public void setZoom(Float zoom, float duration, int animation) {
@@ -425,7 +481,8 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         setCenter(initialCameraPosition, 0.f, 0);
     }
 
-    public void setMaxFps(float maxFps) {
+    public void setMaxFps(float fps) {
+        maxFps = fps;
         getMapWindow().setMaxFps(maxFps);
     }
 
