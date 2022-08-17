@@ -373,6 +373,7 @@ import { Polygon } from 'react-native-yamap';
 |--|--|--|
 | points | Point[] | Массив точек линии |
 | fillColor | string | Цвет заливки |
+| strokeColor | string | Цвет границы |
 | strokeWidth | number | Толщина границы |
 | innerRings | (Point[])[] | Массив полилиний, которые образуют отверстия в полигоне |
 | onPress | function | Действие при нажатии/клике |
