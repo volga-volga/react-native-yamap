@@ -34,8 +34,8 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     private static final int GET_VISIBLE_REGION = 6;
     private static final int SET_TRAFFIC_VISIBLE = 7;
     private static final int FIT_MARKERS = 8;
-    private static final int GET_SCREEN_POINT = 9;
-    private static final int GET_WORLD_POINT = 10;
+    private static final int GET_SCREEN_POINTS = 9;
+    private static final int GET_WORLD_POINTS = 10;
 
     YamapViewManager() {
     }
@@ -61,8 +61,8 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
             .put("onMapPress", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapPress")))
             .put("onMapLongPress", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapLongPress")))
             .put("onMapLoaded", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapLoaded")))
-            .put("screenToWorldPoint", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onScreenToWorldPointReceived")))
-            .put("worldToScreenPoint", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onWorldToScreenPointReceived")))
+            .put("screenToWorldPoints", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onScreenToWorldPointsReceived")))
+            .put("worldToScreenPoints", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onWorldToScreenPointsReceived")))
             .build();
     }
 
@@ -77,8 +77,8 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         map.put("getVisibleRegion", GET_VISIBLE_REGION);
         map.put("setTrafficVisible", SET_TRAFFIC_VISIBLE);
         map.put("fitMarkers", FIT_MARKERS);
-        map.put("getScreenPoint", GET_SCREEN_POINT);
-        map.put("getWorldPoint", GET_WORLD_POINT);
+        map.put("getScreenPoints", GET_SCREEN_POINTS);
+        map.put("getWorldPoints", GET_WORLD_POINTS);
 
         return map;
     }
@@ -136,15 +136,15 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
                     }
                     break;
 
-                case "getScreenPoint":
+                case "getScreenPoints":
                     if (args != null) {
-                        view.emitWorldToScreenPoint(args.getMap(0), args.getString(1));
+                        view.emitWorldToScreenPoints(args.getArray(0), args.getString(1));
                     }
                     break;
 
-                case "getWorldPoint":
+                case "getWorldPoints":
                     if (args != null) {
-                        view.emitScreenToWorldPoint(args.getMap(0), args.getString(1));
+                        view.emitScreenToWorldPoints(args.getArray(0), args.getString(1));
                     }
                     break;
 

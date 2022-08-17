@@ -18,8 +18,8 @@
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onMapPress;
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onMapLongPress;
 @property (nonatomic, copy) RCTBubblingEventBlock _Nullable onMapLoaded;
-@property (nonatomic, copy) RCTBubblingEventBlock _Nullable onWorldToScreenPointReceived;
-@property (nonatomic, copy) RCTBubblingEventBlock _Nullable onScreenToWorldPointReceived;
+@property (nonatomic, copy) RCTBubblingEventBlock _Nullable onWorldToScreenPointsReceived;
+@property (nonatomic, copy) RCTBubblingEventBlock _Nullable onScreenToWorldPointsReceived;
 
 // REF
 - (void)emitCameraPositionToJS:(NSString*_Nonnull)_id;
@@ -30,8 +30,8 @@
 - (void)fitMarkers:(NSArray<YMKPoint*>*_Nonnull)points;
 - (void)findRoutes:(NSArray<YMKRequestPoint*>*_Nonnull)points vehicles:(NSArray<NSString*>*_Nonnull)vehicles withId:(NSString*_Nonnull)_id;
 - (void)setTrafficVisible:(BOOL)traffic;
-- (void)emitWorldToScreenPoint:(YMKPoint*_Nonnull)point withId:(NSString*_Nonnull)_id;
-- (void)emitScreenToWorldPoint:(YMKScreenPoint*_Nonnull)point withId:(NSString*_Nonnull)_id;
+- (void)emitWorldToScreenPoint:(NSArray<YMKPoint*>*_Nonnull)points withId:(NSString*_Nonnull)_id;
+- (void)emitScreenToWorldPoint:(NSArray<YMKScreenPoint*>*_Nonnull)points withId:(NSString*_Nonnull)_id;
 
 // PROPS
 - (void)setNightMode:(BOOL)nightMode;

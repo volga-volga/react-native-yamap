@@ -47,7 +47,8 @@ const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');
 export class YaMap extends React.Component<YaMapProps> {
   static defaultProps = {
     showUserPosition: true,
-    clusterColor: 'red'
+    clusterColor: 'red',
+    maxFps: 60
   };
 
   // @ts-ignore
@@ -161,21 +162,21 @@ export class YaMap extends React.Component<YaMapProps> {
     );
   }
 
-  public getScreenPoint(point: Point, callback: (screenPoint: ScreenPoint) => void) {
+  public getScreenPoints(points: Point[], callback: (screenPoint: ScreenPoint) => void) {
     const cbId = CallbacksManager.addCallback(callback);
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
-      this.getCommand('getScreenPoint'),
-      [point, cbId]
+      this.getCommand('getScreenPoints'),
+      [points, cbId]
     );
   }
 
-  public getWorldPoint(point: ScreenPoint, callback: (point: Point) => void) {
+  public getWorldPoints(points: ScreenPoint[], callback: (point: Point) => void) {
     const cbId = CallbacksManager.addCallback(callback);
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
-      this.getCommand('getWorldPoint'),
-      [point, cbId]
+      this.getCommand('getWorldPoints'),
+      [points, cbId]
     );
   }
 
@@ -213,14 +214,14 @@ export class YaMap extends React.Component<YaMapProps> {
     CallbacksManager.call(id, visibleRegion);
   }
 
-  private processWorldToScreenPointReceived(event: NativeSyntheticEvent<{id: string} & ScreenPoint>) {
-    const { id, ...screenPoint } = event.nativeEvent;
-    CallbacksManager.call(id, screenPoint);
+  private processWorldToScreenPointsReceived(event: NativeSyntheticEvent<{id: string} & ScreenPoint[]>) {
+    const { id, ...screenPoints } = event.nativeEvent;
+    CallbacksManager.call(id, screenPoints);
   }
 
-  private processScreenToWorldPointReceived(event: NativeSyntheticEvent<{id: string} & Point>) {
-    const { id, ...point } = event.nativeEvent;
-    CallbacksManager.call(id, point);
+  private processScreenToWorldPointsReceived(event: NativeSyntheticEvent<{id: string} & Point[]>) {
+    const { id, ...worldPoints } = event.nativeEvent;
+    CallbacksManager.call(id, worldPoints);
   }
 
   private resolveImageUri(img: ImageSourcePropType) {
@@ -233,8 +234,8 @@ export class YaMap extends React.Component<YaMapProps> {
       onRouteFound: this.processRoute,
       onCameraPositionReceived: this.processCameraPosition,
       onVisibleRegionReceived: this.processVisibleRegion,
-      onWorldToScreenPointReceived: this.processWorldToScreenPointReceived,
-      onScreenToWorldPointReceived: this.processScreenToWorldPointReceived,
+      onWorldToScreenPointsReceived: this.processWorldToScreenPointsReceived,
+      onScreenToWorldPointsReceived: this.processScreenToWorldPointsReceived,
       userLocationIcon: this.props.userLocationIcon ? this.resolveImageUri(this.props.userLocationIcon) : undefined
     };
 

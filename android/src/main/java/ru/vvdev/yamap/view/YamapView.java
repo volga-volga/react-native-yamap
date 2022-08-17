@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
@@ -100,7 +101,6 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     private Boolean userClusters = false;
     private int clusterColor = 0;
     private Bitmap userLocationBitmap = null;
-
     private RouteManager routeMng = new RouteManager();
     private MasstransitRouter masstransitRouter = TransportFactory.getInstance().createMasstransitRouter();
     private DrivingRouter drivingRouter;
@@ -111,6 +111,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     private int userLocationAccuracyStrokeColor = 0;
     private float userLocationAccuracyStrokeWidth = 0.f;
     private TrafficLayer trafficLayer = null;
+    private float maxFps = 60;
 
     private UserLocationView userLocationView = null;
 
@@ -159,11 +160,11 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         return result;
     }
 
-    private WritableMap pointToJSON(Point point) {
+    private WritableMap worldPointToJSON(Point worldPoint) {
         WritableMap result = Arguments.createMap();
 
-        result.putDouble("lat", point.getLatitude());
-        result.putDouble("lon", point.getLongitude());
+        result.putDouble("lat", worldPoint.getLatitude());
+        result.putDouble("lon", worldPoint.getLongitude());
 
         return result;
     }
@@ -210,22 +211,40 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "visibleRegion", result);
     }
 
-    public void emitWorldToScreenPoint(ReadableMap p, String id) {
-        Point point = new Point(p.getDouble("lat"), p.getDouble("lon"));
-        ScreenPoint screenPoint = getMapWindow().worldToScreen(point);
-        WritableMap result = screenPointToJSON(screenPoint);
+    public void emitWorldToScreenPoints(ReadableArray worldPoints, String id) {
+        WritableArray screenPoints = Arguments.createArray();
+
+        for (int i = 0; i < worldPoints.size(); ++i) {
+            ReadableMap p = worldPoints.getMap(i);
+            Point worldPoint = new Point(p.getDouble("lat"), p.getDouble("lon"));
+            ScreenPoint screenPoint = getMapWindow().worldToScreen(worldPoint);
+            screenPoints.pushMap(screenPointToJSON(screenPoint));
+        }
+
+        WritableMap result = Arguments.createMap();
         result.putString("id", id);
+        result.putArray("screenPoints", screenPoints);
+
         ReactContext reactContext = (ReactContext) getContext();
-        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "worldToScreenPoint", result);
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "worldToScreenPoints", result);
     }
 
-    public void emitScreenToWorldPoint(ReadableMap p, String id) {
-        ScreenPoint screenPoint = new ScreenPoint((float) p.getDouble("x"), (float) p.getDouble("y"));
-        Point point = getMapWindow().screenToWorld(screenPoint);
-        WritableMap result = pointToJSON(point);
+    public void emitScreenToWorldPoints(ReadableArray screenPoints, String id) {
+        WritableArray worldPoints = Arguments.createArray();
+
+        for (int i = 0; i < screenPoints.size(); ++i) {
+            ReadableMap p = screenPoints.getMap(i);
+            ScreenPoint screenPoint = new ScreenPoint((float) p.getDouble("x"), (float) p.getDouble("y"));
+            Point worldPoint = getMapWindow().screenToWorld(screenPoint);
+            worldPoints.pushMap(worldPointToJSON(worldPoint));
+        }
+
+        WritableMap result = Arguments.createMap();
         result.putString("id", id);
+        result.putArray("worldPoints", worldPoints);
+
         ReactContext reactContext = (ReactContext) getContext();
-        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "screenToWorldPoint", result);
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "screenToWorldPoints", result);
     }
 
     public void setZoom(Float zoom, float duration, int animation) {

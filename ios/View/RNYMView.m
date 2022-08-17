@@ -430,25 +430,37 @@
     }
 }
 
-- (void)emitWorldToScreenPoint:(YMKPoint*)point withId:(NSString*)_id {
-    YMKScreenPoint* screenPoint = [self.mapWindow worldToScreenWithWorldPoint:point];
-    NSDictionary* _screenPoint = [self screenPointToJSON:screenPoint];
-    NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:_screenPoint];
-    [response setValue:_id forKey:@"id"];
+- (void)emitWorldToScreenPoint:(NSArray<YMKPoint*>*)worldPoints withId:(NSString*)_id {
+    NSMutableArray *screenPoints = [[NSMutableArray alloc] init];
 
-    if (self.onWorldToScreenPointReceived) {
-        self.onWorldToScreenPointReceived(response);
+    for (int i = 0; i < [worldPoints count]; ++i) {
+        YMKScreenPoint *screenPoint = [self.mapWindow worldToScreenWithWorldPoint:[worldPoints objectAtIndex:i]];
+        [screenPoints addObject:[self screenPointToJSON:screenPoint]];
+    }
+
+    NSMutableDictionary *response = [[NSMutableDictionary alloc] init];
+    [response setValue:_id forKey:@"id"];
+    [response setValue:screenPoints forKey:@"screenPoints"];
+
+    if (self.onWorldToScreenPointsReceived) {
+        self.onWorldToScreenPointsReceived(response);
     }
 }
 
-- (void)emitScreenToWorldPoint:(YMKScreenPoint*)point withId:(NSString*)_id {
-    YMKPoint* mapPoint = [self.mapWindow screenToWorldWithScreenPoint:point];
-    NSDictionary* _mapPoint = [self worldPointToJSON:mapPoint];
-    NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:_mapPoint];
-    [response setValue:_id forKey:@"id"];
+- (void)emitScreenToWorldPoint:(NSArray<YMKScreenPoint*>*)screenPoints withId:(NSString*)_id {
+    NSMutableArray *worldPoints = [[NSMutableArray alloc] init];
 
-    if (self.onScreenToWorldPointReceived) {
-        self.onScreenToWorldPointReceived(response);
+    for (int i = 0; i < [screenPoints count]; ++i) {
+        YMKPoint *worldPoint = [self.mapWindow screenToWorldWithScreenPoint:[screenPoints objectAtIndex:i]];
+        [worldPoints addObject:[self worldPointToJSON:worldPoint]];
+    }
+
+    NSMutableDictionary *response = [[NSMutableDictionary alloc] init];
+    [response setValue:_id forKey:@"id"];
+    [response setValue:worldPoints forKey:@"worldPoints"];
+
+    if (self.onScreenToWorldPointsReceived) {
+        self.onScreenToWorldPointsReceived(response);
     }
 }
 

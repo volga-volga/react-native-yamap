@@ -24,8 +24,8 @@ RCT_EXPORT_MODULE()
         @"onMapPress",
         @"onMapLongPress",
         @"onMapLoaded",
-        @"onWorldToScreenPointReceived",
-        @"onScreenToWorldPointReceived"
+        @"onWorldToScreenPointsReceived",
+        @"onScreenToWorldPointsReceived"
     ];
 }
 
@@ -60,8 +60,8 @@ RCT_EXPORT_VIEW_PROPERTY(onCameraPositionChangeEnd, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMapPress, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMapLongPress, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMapLoaded, RCTBubblingEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(onWorldToScreenPointReceived, RCTBubblingEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(onScreenToWorldPointReceived, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onWorldToScreenPointsReceived, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onScreenToWorldPointsReceived, RCTBubblingEventBlock)
 
 RCT_CUSTOM_VIEW_PROPERTY(userLocationAccuracyFillColor, NSNumber, RNYMView) {
     [view setUserLocationAccuracyFillColor: [RCTConvert UIColor:json]];
@@ -278,7 +278,7 @@ RCT_EXPORT_METHOD(setTrafficVisible:(nonnull NSNumber*)reactTag traffic:(BOOL)tr
     }];
 }
 
-RCT_EXPORT_METHOD(getScreenPoint:(nonnull NSNumber*)reactTag point:(NSDictionary*_Nonnull)point _id:(NSString*_Nonnull)_id) {
+RCT_EXPORT_METHOD(getScreenPoints:(nonnull NSNumber*)reactTag json:(id)json _id:(NSString*_Nonnull)_id) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber*, UIView*> *viewRegistry) {
         RNYMView *view = (RNYMView*)viewRegistry[reactTag];
 
@@ -287,12 +287,12 @@ RCT_EXPORT_METHOD(getScreenPoint:(nonnull NSNumber*)reactTag point:(NSDictionary
             return;
         }
 
-        YMKPoint *mapPoint = [RCTConvert YMKPoint:point];
-        [view emitWorldToScreenPoint:mapPoint withId:_id];
+        NSArray<YMKPoint*> *mapPoints = [RCTConvert Points:json];
+        [view emitWorldToScreenPoint:mapPoints withId:_id];
     }];
 }
 
-RCT_EXPORT_METHOD(getWorldPoint:(nonnull NSNumber*)reactTag point:(NSDictionary*_Nonnull)point _id:(NSString*_Nonnull)_id) {
+RCT_EXPORT_METHOD(getWorldPoints:(nonnull NSNumber*)reactTag json:(id)json _id:(NSString*_Nonnull)_id) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber*, UIView*> *viewRegistry) {
         RNYMView *view = (RNYMView*)viewRegistry[reactTag];
 
@@ -301,8 +301,8 @@ RCT_EXPORT_METHOD(getWorldPoint:(nonnull NSNumber*)reactTag point:(NSDictionary*
             return;
         }
 
-        YMKScreenPoint *screenPoint = [RCTConvert YMKScreenPoint:point];
-        [view emitScreenToWorldPoint:screenPoint withId:_id];
+        NSArray<YMKScreenPoint*> *screenPoints = [RCTConvert ScreenPoints:json];
+        [view emitScreenToWorldPoint:screenPoints withId:_id];
     }];
 }
 

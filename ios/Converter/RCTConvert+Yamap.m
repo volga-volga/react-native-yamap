@@ -40,6 +40,20 @@
     return result;
 }
 
++ (NSMutableArray<YMKScreenPoint*>*)ScreenPoints:(id)json {
+    NSArray* parsedArray = [self NSArray:json];
+    NSMutableArray* result = [[NSMutableArray alloc] init];
+
+    for (NSDictionary* jsonMarker in parsedArray) {
+        float x = [[jsonMarker valueForKey:@"x"] floatValue];
+        float y = [[jsonMarker valueForKey:@"y"] floatValue];
+        YMKScreenPoint *point = [YMKScreenPoint screenPointWithX:x y:y];
+        [result addObject:point];
+    }
+
+    return result;
+}
+
 + (float)Zoom:(id)json {
     json = [self NSDictionary:json];
     return [self float:json[@"zoom"]];
