@@ -154,11 +154,11 @@ export class YaMap extends React.Component<YaMapProps> {
   }
 
   public getVisibleRegion(callback: (VisibleRegion: VisibleRegion) => void) {
-    const callbackId = CallbacksManager.addCallback(callback);
+    const cbId = CallbacksManager.addCallback(callback);
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('getVisibleRegion'),
-      [callbackId]
+      [cbId]
     );
   }
 
@@ -182,9 +182,7 @@ export class YaMap extends React.Component<YaMapProps> {
 
   private _findRoutes(points: Point[], vehicles: Vehicles[], callback: ((event: RoutesFoundEvent<DrivingInfo | MasstransitInfo>) => void) | ((event: RoutesFoundEvent<DrivingInfo>) => void) | ((event: RoutesFoundEvent<MasstransitInfo>) => void)) {
     const cbId = CallbacksManager.addCallback(callback);
-    const args = Platform.OS === 'ios'
-                ? [{ points, vehicles, id: cbId }]
-                : [points, vehicles, cbId];
+    const args = Platform.OS === 'ios' ? [{ points, vehicles, id: cbId }] : [points, vehicles, cbId];
 
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
@@ -194,32 +192,30 @@ export class YaMap extends React.Component<YaMapProps> {
   }
 
   private getCommand(cmd: string): any {
-    if (Platform.OS === 'ios') {
-      return UIManager.getViewManagerConfig('YamapView').Commands[cmd];
-    } else {
-      return cmd;
-    }
+    return Platform.OS === 'ios' ? UIManager.getViewManagerConfig('YamapView').Commands[cmd] : cmd;
   }
 
-  private processRoute(event: any) {
-    CallbacksManager.call(event.nativeEvent.id, event);
+  private processRoute(event: NativeSyntheticEvent<{ id: string } & RoutesFoundEvent<DrivingInfo | MasstransitInfo>>) {
+    const { id, ...routes } = event.nativeEvent;
+    CallbacksManager.call(id, routes);
   }
 
-  private processCameraPosition(event: any) {
-    CallbacksManager.call(event.nativeEvent.id, event);
+  private processCameraPosition(event: NativeSyntheticEvent<{ id: string } & CameraPosition>) {
+    const { id, ...point } = event.nativeEvent;
+    CallbacksManager.call(id, point);
   }
 
-  private processVisibleRegion(event: NativeSyntheticEvent<{id: string} & VisibleRegion>) {
+  private processVisibleRegion(event: NativeSyntheticEvent<{ id: string } & VisibleRegion>) {
     const { id, ...visibleRegion } = event.nativeEvent;
     CallbacksManager.call(id, visibleRegion);
   }
 
-  private processWorldToScreenPointsReceived(event: NativeSyntheticEvent<{id: string} & ScreenPoint[]>) {
+  private processWorldToScreenPointsReceived(event: NativeSyntheticEvent<{ id: string } & ScreenPoint[]>) {
     const { id, ...screenPoints } = event.nativeEvent;
     CallbacksManager.call(id, screenPoints);
   }
 
-  private processScreenToWorldPointsReceived(event: NativeSyntheticEvent<{id: string} & Point[]>) {
+  private processScreenToWorldPointsReceived(event: NativeSyntheticEvent<{ id: string } & Point[]>) {
     const { id, ...worldPoints } = event.nativeEvent;
     CallbacksManager.call(id, worldPoints);
   }
