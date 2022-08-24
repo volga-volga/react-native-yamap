@@ -287,7 +287,8 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
                 RequestPoint _p = new RequestPoint(point, RequestPointType.WAYPOINT, null);
                 _points.add(_p);
             }
-            drivingRouter.requestRoutes(_points, new DrivingOptions(), new VehicleOptions(), listener);
+
+            drivingRouter.requestRoutes(_points, new DrivingOptions().setRoutesCount(1), new VehicleOptions(), listener);
             return;
         }
         ArrayList<RequestPoint> _points = new ArrayList<>();
