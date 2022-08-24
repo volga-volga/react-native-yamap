@@ -96,7 +96,7 @@ public class YandexMapSuggestClient implements MapSuggestClient {
 
         SuggestOptions options_ = new SuggestOptions();
 
-        int suggestType = SuggestType.UNSPECIFIED.value;
+        int suggestType = SuggestType.GEO.value;
 
         if (options.hasKey(suggestWordsKey) && !options.isNull(suggestWordsKey)) {
             if (options.getType(suggestWordsKey) != ReadableType.Boolean) {
@@ -137,6 +137,7 @@ public class YandexMapSuggestClient implements MapSuggestClient {
                 onError.invoke(new IllegalStateException("suggest error: " + suggestTypesKey + " is not an Array"));
                 return;
             }
+            suggestType = SuggestType.UNSPECIFIED.value;
             ReadableArray suggestTypesArray = options.getArray(suggestTypesKey);
             for (int i = 0; i < suggestTypesArray.size(); i++) {
                 if(suggestTypesArray.getType(i) != ReadableType.Number){
@@ -146,9 +147,9 @@ public class YandexMapSuggestClient implements MapSuggestClient {
                 int value = suggestTypesArray.getInt(i);
                 suggestType = suggestType | value;
             }
-            options_.setSuggestTypes(suggestType);
         }
 
+        options_.setSuggestTypes(suggestType);
         this.suggestHandler(text, options_, onSuccess, onError);
     }
 
