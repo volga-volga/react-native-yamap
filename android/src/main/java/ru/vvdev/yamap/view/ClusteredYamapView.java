@@ -114,34 +114,13 @@ public class ClusteredYamapView extends YamapView implements ClusterListener, Cl
         cluster.addClusterTapListener(this);
     }
 
-    private void fitClusterMarkers(List<PlacemarkMapObject> points) {
-        ArrayList<Point> lastKnownMarkers = new ArrayList<Point>();
-        for (int i = 0; i < points.size(); ++i) {
-            lastKnownMarkers.add(points.get(i).getGeometry());
-        }
-        // todo[0]: добавить параметры анимации и дефолтного зума (для одного маркера)
-        if (lastKnownMarkers.size() == 0) {
-            return;
-        }
-        if (lastKnownMarkers.size() == 1) {
-            Point center = new Point(lastKnownMarkers.get(0).getLatitude(), lastKnownMarkers.get(0).getLongitude());
-            getMap().move(new CameraPosition(center, 15, 0, 0));
-            return;
-        }
-        CameraPosition oldCameraPosition = getMap().getCameraPosition();
-        CameraPosition cameraPosition = getMap().cameraPosition(calculateBoundingBox(lastKnownMarkers));
-        cameraPosition = new CameraPosition(cameraPosition.getTarget(), cameraPosition.getZoom() - 0.8f, cameraPosition.getAzimuth(), cameraPosition.getTilt());
-        if (cameraPosition.getZoom()-oldCameraPosition.getZoom()>1) {
-            getMap().move(cameraPosition, new Animation(Animation.Type.SMOOTH, 0.7f), null);
-        } else {
-            cameraPosition = new CameraPosition(cameraPosition.getTarget(), (float) Math.ceil(cameraPosition.getZoom()), cameraPosition.getAzimuth(), cameraPosition.getTilt());
-            getMap().move(cameraPosition, new Animation(Animation.Type.SMOOTH, 0.7f), null);
-        }
-    }
-
     @Override
     public boolean onClusterTap(@NonNull Cluster cluster) {
-        fitClusterMarkers(cluster.getPlacemarks());
+        ArrayList<Point> points = new ArrayList<>();
+        for (PlacemarkMapObject placemark : cluster.getPlacemarks()) {
+            points.add(placemark.getGeometry());
+        }
+        fitMarkers(points);
         return true;
     }
 

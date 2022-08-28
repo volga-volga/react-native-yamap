@@ -95,30 +95,6 @@
     [clusterCollection clusterPlacemarksWithClusterRadius:50 minZoom:12];
 }
 
-- (void)fitMarkers:(NSArray<YMKPlacemarkMapObject*>*) _points {
-    NSMutableArray<YMKPoint*>* lastKnownMarkers = [[NSMutableArray alloc] init];
-    for (int i = 0; i < [_points count]; ++i) {
-            [lastKnownMarkers addObject:[[_points objectAtIndex:i] geometry]];
-    }
-    if ([lastKnownMarkers count] == 0) {
-        return;
-    }
-    if ([lastKnownMarkers count] == 1) {
-        YMKPoint *center = [lastKnownMarkers objectAtIndex:0];
-        [self.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:15 azimuth:0 tilt:0]];
-        return;
-    }
-    YMKCameraPosition *oldCameraPosition = [self.mapWindow.map cameraPosition];
-    YMKCameraPosition *cameraPosition = [self.mapWindow.map cameraPositionWithBoundingBox:[self calculateBoundingBox:lastKnownMarkers]];
-    cameraPosition = [YMKCameraPosition cameraPositionWithTarget:cameraPosition.target zoom:cameraPosition.zoom - 0.8f azimuth:cameraPosition.azimuth tilt:cameraPosition.tilt];
-    if ([cameraPosition zoom] - [oldCameraPosition zoom] > 1) {
-        [self.mapWindow.map moveWithCameraPosition:cameraPosition animationType:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:1.0] cameraCallback:^(BOOL completed){}];
-    } else {
-        cameraPosition = [YMKCameraPosition cameraPositionWithTarget:cameraPosition.target zoom:ceil(cameraPosition.zoom) azimuth:cameraPosition.azimuth tilt:cameraPosition.tilt];
-        [self.mapWindow.map moveWithCameraPosition:cameraPosition animationType:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:1.0] cameraCallback:^(BOOL completed){}];
-    }
-}
-
 - (void)setClusterColor: (UIColor*) color {
     clusterColor = color;
 }
@@ -231,7 +207,11 @@
 }
 
 - (BOOL)onClusterTapWithCluster:(nonnull YMKCluster *)cluster {
-    [self fitMarkers:[cluster placemarks]];
+    NSMutableArray<YMKPoint*>* lastKnownMarkers = [[NSMutableArray alloc] init];
+    for (YMKPlacemarkMapObject *placemark in [cluster placemarks]) {
+        [lastKnownMarkers addObject:[placemark geometry]];
+    }
+    [self fitMarkers:lastKnownMarkers];
     return YES;
 }
 
