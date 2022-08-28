@@ -22,8 +22,10 @@ export class Circle extends React.Component<CircleProps> {
 
   render() {
     const props = { ...this.props };
+
     processColorProps(props, 'fillColor' as keyof CircleProps);
     processColorProps(props, 'strokeColor' as keyof CircleProps);
+
     return <NativeCircleComponent {...props} />;
   }
 }

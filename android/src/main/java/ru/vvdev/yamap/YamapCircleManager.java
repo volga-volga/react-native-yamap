@@ -41,7 +41,7 @@ public class YamapCircleManager extends ViewGroupManager<YamapCircle> {
         return new YamapCircle(context);
     }
 
-    // props
+    // PROPS
     @ReactProp(name = "center")
     public void setCenter(YamapCircle view, ReadableMap center) {
         if (center != null) {
@@ -66,10 +66,12 @@ public class YamapCircleManager extends ViewGroupManager<YamapCircle> {
     public void setStrokeColor(YamapCircle view, int color) {
         view.setStrokeColor(color);
     }
+
     @ReactProp(name = "fillColor")
     public void setFillColor(YamapCircle view, int color) {
         view.setFillColor(color);
     }
+
     @ReactProp(name = "zIndex")
     public void setZIndex(YamapCircle view, int zIndex) {
         view.setZIndex(zIndex);

@@ -38,7 +38,7 @@ public class YamapCircle extends ViewGroup implements MapObjectTapListener, Reac
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
     }
 
-    // props
+    // PROPS
     public void setCenter(Point point) {
         center = point;
         updateGeometry();
@@ -99,6 +99,7 @@ public class YamapCircle extends ViewGroup implements MapObjectTapListener, Reac
     public boolean onMapObjectTap(@NonNull MapObject mapObject, @NonNull Point point) {
         WritableMap e = Arguments.createMap();
         ((ReactContext) getContext()).getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onPress", e);
+
         return false;
     }
 }

@@ -1,4 +1,5 @@
-import { NativeModules } from "react-native";
+import { Point } from './interfaces';
+import { NativeModules } from 'react-native';
 
 const { YamapSuggests } = NativeModules;
 
@@ -13,14 +14,36 @@ export type YamapCoords = {
 };
 export type YamapSuggestWithCoords = YamapSuggest & Partial<YamapCoords>;
 
-type SuggestFetcher = (query: string) => Promise<Array<YamapSuggest>>;
-const suggest: SuggestFetcher = (query) => YamapSuggests.suggest(query);
+export enum SuggestTypes {
+  YMKSuggestTypeUnspecified = 0b00,
+  /**
+   * Toponyms.
+   */
+  YMKSuggestTypeGeo = 0b01,
+  /**
+   * Companies.
+   */
+  YMKSuggestTypeBiz = 0b01 << 1,
+  /**
+   * Mass transit routes.
+   */
+  YMKSuggestTypeTransit = 0b01 << 2,
+}
 
-type SuggestWithCoordsFetcher = (
-  query: string
-) => Promise<Array<YamapSuggestWithCoords>>;
-const suggestWithCoords: SuggestWithCoordsFetcher = async (query) => {
-  const suggests = await suggest(query);
+type SuggestOptions = { userPosition?: Point, suggestWords?: boolean, suggestTypes?: SuggestTypes[] }
+
+type SuggestFetcher = (query: string, options?: SuggestOptions) => Promise<Array<YamapSuggest>>;
+const suggest: SuggestFetcher = (query, options) => {
+  if (options) {
+    return YamapSuggests.suggestWithOptions(query, options);
+  }
+  return YamapSuggests.suggest(query);
+}
+
+type SuggestWithCoordsFetcher = (query: string, options?: SuggestOptions) => Promise<Array<YamapSuggestWithCoords>>;
+const suggestWithCoords: SuggestWithCoordsFetcher = async (query, options) => {
+  const suggests = await suggest(query, options);
+
   return suggests.map((item) => ({
     ...item,
     ...getCoordsFromSuggest(item),
@@ -34,15 +57,16 @@ const reset: SuggestResetter = () => YamapSuggests.reset();
 type LatLonGetter = (suggest: YamapSuggest) => YamapCoords | undefined;
 const getCoordsFromSuggest: LatLonGetter = (suggest) => {
   const coords = suggest.uri
-    ?.split("?")[1]
-    ?.split("&")
-    ?.find((param) => param.startsWith("ll"))
-    ?.split("=")[1];
+    ?.split('?')[1]
+    ?.split('&')
+    ?.find((param) => param.startsWith('ll'))
+    ?.split('=')[1];
   if (!coords) return;
 
-  const splittedCoords = coords.split("%2C");
+  const splittedCoords = coords.split('%2C');
   const lon = Number(splittedCoords[0]);
   const lat = Number(splittedCoords[1]);
+
   return { lat, lon };
 };
 
@@ -50,7 +74,7 @@ const Suggest = {
   suggest,
   suggestWithCoords,
   reset,
-  getCoordsFromSuggest,
+  getCoordsFromSuggest
 };
 
 export default Suggest;

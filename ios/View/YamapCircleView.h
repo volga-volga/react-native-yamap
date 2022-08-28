@@ -7,17 +7,16 @@
 
 @property (nonatomic, copy) RCTBubblingEventBlock onPress;
 
-// props
--(void) setFillColor:(UIColor*) color;
--(void) setStrokeColor:(UIColor*) color;
--(void) setStrokeWidth:(NSNumber*) width;
--(void) setZIndex:(NSNumber*) _zIndex;
--(void) setCircleCenter:(YMKPoint*) center;
--(void) setRadius:(float) radius;
-
-- (YMKCircle*) getCircle;
--(YMKPolygonMapObject*) getMapObject;
--(void) setMapObject: (YMKCircleMapObject*) mapObject;
+// PROPS
+- (void)setFillColor:(UIColor*)color;
+- (void)setStrokeColor:(UIColor*)color;
+- (void)setStrokeWidth:(NSNumber*)width;
+- (void)setZIndex:(NSNumber*)_zIndex;
+- (void)setCircleCenter:(YMKPoint*)center;
+- (void)setRadius:(float)radius;
+- (YMKCircle*)getCircle;
+- (YMKPolygonMapObject*)getMapObject;
+- (void)setMapObject:(YMKCircleMapObject*)mapObject;
 
 @end
 

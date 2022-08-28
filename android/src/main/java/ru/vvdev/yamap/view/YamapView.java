@@ -15,9 +15,12 @@ import androidx.annotation.NonNull;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
+import com.yandex.mapkit.ScreenPoint;
 import com.yandex.mapkit.Animation;
 import com.yandex.mapkit.MapKitFactory;
 import com.yandex.mapkit.RequestPoint;
@@ -35,6 +38,8 @@ import com.yandex.mapkit.geometry.Polyline;
 import com.yandex.mapkit.geometry.SubpolylineHelper;
 import com.yandex.mapkit.layers.ObjectEvent;
 import com.yandex.mapkit.map.CameraListener;
+import com.yandex.mapkit.map.MapLoadStatistics;
+import com.yandex.mapkit.map.MapLoadedListener;
 import com.yandex.mapkit.map.CameraPosition;
 import com.yandex.mapkit.map.CameraUpdateReason;
 import com.yandex.mapkit.map.CircleMapObject;
@@ -53,7 +58,7 @@ import com.yandex.mapkit.map.VisibleRegion;
 import com.yandex.mapkit.map.MapType;
 import com.yandex.mapkit.mapview.MapView;
 import com.yandex.mapkit.transport.TransportFactory;
-import com.yandex.mapkit.transport.masstransit.MasstransitOptions;
+import com.yandex.mapkit.transport.masstransit.FilterVehicleTypes;
 import com.yandex.mapkit.transport.masstransit.MasstransitRouter;
 import com.yandex.mapkit.transport.masstransit.PedestrianRouter;
 import com.yandex.mapkit.transport.masstransit.Route;
@@ -62,6 +67,7 @@ import com.yandex.mapkit.transport.masstransit.Section;
 import com.yandex.mapkit.transport.masstransit.SectionMetadata;
 import com.yandex.mapkit.transport.masstransit.Session;
 import com.yandex.mapkit.transport.masstransit.TimeOptions;
+import com.yandex.mapkit.transport.masstransit.TransitOptions;
 import com.yandex.mapkit.transport.masstransit.Transport;
 import com.yandex.mapkit.transport.masstransit.Weight;
 import com.yandex.mapkit.user_location.UserLocationLayer;
@@ -89,9 +95,7 @@ import ru.vvdev.yamap.utils.Callback;
 import ru.vvdev.yamap.utils.ImageLoader;
 import ru.vvdev.yamap.utils.RouteManager;
 
-public class YamapView extends MapView implements UserLocationObjectListener, CameraListener, InputListener, TrafficListener {
-    // default colors for known vehicles
-    // "underground" actually get color considering with his own branch"s color
+public class YamapView extends MapView implements UserLocationObjectListener, CameraListener, InputListener, TrafficListener, MapLoadedListener {
     private final static Map<String, String> DEFAULT_VEHICLE_COLORS = new HashMap<String, String>() {{
         put("bus", "#59ACFF");
         put("railway", "#F8634F");
@@ -103,7 +107,6 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     }};
     private String userLocationIcon = "";
     private Bitmap userLocationBitmap = null;
-
     private RouteManager routeMng = new RouteManager();
     private MasstransitRouter masstransitRouter = TransportFactory.getInstance().createMasstransitRouter();
     private DrivingRouter drivingRouter;
@@ -114,6 +117,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     private int userLocationAccuracyStrokeColor = 0;
     private float userLocationAccuracyStrokeWidth = 0.f;
     private TrafficLayer trafficLayer = null;
+    private float maxFps = 60;
     static private HashMap<String, ImageProvider> icons = new HashMap<>();
 
     void setImage(String iconSource, PlacemarkMapObject mapObject, IconStyle iconStyle) {
@@ -139,7 +143,6 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         }
     }
 
-    // location
     private UserLocationView userLocationView = null;
 
     public YamapView(Context context) {
@@ -148,9 +151,10 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         drivingRouter = DirectionsFactory.getInstance().createDrivingRouter();
         getMap().addCameraListener(this);
         getMap().addInputListener(this);
+        getMap().setMapLoadedListener(this);
     }
 
-    // ref methods
+    // REF
     public void setCenter(CameraPosition position, float duration, int animation) {
         if (duration > 0) {
             Animation.Type anim = animation == 0 ? Animation.Type.SMOOTH : Animation.Type.LINEAR;
@@ -172,15 +176,26 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         cameraPosition.putMap("point", target);
         cameraPosition.putString("reason", reason.toString());
         cameraPosition.putBoolean("finished", finished);
+
         return cameraPosition;
     }
 
-    public void emitCameraPositionToJS(String id) {
-        CameraPosition position = getMap().getCameraPosition();
-        WritableMap cameraPosition = positionToJSON(position, CameraUpdateReason.valueOf("APPLICATION"), true);
-        cameraPosition.putString("id", id);
-        ReactContext reactContext = (ReactContext) getContext();
-        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "cameraPosition", cameraPosition);
+    private WritableMap screenPointToJSON(ScreenPoint screenPoint) {
+        WritableMap result = Arguments.createMap();
+
+        result.putDouble("x", (float) screenPoint.getX());
+        result.putDouble("y", (float) screenPoint.getY());
+
+        return result;
+    }
+
+    private WritableMap worldPointToJSON(Point worldPoint) {
+        WritableMap result = Arguments.createMap();
+
+        result.putDouble("lat", worldPoint.getLatitude());
+        result.putDouble("lon", worldPoint.getLongitude());
+
+        return result;
     }
 
     private WritableMap visibleRegionToJSON(VisibleRegion region) {
@@ -209,12 +224,56 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         return result;
     }
 
+    public void emitCameraPositionToJS(String id) {
+        CameraPosition position = getMap().getCameraPosition();
+        WritableMap cameraPosition = positionToJSON(position, CameraUpdateReason.valueOf("APPLICATION"), true);
+        cameraPosition.putString("id", id);
+        ReactContext reactContext = (ReactContext) getContext();
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "cameraPosition", cameraPosition);
+    }
+
     public void emitVisibleRegionToJS(String id) {
         VisibleRegion visibleRegion = getMap().getVisibleRegion();
         WritableMap result = visibleRegionToJSON(visibleRegion);
         result.putString("id", id);
         ReactContext reactContext = (ReactContext) getContext();
         reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "visibleRegion", result);
+    }
+
+    public void emitWorldToScreenPoints(ReadableArray worldPoints, String id) {
+        WritableArray screenPoints = Arguments.createArray();
+
+        for (int i = 0; i < worldPoints.size(); ++i) {
+            ReadableMap p = worldPoints.getMap(i);
+            Point worldPoint = new Point(p.getDouble("lat"), p.getDouble("lon"));
+            ScreenPoint screenPoint = getMapWindow().worldToScreen(worldPoint);
+            screenPoints.pushMap(screenPointToJSON(screenPoint));
+        }
+
+        WritableMap result = Arguments.createMap();
+        result.putString("id", id);
+        result.putArray("screenPoints", screenPoints);
+
+        ReactContext reactContext = (ReactContext) getContext();
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "worldToScreenPoints", result);
+    }
+
+    public void emitScreenToWorldPoints(ReadableArray screenPoints, String id) {
+        WritableArray worldPoints = Arguments.createArray();
+
+        for (int i = 0; i < screenPoints.size(); ++i) {
+            ReadableMap p = screenPoints.getMap(i);
+            ScreenPoint screenPoint = new ScreenPoint((float) p.getDouble("x"), (float) p.getDouble("y"));
+            Point worldPoint = getMapWindow().screenToWorld(screenPoint);
+            worldPoints.pushMap(worldPointToJSON(worldPoint));
+        }
+
+        WritableMap result = Arguments.createMap();
+        result.putString("id", id);
+        result.putArray("worldPoints", worldPoints);
+
+        ReactContext reactContext = (ReactContext) getContext();
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "screenToWorldPoints", result);
     }
 
     public void setZoom(Float zoom, float duration, int animation) {
@@ -296,8 +355,8 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
             pedestrianRouter.requestRoutes(_points, new TimeOptions(), listener);
             return;
         }
-        MasstransitOptions masstransitOptions = new MasstransitOptions(new ArrayList<String>(), vehicles, new TimeOptions());
-        masstransitRouter.requestRoutes(_points, masstransitOptions, listener);
+        TransitOptions transitOptions = new TransitOptions(FilterVehicleTypes.NONE.value, new TimeOptions());
+        masstransitRouter.requestRoutes(_points, transitOptions, listener);
     }
 
     public void fitAllMarkers() {
@@ -314,9 +373,11 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     private ArrayList<Point> mapPlacemarksToPoints(List<PlacemarkMapObject> placemarks) {
         ArrayList<Point> points = new ArrayList<Point>();
+
         for (int i = 0; i < placemarks.size(); ++i) {
             points.add(placemarks.get(i).getGeometry());
         }
+
         return points;
     }
 
@@ -325,20 +386,25 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         double maxLon = points.get(0).getLongitude();
         double minLat = points.get(0).getLatitude();
         double maxLat = points.get(0).getLatitude();
+
         for (int i = 0; i < points.size(); i++) {
             if (points.get(i).getLongitude() > maxLon) {
                 maxLon = points.get(i).getLongitude();
             }
+
             if (points.get(i).getLongitude() < minLon) {
                 minLon = points.get(i).getLongitude();
             }
+
             if (points.get(i).getLatitude() > maxLat) {
                 maxLat = points.get(i).getLatitude();
             }
+
             if (points.get(i).getLatitude() < minLat) {
                 minLat = points.get(i).getLatitude();
             }
         }
+
         Point southWest = new Point(minLat, minLon);
         Point northEast = new Point(maxLat, maxLon);
 
@@ -360,7 +426,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         getMap().move(cameraPosition, new Animation(Animation.Type.SMOOTH, 0.7f), null);
     }
 
-    // props
+    // PROPS
     public void setUserLocationIcon(final String iconSource) {
         // todo[0]: можно устанавливать разные иконки на покой и движение. Дополнительно можно устанавливать стиль иконки, например scale
         userLocationIcon = iconSource;
@@ -414,6 +480,37 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         }
     }
 
+    public void setInitialRegion (@Nullable ReadableMap params) {
+        if ((!params.hasKey("lat") || params.isNull("lat")) || (!params.hasKey("lon") && params.isNull("lon")))
+            return;
+
+        Float initialRegionZoom = 10.f;
+        Float initialRegionAzimuth = 0.f;
+        Float initialRegionTilt = 0.f;
+
+        if (params.hasKey("zoom") && !params.isNull("zoom"))
+            initialRegionZoom = (float) params.getDouble("zoom");
+
+        if (params.hasKey("azimuth") && !params.isNull("azimuth"))
+            initialRegionAzimuth = (float) params.getDouble("azimuth");
+
+        if (params.hasKey("tilt") && !params.isNull("tilt"))
+            initialRegionTilt = (float) params.getDouble("tilt");
+
+        Point initialPosition = new Point(params.getDouble("lat"), params.getDouble("lon"));
+        CameraPosition initialCameraPosition = new CameraPosition(initialPosition, initialRegionZoom, initialRegionAzimuth, initialRegionTilt);
+        setCenter(initialCameraPosition, 0.f, 0);
+    }
+
+    public void setMaxFps(float fps) {
+        maxFps = fps;
+        getMapWindow().setMaxFps(maxFps);
+    }
+
+    public void setInteractive(boolean interactive) {
+        setNoninteractive(!interactive);
+    }
+
     public void setNightMode(Boolean nightMode) {
         getMap().setNightModeEnabled(nightMode);
     }
@@ -438,11 +535,11 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         getMap().setTiltGesturesEnabled(tiltGesturesEnabled);
     }
 
-
     public void setTrafficVisible(Boolean isVisible) {
         if (trafficLayer == null) {
             trafficLayer = MapKitFactory.getInstance().createTrafficLayer(getMapWindow());
         }
+
         if (isVisible) {
             trafficLayer.addTrafficListener(this);
             trafficLayer.setTrafficVisible(true);
@@ -456,6 +553,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         if (userLocationLayer == null) {
             userLocationLayer = MapKitFactory.getInstance().createUserLocationLayer(getMapWindow());
         }
+
         if (show) {
             userLocationLayer.setObjectListener(this);
             userLocationLayer.setVisible(true);
@@ -483,10 +581,13 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         routeMetadata.putMap("routeInfo", routeWeightData);
         routeMetadata.putInt("routeIndex", routeIndex);
         final WritableArray stops = new WritableNativeArray();
+
         for (RouteStop stop : section.getStops()) {
-            stops.pushString(stop.getStop().getName());
+            stops.pushString(stop.getMetadata().getStop().getName());
         }
+
         routeMetadata.putArray("stops", stops);
+
         if (data.getTransports() != null) {
             for (Transport transport : data.getTransports()) {
                 for (String type : transport.getLine().getVehicleTypes()) {
@@ -521,21 +622,27 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
                 routeMetadata.putString("type", "walk");
             }
         }
+
         WritableMap wTransports = Arguments.createMap();
+
         for (Map.Entry<String, ArrayList<String>> entry : transports.entrySet()) {
             wTransports.putArray(entry.getKey(), Arguments.fromList(entry.getValue()));
         }
+
         routeMetadata.putMap("transports", wTransports);
         Polyline subpolyline = SubpolylineHelper.subpolyline(route.getGeometry(), section.getGeometry());
         List<Point> linePoints = subpolyline.getPoints();
         WritableArray jsonPoints = Arguments.createArray();
+
         for (Point point : linePoints) {
             WritableMap jsonPoint = Arguments.createMap();
             jsonPoint.putDouble("lat", point.getLatitude());
             jsonPoint.putDouble("lon", point.getLongitude());
             jsonPoints.pushMap(jsonPoint);
         }
+
         routeMetadata.putArray("points", jsonPoints);
+
         return routeMetadata;
     }
 
@@ -557,23 +664,28 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         final WritableArray stops = new WritableNativeArray();
         routeMetadata.putArray("stops", stops);
         routeMetadata.putString("sectionColor", formatColor(Color.DKGRAY));
+
         if (section.getMetadata().getWeight().getDistance().getValue() == 0) {
             routeMetadata.putString("type", "waiting");
         } else {
             routeMetadata.putString("type", "car");
         }
+
         WritableMap wTransports = Arguments.createMap();
         routeMetadata.putMap("transports", wTransports);
         Polyline subpolyline = SubpolylineHelper.subpolyline(route.getGeometry(), section.getGeometry());
         List<Point> linePoints = subpolyline.getPoints();
         WritableArray jsonPoints = Arguments.createArray();
+
         for (Point point : linePoints) {
             WritableMap jsonPoint = Arguments.createMap();
             jsonPoint.putDouble("lat", point.getLatitude());
             jsonPoint.putDouble("lon", point.getLongitude());
             jsonPoints.pushMap(jsonPoint);
         }
+
         routeMetadata.putArray("points", jsonPoints);
+
         return routeMetadata;
     }
 
@@ -594,7 +706,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         return String.format("#%06X", (0xFFFFFF & color));
     }
 
-    // children
+    // CHILDREN
     public void addFeature(View child, int index) {
         if (child instanceof YamapPolygon) {
             YamapPolygon _child = (YamapPolygon) child;
@@ -664,9 +776,14 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     @Override
     public void onCameraPositionChanged(@NonNull com.yandex.mapkit.map.Map map, @NonNull CameraPosition cameraPosition, CameraUpdateReason reason, boolean finished) {
-        WritableMap position = positionToJSON(cameraPosition, reason, finished);
+        WritableMap positionStart = positionToJSON(cameraPosition, reason, finished);
+        WritableMap positionFinish = positionToJSON(cameraPosition, reason, finished);
         ReactContext reactContext = (ReactContext) getContext();
-        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "cameraPositionChanged", position);
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "cameraPositionChange", positionStart);
+
+        if (finished) {
+            reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "cameraPositionChangeEnd", positionFinish);
+        }
     }
 
     @Override
@@ -685,6 +802,22 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         data.putDouble("lon", point.getLongitude());
         ReactContext reactContext = (ReactContext) getContext();
         reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onMapLongPress", data);
+    }
+
+    @Override
+    public void onMapLoaded(MapLoadStatistics statistics) {
+        WritableMap data = Arguments.createMap();
+        data.putInt("renderObjectCount",statistics.getRenderObjectCount());
+        data.putDouble("curZoomModelsLoaded",statistics.getCurZoomModelsLoaded());
+        data.putDouble("curZoomPlacemarksLoaded",statistics.getCurZoomPlacemarksLoaded());
+        data.putDouble("curZoomLabelsLoaded",statistics.getCurZoomLabelsLoaded());
+        data.putDouble("curZoomGeometryLoaded",statistics.getCurZoomGeometryLoaded());
+        data.putDouble("tileMemoryUsage",statistics.getTileMemoryUsage());
+        data.putDouble("delayedGeometryLoaded",statistics.getDelayedGeometryLoaded());
+        data.putDouble("fullyAppeared",statistics.getFullyAppeared());
+        data.putDouble("fullyLoaded",statistics.getFullyLoaded());
+        ReactContext reactContext = (ReactContext) getContext();
+        reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(getId(), "onMapLoaded",data);
     }
 
     //trafficListener implementation

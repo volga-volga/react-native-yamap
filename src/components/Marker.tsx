@@ -30,7 +30,7 @@ export class Marker extends React.Component<MarkerProps, State> {
 
   state = {
     recreateKey: false,
-    children: this.props.children,
+    children: this.props.children
   };
 
   private getCommand(cmd: string): any {
@@ -48,12 +48,13 @@ export class Marker extends React.Component<MarkerProps, State> {
         recreateKey:
           nextProps.children === prevState.children
             ? prevState.recreateKey
-            : !prevState.recreateKey,
+            : !prevState.recreateKey
       };
     }
+
     return {
       children: nextProps.children,
-      recreateKey: Boolean(nextProps.children),
+      recreateKey: Boolean(nextProps.children)
     };
   }
 
@@ -64,7 +65,7 @@ export class Marker extends React.Component<MarkerProps, State> {
   private getProps() {
     return {
       ...this.props,
-      source: this.resolveImageUri(this.props.source),
+      source: this.resolveImageUri(this.props.source)
     };
   }
 
@@ -72,7 +73,7 @@ export class Marker extends React.Component<MarkerProps, State> {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('animatedMoveTo'),
-      [coords, duration],
+      [coords, duration]
     );
   }
 
@@ -80,7 +81,7 @@ export class Marker extends React.Component<MarkerProps, State> {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('animatedRotateTo'),
-      [angle, duration],
+      [angle, duration]
     );
   }
 

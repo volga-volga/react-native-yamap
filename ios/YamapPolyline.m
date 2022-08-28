@@ -17,16 +17,17 @@
 
 RCT_EXPORT_MODULE()
 
-- (NSArray<NSString *> *)supportedEvents {
+- (NSArray<NSString*>*)supportedEvents {
     return @[@"onPress"];
 }
 
 - (instancetype)init {
     self = [super init];
+
     return self;
 }
-+ (BOOL)requiresMainQueueSetup
-{
+
++ (BOOL)requiresMainQueueSetup {
     return YES;
 }
 
@@ -34,7 +35,7 @@ RCT_EXPORT_MODULE()
     return [[YamapPolylineView alloc] init];
 }
 
-// props
+// PROPS
 RCT_EXPORT_VIEW_PROPERTY(onPress, RCTBubblingEventBlock)
 
 RCT_CUSTOM_VIEW_PROPERTY (points, NSArray<YMKPoint>, YamapPolylineView) {
@@ -62,12 +63,15 @@ RCT_CUSTOM_VIEW_PROPERTY(dashLength, NSNumber, YamapPolylineView) {
 RCT_CUSTOM_VIEW_PROPERTY(gapLength, NSNumber, YamapPolylineView) {
     [view setGapLength: json];
 }
+
 RCT_CUSTOM_VIEW_PROPERTY(dashOffset, NSNumber, YamapPolylineView) {
     [view setDashOffset: json];
 }
+
 RCT_CUSTOM_VIEW_PROPERTY(outlineWidth, NSNumber, YamapPolylineView) {
     [view setOutlineWidth: json];
 }
+
 RCT_CUSTOM_VIEW_PROPERTY(zIndex, NSNumber, YamapPolylineView) {
     [view setZIndex: json];
 }

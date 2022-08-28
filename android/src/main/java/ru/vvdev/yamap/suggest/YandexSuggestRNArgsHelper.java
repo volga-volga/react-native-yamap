@@ -7,12 +7,13 @@ import com.facebook.react.bridge.WritableMap;
 import java.util.List;
 
 public final class YandexSuggestRNArgsHelper {
-
     public WritableArray createSuggestsMapFrom(List<MapSuggestItem> data) {
         final WritableArray result = Arguments.createArray();
+
         for (int i = 0; i < data.size(); i++) {
             result.pushMap(createSuggestMapFrom(data.get(i)));
         }
+
         return result;
     }
 
@@ -21,6 +22,7 @@ public final class YandexSuggestRNArgsHelper {
         result.putString("title", data.getTitle());
         result.putString("subtitle", data.getSubtitle());
         result.putString("uri", data.getUri());
+
         return result;
     }
 }

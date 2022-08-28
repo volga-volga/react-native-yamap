@@ -9,5 +9,6 @@
 
 @property YamapView *map;
 
--(void) initWithKey:(NSString *) apiKey;
+- (void)initWithKey:(NSString*)apiKey;
+
 @end

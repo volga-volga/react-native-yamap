@@ -34,6 +34,8 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     private static final int GET_VISIBLE_REGION = 6;
     private static final int SET_TRAFFIC_VISIBLE = 7;
     private static final int FIT_MARKERS = 8;
+    private static final int GET_SCREEN_POINTS = 9;
+    private static final int GET_WORLD_POINTS = 10;
 
     YamapViewManager() {
     }
@@ -46,18 +48,22 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     @Override
     public Map<String, Object> getExportedCustomDirectEventTypeConstants() {
         return MapBuilder.<String, Object>builder()
-                .build();
+            .build();
     }
 
     public Map getExportedCustomBubblingEventTypeConstants() {
         return MapBuilder.builder()
-                .put("routes", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onRouteFound")))
-                .put("cameraPosition", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionReceived")))
-                .put("cameraPositionChanged", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionChange")))
-                .put("visibleRegion", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onVisibleRegionReceived")))
-                .put("onMapPress", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapPress")))
-                .put("onMapLongPress", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapLongPress")))
-                .build();
+            .put("routes", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onRouteFound")))
+            .put("cameraPosition", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionReceived")))
+            .put("cameraPositionChange", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionChange")))
+            .put("cameraPositionChangeEnd", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionChangeEnd")))
+            .put("visibleRegion", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onVisibleRegionReceived")))
+            .put("onMapPress", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapPress")))
+            .put("onMapLongPress", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapLongPress")))
+            .put("onMapLoaded", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapLoaded")))
+            .put("screenToWorldPoints", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onScreenToWorldPointsReceived")))
+            .put("worldToScreenPoints", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onWorldToScreenPointsReceived")))
+            .build();
     }
 
     @Override
@@ -71,58 +77,81 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         map.put("getVisibleRegion", GET_VISIBLE_REGION);
         map.put("setTrafficVisible", SET_TRAFFIC_VISIBLE);
         map.put("fitMarkers", FIT_MARKERS);
+        map.put("getScreenPoints", GET_SCREEN_POINTS);
+        map.put("getWorldPoints", GET_WORLD_POINTS);
+
         return map;
     }
 
     @Override
     public void receiveCommand(
-            @NonNull YamapView view,
-            String commandType,
-            @Nullable ReadableArray args) {
-        Assertions.assertNotNull(view);
-        Assertions.assertNotNull(args);
-        switch (commandType) {
-            case "setCenter":
-                setCenter(castToYaMapView(view), args.getMap(0), (float) args.getDouble(1), (float) args.getDouble(2), (float) args.getDouble(3), (float) args.getDouble(4), args.getInt(5));
-                return;
-            case "fitAllMarkers":
-                fitAllMarkers(view);
-                return;
-            case "fitMarkers":
-                if (args != null) {
-                    fitMarkers(view, args.getArray(0));
-                }
-                return;
-            case "findRoutes":
-                if (args != null) {
-                    findRoutes(view, args.getArray(0), args.getArray(1), args.getString(2));
-                }
-                return;
-            case "setZoom":
-                if (args != null) {
-                    view.setZoom((float)args.getDouble(0), (float)args.getDouble(1), args.getInt(2));
-                }
-                return;
-            case "getCameraPosition":
-                if (args != null) {
-                    view.emitCameraPositionToJS(args.getString(0));
-                }
-                return;
-            case "getVisibleRegion":
-                if (args != null) {
-                    view.emitVisibleRegionToJS(args.getString(0));
-                }
-                return;
+        @NonNull YamapView view,
+        String commandType,
+        @Nullable ReadableArray args) {
+            Assertions.assertNotNull(view);
+            Assertions.assertNotNull(args);
+
+            switch (commandType) {
+                case "setCenter":
+                    setCenter(castToYaMapView(view), args.getMap(0), (float) args.getDouble(1), (float) args.getDouble(2), (float) args.getDouble(3), (float) args.getDouble(4), args.getInt(5));
+                    break;
+
+                case "fitAllMarkers":
+                    fitAllMarkers(view);
+                    break;
+
+                case "fitMarkers":
+                    if (args != null) {
+                        fitMarkers(view, args.getArray(0));
+                    }
+                    break;
+
+                case "findRoutes":
+                    if (args != null) {
+                        findRoutes(view, args.getArray(0), args.getArray(1), args.getString(2));
+                    }
+                    break;
+
+                case "setZoom":
+                    if (args != null) {
+                        view.setZoom((float)args.getDouble(0), (float)args.getDouble(1), args.getInt(2));
+                    }
+                    break;
+
+                case "getCameraPosition":
+                    if (args != null) {
+                        view.emitCameraPositionToJS(args.getString(0));
+                    }
+                    break;
+
+                case "getVisibleRegion":
+                    if (args != null) {
+                        view.emitVisibleRegionToJS(args.getString(0));
+                    }
+                    break;
             case "setTrafficVisible":
                 if (args != null) {
                     view.setTrafficVisible(args.getBoolean(0));
                 }
-                return;
-            default:
-                throw new IllegalArgumentException(String.format(
-                        "Unsupported command %d received by %s.",
-                        commandType,
-                        getClass().getSimpleName()));
+                break;
+
+                case "getScreenPoints":
+                    if (args != null) {
+                        view.emitWorldToScreenPoints(args.getArray(0), args.getString(1));
+                    }
+                    break;
+
+                case "getWorldPoints":
+                    if (args != null) {
+                        view.emitScreenToWorldPoints(args.getArray(0), args.getString(1));
+                    }
+                    break;
+
+                default:
+                    throw new IllegalArgumentException(String.format(
+                            "Unsupported command %d received by %s.",
+                            commandType,
+                            getClass().getSimpleName()));
         }
     }
 
@@ -136,6 +165,7 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         YamapView view = new YamapView(context);
         MapKitFactory.getInstance().onStart();
         view.onStart();
+
         return view;
     }
 
@@ -154,12 +184,14 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     private void fitMarkers(View view, ReadableArray jsPoints) {
         if (jsPoints != null) {
             ArrayList<Point> points = new ArrayList<>();
+
             for (int i = 0; i < jsPoints.size(); ++i) {
                 ReadableMap point = jsPoints.getMap(i);
                 if (point != null) {
                     points.add(new Point(point.getDouble("lat"), point.getDouble("lon")));
                 }
             }
+
             castToYaMapView(view).fitMarkers(points);
         }
     }
@@ -167,23 +199,27 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     private void findRoutes(View view, ReadableArray jsPoints, ReadableArray jsVehicles, String id) {
         if (jsPoints != null) {
             ArrayList<Point> points = new ArrayList<>();
+
             for (int i = 0; i < jsPoints.size(); ++i) {
                 ReadableMap point = jsPoints.getMap(i);
                 if (point != null) {
                     points.add(new Point(point.getDouble("lat"), point.getDouble("lon")));
                 }
             }
+
             ArrayList<String> vehicles = new ArrayList<>();
+
             if (jsVehicles != null) {
                 for (int i = 0; i < jsVehicles.size(); ++i) {
                     vehicles.add(jsVehicles.getString(i));
                 }
             }
+
             castToYaMapView(view).findRoutes(points, vehicles, id);
         }
     }
 
-    // props
+    // PROPS
     @ReactProp(name = "userLocationIcon")
     public void setUserLocationIcon(View view, String icon) {
         if (icon != null) {
@@ -253,6 +289,23 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         if (type != null) {
             castToYaMapView(view).setMapType(type);
         }
+    }
+
+    @ReactProp(name = "initialRegion")
+    public void setInitialRegion(View view, ReadableMap params) {
+        if (params != null) {
+            castToYaMapView(view).setInitialRegion(params);
+        }
+    }
+
+    @ReactProp(name = "maxFps")
+    public void setMaxFps(View view, float maxFps) {
+        castToYaMapView(view).setMaxFps(maxFps);
+    }
+
+    @ReactProp(name = "interactive")
+    public void setInteractive(View view, boolean interactive) {
+        castToYaMapView(view).setInteractive(interactive);
     }
 
     @Override
