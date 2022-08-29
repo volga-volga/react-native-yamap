@@ -41,9 +41,6 @@
     UIColor* userLocationAccuracyFillColor;
     UIColor* userLocationAccuracyStrokeColor;
     float userLocationAccuracyStrokeWidth;
-    YMKClusterizedPlacemarkCollection *clusterCollection;
-    UIColor* clusterColor;
-    BOOL userClusters;
 }
 
 - (instancetype)init {
@@ -67,12 +64,9 @@
     [vehicleColors setObject:@"#2d9da8" forKey:@"walk"];
     userLocationAccuracyFillColor = nil;
     userLocationAccuracyStrokeColor = nil;
-    clusterColor=nil;
-    userClusters=NO;
     userLocationAccuracyStrokeWidth = 0.f;
     [self.mapWindow.map addCameraListenerWithCameraListener:self];
     [self.mapWindow.map addInputListenerWithInputListener:(id<YMKMapInputListener>) self];
-    clusterCollection = [self.mapWindow.map.mapObjects addClusterizedPlacemarkCollectionWithClusterListener:self];
     [self.mapWindow.map setMapLoadedListenerWithMapLoadedListener:self];
     return self;
 }
@@ -481,64 +475,8 @@
     [self.mapWindow.map setNightModeEnabled:nightMode];
 }
 
-- (void)setClusters:(BOOL)useUserClusters {
-    userClusters = useUserClusters;
-    [self updateUserMarkers];
-}
 
-- (void)setInitialRegion:(NSDictionary*)initialParams {
-    if ([initialParams valueForKey:@"lat"] == nil || [initialParams valueForKey:@"lon"] == nil)
-        return;
-
-    float initialZoom = 10.f;
-    float initialAzimuth = 0.f;
-    float initialTilt = 0.f;
-
-    if ([initialParams valueForKey:@"zoom"] != nil)
-        initialZoom = [initialParams[@"zoom"] floatValue];
-
-    if ([initialParams valueForKey:@"azimuth"] != nil)
-        initialTilt = [initialParams[@"azimuth"] floatValue];
-
-    if ([initialParams valueForKey:@"tilt"] != nil)
-        initialTilt = [initialParams[@"tilt"] floatValue];
-
-    YMKPoint* initialRegionCenter = [RCTConvert YMKPoint:@{@"lat":[initialParams valueForKey:@"lat"], @"lon":[initialParams valueForKey:@"lon"]}];
-    YMKCameraPosition *initialRegioPosition = [YMKCameraPosition cameraPositionWithTarget:initialRegionCenter zoom:initialZoom azimuth:initialAzimuth tilt:initialTilt];
-    [self.mapWindow.map moveWithCameraPosition:initialRegioPosition];
-}
-
-- (void)updateUserMarkers {
-    NSMutableArray<YamapMarkerView*>* lastKnownMarkers = [[NSMutableArray alloc] init];
-
-    for (int i = 0; i < [_reactSubviews count]; ++i) {
-        UIView* view = [_reactSubviews objectAtIndex:i];
-
-        if ([view isKindOfClass:[YamapMarkerView class]]) {
-            YamapMarkerView* marker = (YamapMarkerView*) view;
-            [lastKnownMarkers addObject:marker];
-
-            if (!userClusters) {
-                [clusterCollection removeWithMapObject:[marker getMapObject]];
-            } else {
-                YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
-                [objects removeWithMapObject:[marker getMapObject]];
-            }
-
-            [_reactSubviews removeObject:marker];
-            --i;
-        }
-    }
-
-    [clusterCollection clear];
-
-    for (int i = 0; i < [lastKnownMarkers count]; ++i) {
-        UIView* view = [lastKnownMarkers objectAtIndex:i];
-        [self insertReactSubview:view atIndex:[_reactSubviews count]];
-    }
-}
-
-- (void)setListenUserLocation:(BOOL)listen {
+- (void)setListenUserLocation:(BOOL) listen {
     YMKMapKit* inst = [YMKMapKit sharedInstance];
 
     if (userLayer == nil) {
@@ -579,14 +517,7 @@
     return points;
 }
 
-- (void)fitMarkers:(NSArray<YMKPoint*>*)points {
-    if ([points count] == 1) {
-        YMKPoint *center = [points objectAtIndex:0];
-        [self.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:15 azimuth:0 tilt:0]];
-
-        return;
-    }
-
+-(YMKBoundingBox*)calculateBoundingBox:(NSArray<YMKPoint*>*) points {
     double minLon = [points[0] longitude], maxLon = [points[0] longitude];
     double minLat = [points[0] latitude], maxLat = [points[0] latitude];
 
@@ -600,7 +531,16 @@
     YMKPoint *southWest = [YMKPoint pointWithLatitude:minLat longitude:minLon];
     YMKPoint *northEast = [YMKPoint pointWithLatitude:maxLat longitude:maxLon];
     YMKBoundingBox *boundingBox = [YMKBoundingBox boundingBoxWithSouthWest:southWest northEast:northEast];
-    YMKCameraPosition *cameraPosition = [self.mapWindow.map cameraPositionWithBoundingBox:boundingBox];
+    return boundingBox;
+}
+
+- (void)fitMarkers:(NSArray<YMKPoint*>*) points {
+    if ([points count] == 1) {
+        YMKPoint *center = [points objectAtIndex:0];
+        [self.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:15 azimuth:0 tilt:0]];
+        return;
+    }
+    YMKCameraPosition *cameraPosition = [self.mapWindow.map cameraPositionWithBoundingBox:[self calculateBoundingBox:points]];
     cameraPosition = [YMKCameraPosition cameraPositionWithTarget:cameraPosition.target zoom:cameraPosition.zoom - 0.8f azimuth:cameraPosition.azimuth tilt:cameraPosition.tilt];
     [self.mapWindow.map moveWithCameraPosition:cameraPosition animationType:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:1.0] cameraCallback:^(BOOL completed){}];
 }
@@ -614,10 +554,6 @@
 - (void)setUserLocationAccuracyFillColor:(UIColor*)color {
     userLocationAccuracyFillColor = color;
     [self updateUserIcon];
-}
-
-- (void)setClusterColor:(UIColor*)color {
-    clusterColor = color;
 }
 
 - (void)setUserLocationAccuracyStrokeColor:(UIColor*)color {
@@ -724,14 +660,8 @@
     } else if ([subview isKindOfClass:[YamapMarkerView class]]) {
         YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
         YamapMarkerView* marker = (YamapMarkerView*) subview;
-        if (userClusters) {
-            YMKPlacemarkMapObject* obj = [clusterCollection addPlacemarkWithPoint:[marker getPoint]];
-            [marker setMapObject:obj];
-            [clusterCollection clusterPlacemarksWithClusterRadius:(50) minZoom:(12)];
-        } else {
-            YMKPlacemarkMapObject* obj = [objects addPlacemarkWithPoint:[marker getPoint]];
-            [marker setMapObject:obj];
-        }
+        YMKPlacemarkMapObject* obj = [objects addPlacemarkWithPoint:[marker getPoint]];
+        [marker setMapObject:obj];
     } else if ([subview isKindOfClass:[YamapCircleView class]]) {
         YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
         YamapCircleView* circle = (YamapCircleView*) subview;
@@ -748,6 +678,16 @@
     [super insertReactSubview:subview atIndex:atIndex];
 }
 
+- (void)insertMarkerReactSubview:(UIView<RCTComponent>*) subview atIndex:(NSInteger) atIndex {
+    [_reactSubviews insertObject:subview atIndex:atIndex];
+    [super insertReactSubview:subview atIndex:atIndex];
+}
+
+- (void)removeMarkerReactSubview:(UIView<RCTComponent>*) subview {
+    [_reactSubviews removeObject:subview];
+    [super removeReactSubview: subview];
+}
+
 - (void)removeReactSubview:(UIView<RCTComponent>*)subview {
     if ([subview isKindOfClass:[YamapPolygonView class]]) {
         YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
@@ -760,11 +700,7 @@
     } else if ([subview isKindOfClass:[YamapMarkerView class]]) {
         YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
         YamapMarkerView* marker = (YamapMarkerView*) subview;
-        if (userClusters) {
-            [clusterCollection removeWithMapObject:[marker getMapObject]];
-        } else {
         [objects removeWithMapObject:[marker getMapObject]];
-        }
     } else if ([subview isKindOfClass:[YamapCircleView class]]) {
         YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
         YamapCircleView* circle = (YamapCircleView*) subview;
@@ -780,81 +716,6 @@
     [super removeReactSubview: subview];
 }
 
-- (UIImage*)clusterImage:(NSNumber*)clusterSize {
-    float FONT_SIZE = 15;
-    float MARGIN_SIZE = 3;
-    float STROKE_SIZE = 3;
-    float scale = UIScreen.mainScreen.scale;
-    NSString *text = [clusterSize stringValue];
-    UIFont *font = [UIFont systemFontOfSize:FONT_SIZE * scale];
-    CGSize size = [text sizeWithFont:font];
-    float textRadius = sqrt(size.height * size.height + size.width * size.width) / 2;
-    float internalRadius = textRadius + MARGIN_SIZE * scale;
-    float externalRadius = internalRadius + STROKE_SIZE * scale;
-    UIImage *someImageView = [UIImage alloc];
-    // This function returns a newImage, based on image, that has been:
-    // - scaled to fit in (CGRect) rect
-    // - and cropped within a circle of radius: rectWidth/2
-
-    //Create the bitmap graphics context
-    UIGraphicsBeginImageContextWithOptions(CGSizeMake(externalRadius*2, externalRadius*2), NO, 1.0);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextSetFillColorWithColor(context, [clusterColor CGColor]);
-    CGContextFillEllipseInRect(context, CGRectMake(0, 0, externalRadius*2, externalRadius*2));
-    CGContextSetFillColorWithColor(context, [UIColor.whiteColor CGColor]);
-    CGContextFillEllipseInRect(context, CGRectMake(externalRadius - internalRadius, externalRadius - internalRadius, internalRadius*2, internalRadius*2));
-    [text drawInRect:CGRectMake(externalRadius - size.width/2, externalRadius - size.height/2, size.width, size.height) withAttributes:@{NSFontAttributeName: font, NSForegroundColorAttributeName: UIColor.blackColor }];
-    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-
-    return newImage;
-}
-
-- (void)onClusterAddedWithCluster:(nonnull YMKCluster*)cluster {
-    NSNumber *myNum = @([cluster size]);
-    [[cluster appearance] setIconWithImage:[self clusterImage:myNum]];
-    [cluster addClusterTapListenerWithClusterTapListener:self];
-}
-
-- (BOOL)onClusterTapWithCluster:(nonnull YMKCluster*)cluster {
-    [self fitMarkers:[self mapPlacemarksToPoints:[cluster placemarks]]];
-
-    return YES;
-}
-
-- (void)onMapLoadedWithStatistics:(YMKMapLoadStatistics*)statistics {
-	if (self.onMapLoaded) {
-        NSDictionary *data = @{
-			@"renderObjectCount": @(statistics.renderObjectCount),
-			@"curZoomModelsLoaded": @(statistics.curZoomModelsLoaded),
-			@"curZoomPlacemarksLoaded": @(statistics.curZoomPlacemarksLoaded),
-			@"curZoomLabelsLoaded": @(statistics.curZoomLabelsLoaded),
-			@"curZoomGeometryLoaded": @(statistics.curZoomGeometryLoaded),
-			@"tileMemoryUsage": @(statistics.tileMemoryUsage),
-			@"delayedGeometryLoaded": @(statistics.delayedGeometryLoaded),
-			@"fullyAppeared": @(statistics.fullyAppeared),
-			@"fullyLoaded": @(statistics.fullyLoaded),
-		};
-		self.onMapLoaded(data);
-	}
-}
-
-- (void)reactSetFrame:(CGRect)frame {
-	self.mapFrame = frame;
-	[super reactSetFrame:frame];
-}
-
-- (void)layoutMarginsDidChange {
-	[super reactSetFrame:self.mapFrame];
-}
-
-- (void)setMaxFps:(float)maxFps {
-    [self.mapWindow setMaxFpsWithFps:maxFps];
-}
-
-- (void)setInteractive:(BOOL)interactive {
-    [self setNoninteractive:!interactive];
-}
 
 @synthesize reactTag;
 

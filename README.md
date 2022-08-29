@@ -499,3 +499,42 @@ const find = async (query: string, options?: SuggestOptions) => {
   Suggest.reset();
 }
 ```
+
+
+### Использование компонента ClusteredYamap
+
+```jsx
+import React from 'react';
+import { ClusteredYamap } from '../../react-native-yamap/src';
+
+const Map = () => {
+  return (
+    <ClusteredYamap
+      clusterColor={'red'}
+      clusteredMarkers={[
+        {
+          point: {
+            lat: 56.754215,
+            lon: 38.622504,
+          },
+          data: {},
+        },
+        {
+          point: {
+            lat: 56.754215,
+            lon: 38.222504,
+          },
+          data: {},
+        },
+      ]}
+      renderMarker={(info, index) => (
+        <Marker
+          key={index}
+          point={info.point}
+        />
+      )}
+      style={{flex: 1}}
+    />
+  );
+};
+```

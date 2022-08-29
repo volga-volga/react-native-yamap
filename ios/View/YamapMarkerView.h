@@ -12,10 +12,11 @@
 // PROPS
 - (void)setZIndex:(NSNumber*)_zIndex;
 - (void)setScale:(NSNumber*)_scale;
-- (void)setSource:(NSString*)_source;
-- (void)setPoint:(YMKPoint*)_points;
-- (void)setAnchor:(NSValue*)_anchor;
-- (void)setVisible:(NSNumber*)_visible;
+- (void)setRotated:(NSNumber*) _rotation;
+-(void) setSource:(NSString*) _source;
+-(void) setPoint:(YMKPoint*) _points;
+-(void) setAnchor:(NSValue*) _anchor;
+-(void) setVisible:(NSNumber*) _visible;
 
 // REF
 - (void)animatedMoveTo:(YMKPoint*)point withDuration:(float)duration;
@@ -23,6 +24,7 @@
 - (YMKPoint*)getPoint;
 - (YMKPlacemarkMapObject*)getMapObject;
 - (void)setMapObject:(YMKPlacemarkMapObject*)mapObject;
+-(void) setClusterMapObject:(YMKPlacemarkMapObject*) mapObject;
 
 @end
 

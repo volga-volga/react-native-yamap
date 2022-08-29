@@ -71,16 +71,6 @@ RCT_CUSTOM_VIEW_PROPERTY(userLocationAccuracyStrokeColor, NSNumber, RNYMView) {
     [view setUserLocationAccuracyStrokeColor: [RCTConvert UIColor:json]];
 }
 
-RCT_CUSTOM_VIEW_PROPERTY(withClusters, BOOL, RNYMView) {
-    if (view) {
-        [view setClusters: json ? [json boolValue] : NO];
-    }
-}
-
-RCT_CUSTOM_VIEW_PROPERTY(clusterColor, NSNumber, RNYMView) {
-    [view setClusterColor: [RCTConvert UIColor:json]];
-}
-
 RCT_CUSTOM_VIEW_PROPERTY(userLocationAccuracyStrokeWidth, NSNumber, RNYMView) {
     [view setUserLocationAccuracyStrokeWidth: [json floatValue]];
 }

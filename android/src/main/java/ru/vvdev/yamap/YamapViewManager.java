@@ -129,12 +129,11 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
                         view.emitVisibleRegionToJS(args.getString(0));
                     }
                     break;
-
-                case "setTrafficVisible":
-                    if (args != null) {
-                        view.setTrafficVisible(args.getBoolean(0));
-                    }
-                    break;
+            case "setTrafficVisible":
+                if (args != null) {
+                    view.setTrafficVisible(args.getBoolean(0));
+                }
+                break;
 
                 case "getScreenPoints":
                     if (args != null) {
@@ -226,16 +225,6 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         if (icon != null) {
             castToYaMapView(view).setUserLocationIcon(icon);
         }
-    }
-
-    @ReactProp(name = "withClusters")
-    public void setClusters(View view, Boolean with) {
-        castToYaMapView(view).setClusters(with);
-    }
-
-    @ReactProp(name = "clusterColor")
-    public void setClusterColor(View view, int color) {
-        castToYaMapView(view).setClustersColor(color);
     }
 
     @ReactProp(name = "userLocationAccuracyFillColor")

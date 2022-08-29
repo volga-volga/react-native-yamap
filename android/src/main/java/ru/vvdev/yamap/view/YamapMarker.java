@@ -27,6 +27,7 @@ import com.yandex.runtime.image.ImageProvider;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Handler;
@@ -40,6 +41,7 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
     private int zIndex = 1;
     private float scale = 1;
     private Boolean visible = true;
+    private Boolean rotated = false;
     private int YAMAP_FRAMES_PER_SECOND = 25;
     private PointF markerAnchor = null;
     private String iconSource;
@@ -78,6 +80,11 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
         updateMarker();
     }
 
+    public void setRotated(Boolean rotated) {
+        rotated = rotated;
+        updateMarker();
+    }
+
     public void setVisible(Boolean _visible) {
         visible = _visible;
         updateMarker();
@@ -97,7 +104,7 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
         if (mapObject != null && mapObject.isValid()) {
             final IconStyle iconStyle = new IconStyle();
             iconStyle.setScale(scale);
-            iconStyle.setRotationType(RotationType.ROTATE);
+            iconStyle.setRotationType(rotated ? RotationType.ROTATE : RotationType.NO_ROTATION);
             iconStyle.setVisible(visible);
             if (markerAnchor != null) {
                 iconStyle.setAnchor(markerAnchor);
@@ -119,19 +126,10 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
             }
             if (childs.size() == 0) {
                 if (!iconSource.equals("")) {
-                    ImageLoader.DownloadImageBitmap(getContext(), iconSource, new Callback<Bitmap>() {
-                        @Override
-                        public void invoke(Bitmap bitmap) {
-                            try {
-                                if (mapObject != null) {
-                                    mapObject.setIcon(ImageProvider.fromBitmap(bitmap));
-                                    mapObject.setIconStyle(iconStyle);
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
+                    YamapView parent = (YamapView)getParent();
+                    if (parent!=null) {
+                        parent.setImage(iconSource, mapObject, iconStyle);
+                    }
                 }
             }
         }
