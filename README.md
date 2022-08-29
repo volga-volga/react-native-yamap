@@ -498,38 +498,6 @@ const find = async (query: string, options?: SuggestOptions) => {
   // After searh session is finished
   Suggest.reset();
 }
-`
-
-## Поиск по гео с подсказсками (GeoSuggestions)
-
-Для поиска с геоподсказками нужно воспользоваться модулем Suggest:
-
-```typescript
-
-import { Suggest } from 'react-native-yamap';
-
-const find = async (query: string, options?: SuggestOptions) => {
-  const suggestions = await Suggest.suggest(query, options);
-
-  // suggestion = [{
-  //   subtitle: "Москва, Россия"
-  //   title: "улица Льва Толстого, 16"
-  //   uri: "ymapsbm1://geo?ll=37.587093%2C55.733974&spn=0.001000%2C0.001000&text=%D0%A0%D0%BE%D1%81%D1%81%D0%B8%D1%8F%2C%20%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0%2C%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%20%D0%9B%D1%8C%D0%B2%D0%B0%20%D0%A2%D0%BE%D0%BB%D1%81%D1%82%D0%BE%D0%B3%D0%BE%2C%2016"
-  // }, ...]
-
-  const suggestionsWithCoards = await Suggest.suggestWithCoords(query, options);
-
-  // suggestionsWithCoards = [{
-  //   subtitle: "Москва, Россия"
-  //   title: "улица Льва Толстого, 16"
-  //   lat: 55.733974
-  //   lon: 37.587093
-  //   uri: "ymapsbm1://geo?ll=37.587093%2C55.733974&spn=0.001000%2C0.001000&text=%D0%A0%D0%BE%D1%81%D1%81%D0%B8%D1%8F%2C%20%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0%2C%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%20%D0%9B%D1%8C%D0%B2%D0%B0%20%D0%A2%D0%BE%D0%BB%D1%81%D1%82%D0%BE%D0%B3%D0%BE%2C%2016"
-  // }, ...]
-
-  // After searh session is finished
-  Suggest.reset();
-}
 ```
 
 
