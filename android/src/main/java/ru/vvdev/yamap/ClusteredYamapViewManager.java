@@ -11,19 +11,17 @@ import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
-import com.facebook.react.views.view.ReactViewGroup;
 import com.yandex.mapkit.MapKitFactory;
 import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.map.CameraPosition;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import ru.vvdev.yamap.view.ClusteredYamapView;
-import ru.vvdev.yamap.view.YamapView;
 
 public class ClusteredYamapViewManager extends ViewGroupManager<ClusteredYamapView> {
     public static final String REACT_CLASS = "ClusteredYamapView";
@@ -35,6 +33,17 @@ public class ClusteredYamapViewManager extends ViewGroupManager<ClusteredYamapVi
     private static final int GET_CAMERA_POSITION = 5;
     private static final int GET_VISIBLE_REGION = 6;
     private static final int SET_TRAFFIC_VISIBLE = 7;
+    private static final int FIT_MARKERS = 8;
+    private static final int GET_SCREEN_POINTS = 9;
+    private static final int GET_WORLD_POINTS = 10;
+
+    ClusteredYamapViewManager() {
+    }
+
+    @Override
+    public String getName() {
+        return REACT_CLASS;
+    }
 
     @Override
     public Map<String, Object> getExportedCustomDirectEventTypeConstants() {
@@ -46,30 +55,32 @@ public class ClusteredYamapViewManager extends ViewGroupManager<ClusteredYamapVi
         return MapBuilder.builder()
                 .put("routes", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onRouteFound")))
                 .put("cameraPosition", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionReceived")))
-                .put("cameraPositionChanged", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionChange")))
+                .put("cameraPositionChange", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionChange")))
+                .put("cameraPositionChangeEnd", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionChangeEnd")))
                 .put("visibleRegion", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onVisibleRegionReceived")))
                 .put("onMapPress", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapPress")))
                 .put("onMapLongPress", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapLongPress")))
+                .put("onMapLoaded", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapLoaded")))
+                .put("screenToWorldPoints", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onScreenToWorldPointsReceived")))
+                .put("worldToScreenPoints", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onWorldToScreenPointsReceived")))
                 .build();
     }
 
     @Override
     public Map<String, Integer> getCommandsMap() {
-        return MapBuilder.of(
-                "setCenter",
-                SET_CENTER,
-                "fitAllMarkers",
-                FIT_ALL_MARKERS,
-                "findRoutes",
-                FIND_ROUTES,
-                "setZoom",
-                SET_ZOOM,
-                "getCameraPosition",
-                GET_CAMERA_POSITION,
-                "getVisibleRegion",
-                GET_VISIBLE_REGION,
-                "setTrafficVisible",
-                SET_TRAFFIC_VISIBLE);
+        Map<String, Integer> map = MapBuilder.newHashMap();
+        map.put("setCenter", SET_CENTER);
+        map.put("fitAllMarkers", FIT_ALL_MARKERS);
+        map.put("findRoutes", FIND_ROUTES);
+        map.put("setZoom", SET_ZOOM);
+        map.put("getCameraPosition", GET_CAMERA_POSITION);
+        map.put("getVisibleRegion", GET_VISIBLE_REGION);
+        map.put("setTrafficVisible", SET_TRAFFIC_VISIBLE);
+        map.put("fitMarkers", FIT_MARKERS);
+        map.put("getScreenPoints", GET_SCREEN_POINTS);
+        map.put("getWorldPoints", GET_WORLD_POINTS);
+
+        return map;
     }
 
     @Override
@@ -79,38 +90,63 @@ public class ClusteredYamapViewManager extends ViewGroupManager<ClusteredYamapVi
             @Nullable ReadableArray args) {
         Assertions.assertNotNull(view);
         Assertions.assertNotNull(args);
+
         switch (commandType) {
             case "setCenter":
                 setCenter(castToYaMapView(view), args.getMap(0), (float) args.getDouble(1), (float) args.getDouble(2), (float) args.getDouble(3), (float) args.getDouble(4), args.getInt(5));
-                return;
+                break;
+
             case "fitAllMarkers":
                 fitAllMarkers(view);
-                return;
+                break;
+
+            case "fitMarkers":
+                if (args != null) {
+                    fitMarkers(view, args.getArray(0));
+                }
+                break;
+
             case "findRoutes":
                 if (args != null) {
                     findRoutes(view, args.getArray(0), args.getArray(1), args.getString(2));
                 }
-                return;
+                break;
+
             case "setZoom":
                 if (args != null) {
                     view.setZoom((float)args.getDouble(0), (float)args.getDouble(1), args.getInt(2));
                 }
-                return;
+                break;
+
             case "getCameraPosition":
                 if (args != null) {
                     view.emitCameraPositionToJS(args.getString(0));
                 }
-                return;
+                break;
+
             case "getVisibleRegion":
                 if (args != null) {
                     view.emitVisibleRegionToJS(args.getString(0));
                 }
-                return;
+                break;
             case "setTrafficVisible":
                 if (args != null) {
                     view.setTrafficVisible(args.getBoolean(0));
                 }
-                return;
+                break;
+
+            case "getScreenPoints":
+                if (args != null) {
+                    view.emitWorldToScreenPoints(args.getArray(0), args.getString(1));
+                }
+                break;
+
+            case "getWorldPoints":
+                if (args != null) {
+                    view.emitScreenToWorldPoints(args.getArray(0), args.getString(1));
+                }
+                break;
+
             default:
                 throw new IllegalArgumentException(String.format(
                         "Unsupported command %d received by %s.",
@@ -133,22 +169,16 @@ public class ClusteredYamapViewManager extends ViewGroupManager<ClusteredYamapVi
         return (ClusteredYamapView) view;
     }
 
-    @NonNull
+    @Nonnull
     @Override
-    public String getName() {
-        return REACT_CLASS;
-    }
-
-    @NonNull
-    @Override
-    protected ClusteredYamapView createViewInstance(@NonNull ThemedReactContext context) {
+    public ClusteredYamapView createViewInstance(@Nonnull ThemedReactContext context) {
         ClusteredYamapView view = new ClusteredYamapView(context);
         MapKitFactory.getInstance().onStart();
         view.onStart();
         return view;
     }
 
-    private void setCenter(YamapView view, ReadableMap center, float zoom, float azimuth, float tilt, float duration, int animation) {
+    private void setCenter(ClusteredYamapView view, ReadableMap center, float zoom, float azimuth, float tilt, float duration, int animation) {
         if (center != null) {
             Point centerPosition = new Point(center.getDouble("lat"), center.getDouble("lon"));
             CameraPosition pos = new CameraPosition(centerPosition, zoom, azimuth, tilt);
@@ -158,6 +188,21 @@ public class ClusteredYamapViewManager extends ViewGroupManager<ClusteredYamapVi
 
     private void fitAllMarkers(View view) {
         castToYaMapView(view).fitAllMarkers();
+    }
+
+    private void fitMarkers(View view, ReadableArray jsPoints) {
+        if (jsPoints != null) {
+            ArrayList<Point> points = new ArrayList<>();
+
+            for (int i = 0; i < jsPoints.size(); ++i) {
+                ReadableMap point = jsPoints.getMap(i);
+                if (point != null) {
+                    points.add(new Point(point.getDouble("lat"), point.getDouble("lon")));
+                }
+            }
+
+            castToYaMapView(view).fitMarkers(points);
+        }
     }
 
     private void findRoutes(View view, ReadableArray jsPoints, ReadableArray jsVehicles, String id) {
@@ -179,7 +224,7 @@ public class ClusteredYamapViewManager extends ViewGroupManager<ClusteredYamapVi
         }
     }
 
-    // props
+    // PROPS
     @ReactProp(name = "userLocationIcon")
     public void setUserLocationIcon(View view, String icon) {
         if (icon != null) {
@@ -251,6 +296,23 @@ public class ClusteredYamapViewManager extends ViewGroupManager<ClusteredYamapVi
         }
     }
 
+    @ReactProp(name = "initialRegion")
+    public void setInitialRegion(View view, ReadableMap params) {
+        if (params != null) {
+            castToYaMapView(view).setInitialRegion(params);
+        }
+    }
+
+    @ReactProp(name = "maxFps")
+    public void setMaxFps(View view, float maxFps) {
+        castToYaMapView(view).setMaxFps(maxFps);
+    }
+
+    @ReactProp(name = "interactive")
+    public void setInteractive(View view, boolean interactive) {
+        castToYaMapView(view).setInteractive(interactive);
+    }
+
     @Override
     public void addView(ClusteredYamapView parent, View child, int index) {
         parent.addFeature(child, index);
@@ -262,5 +324,4 @@ public class ClusteredYamapViewManager extends ViewGroupManager<ClusteredYamapVi
         parent.removeChild(index);
         super.removeViewAt(parent, index);
     }
-
 }

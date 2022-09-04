@@ -2,13 +2,8 @@ package ru.vvdev.yamap.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.util.DisplayMetrics;
-import android.view.Display;
 import android.view.View;
-import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
@@ -43,14 +38,10 @@ import com.yandex.mapkit.map.MapLoadedListener;
 import com.yandex.mapkit.map.CameraPosition;
 import com.yandex.mapkit.map.CameraUpdateReason;
 import com.yandex.mapkit.map.CircleMapObject;
-import com.yandex.mapkit.map.Cluster;
-import com.yandex.mapkit.map.ClusterListener;
-import com.yandex.mapkit.map.ClusterTapListener;
 import com.yandex.mapkit.map.ClusterizedPlacemarkCollection;
 import com.yandex.mapkit.map.IconStyle;
 import com.yandex.mapkit.map.InputListener;
 import com.yandex.mapkit.map.MapObject;
-import com.yandex.mapkit.map.MapObjectVisitor;
 import com.yandex.mapkit.map.PlacemarkMapObject;
 import com.yandex.mapkit.map.PolygonMapObject;
 import com.yandex.mapkit.map.PolylineMapObject;
@@ -78,7 +69,6 @@ import com.yandex.runtime.image.ImageProvider;
 import com.yandex.mapkit.traffic.TrafficLayer;
 import com.yandex.mapkit.traffic.TrafficListener;
 import com.yandex.mapkit.traffic.TrafficLevel;
-import com.yandex.runtime.ui_view.ViewProvider;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -89,7 +79,6 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import ru.vvdev.yamap.R;
 import ru.vvdev.yamap.models.ReactMapObject;
 import ru.vvdev.yamap.utils.Callback;
 import ru.vvdev.yamap.utils.ImageLoader;

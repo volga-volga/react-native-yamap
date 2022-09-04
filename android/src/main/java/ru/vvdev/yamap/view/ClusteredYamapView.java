@@ -8,33 +8,25 @@ import android.graphics.Paint;
 import android.view.View;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
-import com.yandex.mapkit.Animation;
-import com.yandex.mapkit.geometry.BoundingBox;
+import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.map.CameraPosition;
+import com.yandex.mapkit.map.CameraUpdateReason;
 import com.yandex.mapkit.map.Cluster;
 import com.yandex.mapkit.map.ClusterListener;
 import com.yandex.mapkit.map.ClusterTapListener;
 import com.yandex.mapkit.map.ClusterizedPlacemarkCollection;
 import com.yandex.mapkit.map.IconStyle;
-import com.yandex.mapkit.map.Map;
 import com.yandex.mapkit.map.MapObject;
-import com.yandex.mapkit.map.MapObjectCollection;
 import com.yandex.mapkit.map.PlacemarkMapObject;
-import com.yandex.mapkit.map.internal.PlacemarkMapObjectBinding;
 import com.yandex.runtime.image.ImageProvider;
-import com.yandex.runtime.ui_view.ViewProvider;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
-
-import ru.vvdev.yamap.models.ReactMapObject;
 
 public class ClusteredYamapView extends YamapView implements ClusterListener, ClusterTapListener {
     private ClusterizedPlacemarkCollection clusterCollection;
@@ -123,7 +115,6 @@ public class ClusteredYamapView extends YamapView implements ClusterListener, Cl
         fitMarkers(points);
         return true;
     }
-
 
     private class TextImageProvider extends ImageProvider {
         private static final float FONT_SIZE = 45;
