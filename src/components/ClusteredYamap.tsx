@@ -16,6 +16,7 @@ import {
   ScreenPoint, MapLoaded, InitialRegion,
 } from '../interfaces';
 import { processColorProps } from '../utils';
+import { YaMap } from './Yamap';
 
 const { yamap: NativeYamapModule } = NativeModules;
 
