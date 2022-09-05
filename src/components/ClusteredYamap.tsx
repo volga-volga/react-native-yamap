@@ -11,9 +11,11 @@ import {
 // @ts-ignore
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 import CallbacksManager from '../utils/CallbacksManager';
-import { MapType, Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition, VisibleRegion } from '../interfaces';
+import {
+  MapType, Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition, VisibleRegion,
+  ScreenPoint, MapLoaded, InitialRegion,
+} from '../interfaces';
 import { processColorProps } from '../utils';
-import { YaMap } from './Yamap';
 
 const { yamap: NativeYamapModule } = NativeModules;
 
@@ -27,8 +29,10 @@ export interface ClusteredYaMapProps<T = any> extends ViewProps {
   mapStyle?: string;
   mapType?: MapType;
   onCameraPositionChange?: (event: NativeSyntheticEvent<CameraPosition>) => void;
+  onCameraPositionChangeEnd?: (event: NativeSyntheticEvent<CameraPosition>) => void;
   onMapPress?: (event: NativeSyntheticEvent<Point>) => void;
   onMapLongPress?: (event: NativeSyntheticEvent<Point>) => void;
+  onMapLoaded?: (event: NativeSyntheticEvent<MapLoaded>) => void;
   userLocationAccuracyFillColor?: string;
   userLocationAccuracyStrokeColor?: string;
   userLocationAccuracyStrokeWidth?: number;
@@ -37,6 +41,8 @@ export interface ClusteredYaMapProps<T = any> extends ViewProps {
   tiltGesturesEnabled?: boolean;
   rotateGesturesEnabled?: boolean;
   fastTapEnabled?: boolean;
+  initialRegion?: InitialRegion;
+  maxFps?: number;
 }
 
 const YaMapNativeComponent = requireNativeComponent<Omit<ClusteredYaMapProps, 'clusteredMarkers'> & {clusteredMarkers: Point[]}>('ClusteredYamapView');
@@ -45,6 +51,7 @@ export class ClusteredYamap extends React.Component<ClusteredYaMapProps> {
   static defaultProps = {
     showUserPosition: true,
     clusterColor: 'red',
+    maxFps: 60
   };
 
   // @ts-ignore
@@ -62,8 +69,8 @@ export class ClusteredYamap extends React.Component<ClusteredYaMapProps> {
     'funicular',
   ];
 
-  public static init(apiKey: string) {
-    NativeYamapModule.init(apiKey);
+  public static init(apiKey: string): Promise<void> {
+    return NativeYamapModule.init(apiKey);
   }
 
   public static setLocale(locale: string): Promise<void> {
@@ -104,7 +111,7 @@ export class ClusteredYamap extends React.Component<ClusteredYaMapProps> {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('fitAllMarkers'),
-      [],
+      []
     );
   }
 
@@ -112,7 +119,15 @@ export class ClusteredYamap extends React.Component<ClusteredYaMapProps> {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('setTrafficVisible'),
-      [isVisible],
+      [isVisible]
+    );
+  }
+
+  public fitMarkers(points: Point[]) {
+    UIManager.dispatchViewManagerCommand(
+      findNodeHandle(this),
+      this.getCommand('fitMarkers'),
+      [points]
     );
   }
 
@@ -120,7 +135,7 @@ export class ClusteredYamap extends React.Component<ClusteredYaMapProps> {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('setCenter'),
-      [center, zoom, azimuth, tilt, duration, animation],
+      [center, zoom, azimuth, tilt, duration, animation]
     );
   }
 
@@ -128,7 +143,7 @@ export class ClusteredYamap extends React.Component<ClusteredYaMapProps> {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('setZoom'),
-      [zoom, duration, animation],
+      [zoom, duration, animation]
     );
   }
 
@@ -137,52 +152,75 @@ export class ClusteredYamap extends React.Component<ClusteredYaMapProps> {
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('getCameraPosition'),
-      [cbId],
+      [cbId]
     );
   }
 
   public getVisibleRegion(callback: (VisibleRegion: VisibleRegion) => void) {
-    const callbackId = CallbacksManager.addCallback(callback);
+    const cbId = CallbacksManager.addCallback(callback);
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('getVisibleRegion'),
-      [callbackId],
+      [cbId]
+    );
+  }
+
+  public getScreenPoints(points: Point[], callback: (screenPoint: ScreenPoint) => void) {
+    const cbId = CallbacksManager.addCallback(callback);
+    UIManager.dispatchViewManagerCommand(
+      findNodeHandle(this),
+      this.getCommand('getScreenPoints'),
+      [points, cbId]
+    );
+  }
+
+  public getWorldPoints(points: ScreenPoint[], callback: (point: Point) => void) {
+    const cbId = CallbacksManager.addCallback(callback);
+    UIManager.dispatchViewManagerCommand(
+      findNodeHandle(this),
+      this.getCommand('getWorldPoints'),
+      [points, cbId]
     );
   }
 
   private _findRoutes(points: Point[], vehicles: Vehicles[], callback: ((event: RoutesFoundEvent<DrivingInfo | MasstransitInfo>) => void) | ((event: RoutesFoundEvent<DrivingInfo>) => void) | ((event: RoutesFoundEvent<MasstransitInfo>) => void)) {
     const cbId = CallbacksManager.addCallback(callback);
-    const args
-      = Platform.OS === 'ios'
-        ? [{ points, vehicles, id: cbId }]
-        : [points, vehicles, cbId];
+    const args = Platform.OS === 'ios' ? [{ points, vehicles, id: cbId }] : [points, vehicles, cbId];
+
     UIManager.dispatchViewManagerCommand(
       findNodeHandle(this),
       this.getCommand('findRoutes'),
-      args,
+      args
     );
   }
 
   private getCommand(cmd: string): any {
-    if (Platform.OS === 'ios') {
-      return UIManager.getViewManagerConfig('ClusteredYamapView').Commands[cmd];
-    } else {
-      return cmd;
-    }
+    return Platform.OS === 'ios' ? UIManager.getViewManagerConfig('ClusteredYamapView').Commands[cmd] : cmd;
   }
 
-  private processRoute(event: any) {
-    CallbacksManager.call(event.nativeEvent.id, event);
+  private processRoute(event: NativeSyntheticEvent<{ id: string } & RoutesFoundEvent<DrivingInfo | MasstransitInfo>>) {
+    const { id, ...routes } = event.nativeEvent;
+    CallbacksManager.call(id, routes);
   }
 
-  private processCameraPosition(event: any) {
-    const { id, ...position } = event.nativeEvent;
-    CallbacksManager.call(id, position);
+  private processCameraPosition(event: NativeSyntheticEvent<{ id: string } & CameraPosition>) {
+    const { id, ...point } = event.nativeEvent;
+    CallbacksManager.call(id, point);
   }
 
-  private processVisibleRegion(event: NativeSyntheticEvent<{id: string} & VisibleRegion>) {
+  private processVisibleRegion(event: NativeSyntheticEvent<{ id: string } & VisibleRegion>) {
     const { id, ...visibleRegion } = event.nativeEvent;
     CallbacksManager.call(id, visibleRegion);
+  }
+
+  private processWorldToScreenPointsReceived(event: NativeSyntheticEvent<{ id: string } & ScreenPoint[]>) {
+    const { id, ...screenPoints } = event.nativeEvent;
+    CallbacksManager.call(id, screenPoints);
+  }
+
+  private processScreenToWorldPointsReceived(event: NativeSyntheticEvent<{ id: string } & Point[]>) {
+    const { id, ...worldPoints } = event.nativeEvent;
+    CallbacksManager.call(id, worldPoints);
   }
 
   private resolveImageUri(img: ImageSourcePropType) {
@@ -197,7 +235,9 @@ export class ClusteredYamap extends React.Component<ClusteredYaMapProps> {
       onRouteFound: this.processRoute,
       onCameraPositionReceived: this.processCameraPosition,
       onVisibleRegionReceived: this.processVisibleRegion,
-      userLocationIcon: this.props.userLocationIcon ? this.resolveImageUri(this.props.userLocationIcon) : undefined,
+      onWorldToScreenPointsReceived: this.processWorldToScreenPointsReceived,
+      onScreenToWorldPointsReceived: this.processScreenToWorldPointsReceived,
+      userLocationIcon: this.props.userLocationIcon ? this.resolveImageUri(this.props.userLocationIcon) : undefined
     };
     processColorProps(props, 'clusterColor' as keyof ClusteredYaMapProps);
     processColorProps(props, 'userLocationAccuracyFillColor' as keyof ClusteredYaMapProps);

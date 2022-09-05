@@ -22,7 +22,7 @@
     YMKDrivingRouter* drivingRouter;
     YMKDrivingSession* drivingSession;
     YMKPedestrianRouter *pedestrianRouter;
-    YMKMasstransitOptions *masstransitOptions;
+    YMKTransitOptions *transitOptions;
     YMKMasstransitSessionRouteHandler routeHandler;
     NSMutableArray<UIView*>* _reactSubviews;
     NSMutableArray *routes;
@@ -44,32 +44,9 @@
 
 - (instancetype)init {
     self = [super init];
-    _reactSubviews = [[NSMutableArray alloc] init];
-    masstransitRouter = [[YMKTransport sharedInstance] createMasstransitRouter];
-    drivingRouter = [[YMKDirections sharedInstance] createDrivingRouter];
-    pedestrianRouter = [[YMKTransport sharedInstance] createPedestrianRouter];
-    masstransitOptions = [YMKMasstransitOptions masstransitOptionsWithAvoidTypes:[[NSArray alloc] init] acceptTypes:[[NSArray alloc] init] timeOptions:[[YMKTimeOptions alloc] init]];
-    acceptVehicleTypes = [[NSMutableArray<NSString *> alloc] init];
-    routes = [[NSMutableArray alloc] init];
-    currentRouteInfo = [[NSMutableArray alloc] init];
-    lastKnownRoutePoints = [[NSMutableArray alloc] init];
-    vehicleColors = [[NSMutableDictionary alloc] init];
     placemarks = [[NSMutableArray alloc] init];
-    [vehicleColors setObject:@"#59ACFF" forKey:@"bus"];
-    [vehicleColors setObject:@"#7D60BD" forKey:@"minibus"];
-    [vehicleColors setObject:@"#F8634F" forKey:@"railway"];
-    [vehicleColors setObject:@"#C86DD7" forKey:@"tramway"];
-    [vehicleColors setObject:@"#3023AE" forKey:@"suburban"];
-    [vehicleColors setObject:@"#BDCCDC" forKey:@"underground"];
-    [vehicleColors setObject:@"#55CfDC" forKey:@"trolleybus"];
-    [vehicleColors setObject:@"#2d9da8" forKey:@"walk"];
-    userLocationAccuracyFillColor = nil;
-    userLocationAccuracyStrokeColor = nil;
     clusterColor=nil;
     userClusters=NO;
-    userLocationAccuracyStrokeWidth = 0.f;
-    [self.mapWindow.map addCameraListenerWithCameraListener:self];
-    [self.mapWindow.map addInputListenerWithInputListener:(id<YMKMapInputListener>) self];
     clusterCollection = [self.mapWindow.map.mapObjects addClusterizedPlacemarkCollectionWithClusterListener:self];
     return self;
 }
@@ -160,7 +137,7 @@
 - (void)removeReactSubview:(UIView<RCTComponent>*) subview {
      if ([subview isKindOfClass:[YamapMarkerView class]]) {
         YamapMarkerView* marker = (YamapMarkerView*) subview;
-        [clusterCollection removeWithPlacemark:[marker getMapObject]];
+        [clusterCollection removeWithMapObject:[marker getMapObject]];
     } else {
         NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
         for (int i = 0; i < childSubviews.count; i++) {

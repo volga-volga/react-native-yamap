@@ -716,6 +716,40 @@
     [super removeReactSubview: subview];
 }
 
+- (void)onMapLoadedWithStatistics:(YMKMapLoadStatistics*)statistics {
+    if (self.onMapLoaded) {
+        NSDictionary *data = @{
+            @"renderObjectCount": @(statistics.renderObjectCount),
+            @"curZoomModelsLoaded": @(statistics.curZoomModelsLoaded),
+            @"curZoomPlacemarksLoaded": @(statistics.curZoomPlacemarksLoaded),
+            @"curZoomLabelsLoaded": @(statistics.curZoomLabelsLoaded),
+            @"curZoomGeometryLoaded": @(statistics.curZoomGeometryLoaded),
+            @"tileMemoryUsage": @(statistics.tileMemoryUsage),
+            @"delayedGeometryLoaded": @(statistics.delayedGeometryLoaded),
+            @"fullyAppeared": @(statistics.fullyAppeared),
+            @"fullyLoaded": @(statistics.fullyLoaded),
+        };
+        self.onMapLoaded(data);
+    }
+}
+
+- (void)reactSetFrame:(CGRect)frame {
+    self.mapFrame = frame;
+    [super reactSetFrame:frame];
+}
+
+- (void)layoutMarginsDidChange {
+    [super reactSetFrame:self.mapFrame];
+}
+
+- (void)setMaxFps:(float)maxFps {
+    [self.mapWindow setMaxFpsWithFps:maxFps];
+}
+
+- (void)setInteractive:(BOOL)interactive {
+    [self setNoninteractive:!interactive];
+}
+
 
 @synthesize reactTag;
 
