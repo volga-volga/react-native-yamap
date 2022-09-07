@@ -43,6 +43,7 @@ export interface ClusteredYaMapProps<T = any> extends ViewProps {
   fastTapEnabled?: boolean;
   initialRegion?: InitialRegion;
   maxFps?: number;
+  followUser?: boolean;
 }
 
 const YaMapNativeComponent = requireNativeComponent<Omit<ClusteredYaMapProps, 'clusteredMarkers'> & {clusteredMarkers: Point[]}>('ClusteredYamapView');
@@ -242,6 +243,7 @@ export class ClusteredYamap extends React.Component<ClusteredYaMapProps> {
     processColorProps(props, 'clusterColor' as keyof ClusteredYaMapProps);
     processColorProps(props, 'userLocationAccuracyFillColor' as keyof ClusteredYaMapProps);
     processColorProps(props, 'userLocationAccuracyStrokeColor' as keyof ClusteredYaMapProps);
+    processColorProps(props, 'followUser' as keyof ClusteredYaMapProps);
     return props;
   }
 

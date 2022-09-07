@@ -41,6 +41,7 @@
     UIColor* userLocationAccuracyFillColor;
     UIColor* userLocationAccuracyStrokeColor;
     float userLocationAccuracyStrokeWidth;
+    BOOL followUser;
 }
 
 - (instancetype)init {
@@ -489,6 +490,25 @@
     } else {
         [userLayer setVisibleWithOn:NO];
         [userLayer setObjectListenerWithObjectListener:nil];
+    }
+}
+
+- (void)setFollowUser:(BOOL)follow {
+    followUser = follow;
+
+    if(userLayer == nil){
+        [self setListenUserLocation: follow];
+    }
+
+    if(follow){
+        CGFloat scale = UIScreen.mainScreen.scale;
+        [userLayer setAnchorWithAnchorNormal:CGPointMake(0.5 * self.mapWindow.width, 0.5 * self.mapWindow.height) anchorCourse:CGPointMake(0.5 * self.mapWindow.width, 0.83 * self.mapWindow.height )];
+        [userLayer setAutoZoomEnabled:YES];
+
+
+    }else{
+        [userLayer setAutoZoomEnabled:NO];
+        [userLayer resetAnchor];
     }
 }
 
