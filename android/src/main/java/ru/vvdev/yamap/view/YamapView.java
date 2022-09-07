@@ -3,6 +3,7 @@ package ru.vvdev.yamap.view;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.PointF;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -553,6 +554,22 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
             userLocationLayer.setObjectListener(null);
         }
     }
+
+     public void setFollowUser(Boolean follow) {
+          if (userLocationLayer == null) {
+            setShowUserPosition(true);
+          }
+
+          if(follow){
+            userLocationLayer.setAutoZoomEnabled(true);
+            userLocationLayer.setAnchor(
+              new PointF((float)(getWidth() * 0.5), (float)(getHeight() * 0.5)),
+              new PointF((float)(getWidth() * 0.5), (float)(getHeight() * 0.83)));
+          }else{
+            userLocationLayer.setAutoZoomEnabled(false);
+            userLocationLayer.resetAnchor();
+          }
+     }
 
     private WritableMap convertRouteSection(Route route, final Section section, Polyline geometry, Weight routeWeight, int routeIndex) {
         SectionMetadata.SectionData data = section.getMetadata().getData();

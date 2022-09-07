@@ -78,6 +78,11 @@ RCT_CUSTOM_VIEW_PROPERTY(showUserPosition, BOOL, RNCYMView) {
     }
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(followUser, BOOL, RNCYMView) {
+    [view setFollowUser: json ? [json boolValue] : NO];
+}
+
+
 RCT_CUSTOM_VIEW_PROPERTY(nightMode, BOOL, RNCYMView) {
     if (view) {
         [view setNightMode: json ? [json boolValue]: NO];

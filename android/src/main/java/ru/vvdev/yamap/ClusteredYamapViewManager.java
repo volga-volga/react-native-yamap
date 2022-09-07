@@ -252,6 +252,11 @@ public class ClusteredYamapViewManager extends ViewGroupManager<ClusteredYamapVi
         castToYaMapView(view).setShowUserPosition(show);
     }
 
+    @ReactProp(name = "followUser")
+    public void setFollowUser(View view, Boolean follow) {
+      castToYaMapView(view).setFollowUser(follow);
+    }
+
     @ReactProp(name = "nightMode")
     public void setNightMode(View view, Boolean nightMode) {
         castToYaMapView(view).setNightMode(nightMode != null ? nightMode : false);
