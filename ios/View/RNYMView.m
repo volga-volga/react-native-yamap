@@ -41,7 +41,6 @@
     UIColor* userLocationAccuracyFillColor;
     UIColor* userLocationAccuracyStrokeColor;
     float userLocationAccuracyStrokeWidth;
-    BOOL followUser;
 }
 
 - (instancetype)init {
@@ -494,8 +493,6 @@
 }
 
 - (void)setFollowUser:(BOOL)follow {
-    followUser = follow;
-
     if(userLayer == nil){
         [self setListenUserLocation: follow];
     }
