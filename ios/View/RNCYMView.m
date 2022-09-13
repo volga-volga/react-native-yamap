@@ -44,6 +44,7 @@
 
 - (instancetype)init {
     self = [super init];
+    _reactSubviews = [[NSMutableArray alloc] init];
     placemarks = [[NSMutableArray alloc] init];
     clusterColor=nil;
     userClusters=NO;
