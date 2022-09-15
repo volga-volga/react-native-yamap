@@ -244,7 +244,7 @@ export class ClusteredYamap extends React.Component<ClusteredYaMapProps> {
     processColorProps(props, 'clusterColor' as keyof ClusteredYaMapProps);
     processColorProps(props, 'userLocationAccuracyFillColor' as keyof ClusteredYaMapProps);
     processColorProps(props, 'userLocationAccuracyStrokeColor' as keyof ClusteredYaMapProps);
-    processColorProps(props, 'followUser' as keyof ClusteredYaMapProps);
+
     return props;
   }
 
