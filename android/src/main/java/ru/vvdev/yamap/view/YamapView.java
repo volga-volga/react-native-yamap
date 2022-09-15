@@ -100,7 +100,6 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     private RouteManager routeMng = new RouteManager();
     private MasstransitRouter masstransitRouter = TransportFactory.getInstance().createMasstransitRouter();
     private DrivingRouter drivingRouter;
-    private ClusterizedPlacemarkCollection clusterCollection;
     private PedestrianRouter pedestrianRouter = TransportFactory.getInstance().createPedestrianRouter();
     private UserLocationLayer userLocationLayer = null;
     private int userLocationAccuracyFillColor = 0;

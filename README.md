@@ -43,7 +43,7 @@ YaMap.init('API_KEY');
 
 #### iOS
 
-  
+
 
 **Обязательно** инициализировать MapKit в функции `didFinishLaunchingWithOptions` в AppDelegate.m/AppDelegate.mm:
 
@@ -242,8 +242,6 @@ type YamapSuggestWithCoords = {
 | tiltGesturesEnabled | boolean | true | Включены ли жесты наклона камеры двумя пальцами |
 | rotateGesturesEnabled | boolean | true | Включены ли жесты поворота камеры |
 | fastTapEnabled | boolean | true | Убрана ли задержка в 300мс при клике/тапе |
-| withClusters | boolean | false | Автоматическая группировка меток на карте в кластеры |
-| clusterColor | string | 'red' | Цвет фона метки-кластера |
 | maxFps | number | 60 | Максимальная частота обновления карты |
 | mapType | string | 'vector' | Тип карты |
 | mapStyle | string | {} | Стили карты согласно [документации](https://yandex.ru/dev/maps/mapkit/doc/dg/concepts/style.html) |
