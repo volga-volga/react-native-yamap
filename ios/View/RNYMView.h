@@ -36,11 +36,9 @@
 
 // PROPS
 - (void)setNightMode:(BOOL)nightMode;
-- (void)setClusters:(BOOL)userClusters;
 - (void)setListenUserLocation:(BOOL)listen;
 - (void)setUserLocationIcon:(NSString*_Nullable)iconSource;
 - (void)setUserLocationAccuracyFillColor:(UIColor*_Nullable)color;
-- (void)setClusterColor:(UIColor*_Nullable)color;
 - (void)setUserLocationAccuracyStrokeColor:(UIColor*_Nullable)color;
 - (void)setUserLocationAccuracyStrokeWidth:(float)width;
 - (void)setMapType:(NSString*_Nullable)type;

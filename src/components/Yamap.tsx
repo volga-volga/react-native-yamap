@@ -19,8 +19,6 @@ const { yamap: NativeYamapModule } = NativeModules;
 
 export interface YaMapProps extends ViewProps {
   userLocationIcon?: ImageSourcePropType;
-  withClusters?: boolean;
-  clusterColor?: string;
   showUserPosition?: boolean;
   nightMode?: boolean;
   mapStyle?: string;
@@ -48,7 +46,6 @@ const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');
 export class YaMap extends React.Component<YaMapProps> {
   static defaultProps = {
     showUserPosition: true,
-    clusterColor: 'red',
     maxFps: 60
   };
 
@@ -236,7 +233,6 @@ export class YaMap extends React.Component<YaMapProps> {
       userLocationIcon: this.props.userLocationIcon ? this.resolveImageUri(this.props.userLocationIcon) : undefined
     };
 
-    processColorProps(props, 'clusterColor' as keyof YaMapProps);
     processColorProps(props, 'userLocationAccuracyFillColor' as keyof YaMapProps);
     processColorProps(props, 'userLocationAccuracyStrokeColor' as keyof YaMapProps);
     processColorProps(props, 'followUser' as keyof YaMapProps);
