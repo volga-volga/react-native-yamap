@@ -110,7 +110,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
     private float maxFps = 60;
     static private HashMap<String, ImageProvider> icons = new HashMap<>();
 
-    void setImage(String iconSource, PlacemarkMapObject mapObject, IconStyle iconStyle) {
+    void setImage(final String iconSource, final PlacemarkMapObject mapObject, final IconStyle iconStyle) {
         if (icons.get(iconSource)==null) {
             ImageLoader.DownloadImageBitmap(getContext(), iconSource, new Callback<Bitmap>() {
                 @Override
