@@ -239,7 +239,6 @@ export class YaMap extends React.Component<YaMapProps> {
     processColorProps(props, 'clusterColor' as keyof YaMapProps);
     processColorProps(props, 'userLocationAccuracyFillColor' as keyof YaMapProps);
     processColorProps(props, 'userLocationAccuracyStrokeColor' as keyof YaMapProps);
-    processColorProps(props, 'followUser' as keyof YaMapProps);
 
     return props;
   }
