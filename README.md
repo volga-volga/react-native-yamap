@@ -217,6 +217,11 @@ type YamapSuggestWithCoords = {
   subtitle?: string;
   uri?: string;
 }
+
+type YandexLogo = {
+  horizontal: 'left' | 'center' | 'right';
+  vertical: 'top' | 'bottom';
+}
 ```
 
 #### Доступные `props` для компонента **MapView**:
@@ -245,6 +250,7 @@ type YamapSuggestWithCoords = {
 | withClusters | boolean | false | Автоматическая группировка меток на карте в кластеры |
 | clusterColor | string | 'red' | Цвет фона метки-кластера |
 | maxFps | number | 60 | Максимальная частота обновления карты |
+| logoPosition | YandexLogo | {} | Позиция логотипа Яндекса на карте |
 | mapType | string | 'vector' | Тип карты |
 | mapStyle | string | {} | Стили карты согласно [документации](https://yandex.ru/dev/maps/mapkit/doc/dg/concepts/style.html) |
 

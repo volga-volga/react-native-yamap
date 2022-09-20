@@ -60,24 +60,24 @@ public class ClusteredYamapView extends YamapView implements ClusterListener, Cl
         clusterCollection.clusterPlacemarks(50, 12);
     }
 
-     public void setClustersColor(int color) {
+    public void setClustersColor(int color) {
         clusterColor = color;
         updateUserMarkersColor();
     }
 
-     private void updateUserMarkersColor() {
-         clusterCollection.clear();
-         List<PlacemarkMapObject> placemarks =  clusterCollection.addPlacemarks(pointsList, new TextImageProvider(Integer.toString(pointsList.size())), new IconStyle());
-         for (int i = 0; i<placemarks.size(); i++) {
-             PlacemarkMapObject placemark = placemarks.get(i);
-             placemarksMap.put("" + placemark.getGeometry().getLatitude() + placemark.getGeometry().getLongitude(), placemark);
-             Object child = getChildAt(i);
-             if (child instanceof YamapMarker) {
-                 ((YamapMarker)child).setMapObject(placemark);
-             }
-         }
-         clusterCollection.clusterPlacemarks(50, 12);
-     }
+    private void updateUserMarkersColor() {
+        clusterCollection.clear();
+        List<PlacemarkMapObject> placemarks =  clusterCollection.addPlacemarks(pointsList, new TextImageProvider(Integer.toString(pointsList.size())), new IconStyle());
+        for (int i = 0; i<placemarks.size(); i++) {
+            PlacemarkMapObject placemark = placemarks.get(i);
+            placemarksMap.put("" + placemark.getGeometry().getLatitude() + placemark.getGeometry().getLongitude(), placemark);
+            Object child = getChildAt(i);
+            if (child instanceof YamapMarker) {
+                ((YamapMarker)child).setMapObject(placemark);
+            }
+        }
+        clusterCollection.clusterPlacemarks(50, 12);
+    }
 
     @Override
     public void addFeature(View child, int index) {

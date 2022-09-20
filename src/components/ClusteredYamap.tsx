@@ -6,14 +6,27 @@ import {
   UIManager,
   findNodeHandle,
   ViewProps,
-  ImageSourcePropType, NativeSyntheticEvent, ListRenderItemInfo,
+  ImageSourcePropType,
+  NativeSyntheticEvent,
+  ListRenderItemInfo
 } from 'react-native';
 // @ts-ignore
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 import CallbacksManager from '../utils/CallbacksManager';
 import {
-  MapType, Animation, Point, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition, VisibleRegion,
-  ScreenPoint, MapLoaded, InitialRegion,
+  MapType,
+  Animation,
+  Point,
+  DrivingInfo,
+  MasstransitInfo,
+  RoutesFoundEvent,
+  Vehicles,
+  CameraPosition,
+  VisibleRegion,
+  ScreenPoint,
+  MapLoaded,
+  InitialRegion,
+  YandexLogo
 } from '../interfaces';
 import { processColorProps } from '../utils';
 import { YaMap } from './Yamap';
@@ -45,6 +58,7 @@ export interface ClusteredYaMapProps<T = any> extends ViewProps {
   initialRegion?: InitialRegion;
   maxFps?: number;
   followUser?: boolean;
+  logoPosition?: YandexLogo;
 }
 
 const YaMapNativeComponent = requireNativeComponent<Omit<ClusteredYaMapProps, 'clusteredMarkers'> & {clusteredMarkers: Point[]}>('ClusteredYamapView');

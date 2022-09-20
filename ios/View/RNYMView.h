@@ -32,7 +32,7 @@
 - (void)setTrafficVisible:(BOOL)traffic;
 - (void)emitWorldToScreenPoint:(NSArray<YMKPoint*>*_Nonnull)points withId:(NSString*_Nonnull)_id;
 - (void)emitScreenToWorldPoint:(NSArray<YMKScreenPoint*>*_Nonnull)points withId:(NSString*_Nonnull)_id;
--(YMKBoundingBox*_Nonnull)calculateBoundingBox:(NSArray<YMKPoint*>*_Nonnull) points;
+- (YMKBoundingBox*_Nonnull)calculateBoundingBox:(NSArray<YMKPoint*>*_Nonnull)points;
 
 // PROPS
 - (void)setNightMode:(BOOL)nightMode;
@@ -48,8 +48,9 @@
 - (void)setMaxFps:(float)maxFps;
 - (void)setInteractive:(BOOL)interactive;
 - (void)insertMarkerReactSubview:(UIView *_Nullable)subview atIndex:(NSInteger)atIndex;
-- (void)removeMarkerReactSubview:(UIView*_Nullable) subview;
-- (void)setFollowUser: (BOOL) follow;
+- (void)removeMarkerReactSubview:(UIView*_Nullable)subview;
+- (void)setFollowUser:(BOOL)follow;
+- (void)setLogoPosition:(NSDictionary*_Nullable)logoPosition;
 
 @end
 

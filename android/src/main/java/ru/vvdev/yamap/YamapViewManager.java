@@ -308,6 +308,13 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         castToYaMapView(view).setInteractive(interactive);
     }
 
+    @ReactProp(name = "logoPosition")
+    public void setLogoPosition(View view, ReadableMap params) {
+        if (params != null) {
+            castToYaMapView(view).setLogoPosition(params);
+        }
+    }
+
     @Override
     public void addView(YamapView parent, View child, int index) {
         parent.addFeature(child, index);

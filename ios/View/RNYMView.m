@@ -580,6 +580,23 @@
     [self.mapWindow.map moveWithCameraPosition:cameraPosition animationType:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:1.0] cameraCallback:^(BOOL completed){}];
 }
 
+- (void)setLogoPosition:(NSDictionary *)logoPosition {
+    YMKLogoHorizontalAlignment *horizontalAlignment = YMKLogoHorizontalAlignmentRight;
+    YMKLogoVerticalAlignment *verticalAlignment = YMKLogoVerticalAlignmentBottom;
+
+    if ([[logoPosition valueForKey:@"horizontal"] isEqual:@"left"]) {
+        horizontalAlignment = YMKLogoHorizontalAlignmentLeft;
+    } else if ([[logoPosition valueForKey:@"horizontal"] isEqual:@"center"]) {
+        horizontalAlignment = YMKLogoHorizontalAlignmentCenter;
+    }
+
+    if ([[logoPosition valueForKey:@"vertical"] isEqual:@"top"]) {
+        verticalAlignment = YMKLogoVerticalAlignmentTop;
+    }
+
+    [self.mapWindow.map.logo setAlignmentWithAlignment:[YMKLogoAlignment alignmentWithHorizontalAlignment:horizontalAlignment verticalAlignment:verticalAlignment]];
+}
+
 // PROPS
 - (void)setUserLocationIcon:(NSString*)iconSource {
     userLocationImage = [self resolveUIImage: iconSource];
