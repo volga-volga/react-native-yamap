@@ -153,6 +153,12 @@ RCT_CUSTOM_VIEW_PROPERTY(interactive, BOOL, RNYMView) {
     }
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(logoPosition, BOOL, RNYMView) {
+    if (json && view) {
+        [view setLogoPosition:json];
+    }
+}
+
 // REF
 RCT_EXPORT_METHOD(fitAllMarkers:(nonnull NSNumber*)reactTag) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber*, UIView*> *viewRegistry) {

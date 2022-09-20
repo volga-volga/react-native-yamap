@@ -12,7 +12,21 @@ import {
 // @ts-ignore
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 import CallbacksManager from '../utils/CallbacksManager';
-import { Point, ScreenPoint, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition, VisibleRegion, InitialRegion, MapType, Animation, MapLoaded } from '../interfaces';
+import {
+  Point,
+  ScreenPoint,
+  DrivingInfo,
+  MasstransitInfo,
+  RoutesFoundEvent,
+  Vehicles,
+  CameraPosition,
+  VisibleRegion,
+  InitialRegion,
+  MapType,
+  Animation,
+  MapLoaded,
+  YandexLogo
+} from '../interfaces';
 import { processColorProps } from '../utils';
 
 const { yamap: NativeYamapModule } = NativeModules;
@@ -41,6 +55,7 @@ export interface YaMapProps extends ViewProps {
   initialRegion?: InitialRegion;
   maxFps?: number;
   followUser?: boolean;
+  logoPosition?: YandexLogo;
 }
 
 const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');

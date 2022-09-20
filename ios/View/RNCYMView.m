@@ -161,11 +161,11 @@
     float externalRadius = internalRadius + STROKE_SIZE;
     UIImage *someImageView = [UIImage alloc];
     // This function returns a newImage, based on image, that has been:
-       // - scaled to fit in (CGRect) rect
-       // - and cropped within a circle of radius: rectWidth/2
+    // - scaled to fit in (CGRect) rect
+    // - and cropped within a circle of radius: rectWidth/2
 
-       //Create the bitmap graphics context
-       UIGraphicsBeginImageContextWithOptions(CGSizeMake(externalRadius*2, externalRadius*2), NO, 1.0);
+    //Create the bitmap graphics context
+    UIGraphicsBeginImageContextWithOptions(CGSizeMake(externalRadius*2, externalRadius*2), NO, 1.0);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextSetFillColorWithColor(context, [clusterColor CGColor]);
     CGContextFillEllipseInRect(context, CGRectMake(0, 0, externalRadius*2, externalRadius*2));
