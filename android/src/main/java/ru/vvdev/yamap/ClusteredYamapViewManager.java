@@ -232,6 +232,11 @@ public class ClusteredYamapViewManager extends ViewGroupManager<ClusteredYamapVi
         }
     }
 
+    @ReactProp(name = "userLocationIconScale")
+    public void setUserLocationIconScale(View view, float scale) {
+        castToYaMapView(view).setUserLocationIconScale(scale);
+    }
+
     @ReactProp(name = "userLocationAccuracyFillColor")
     public void setUserLocationAccuracyFillColor(View view, int color) {
         castToYaMapView(view).setUserLocationAccuracyFillColor(color);

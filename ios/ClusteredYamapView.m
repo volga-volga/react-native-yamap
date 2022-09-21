@@ -15,7 +15,14 @@
 RCT_EXPORT_MODULE()
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[@"onRouteFound", @"onCameraPositionReceived", @"onVisibleRegionReceived", @"onCameraPositionChange", @"onMapPress", @"onMapLongPress"];
+    return @[
+        @"onRouteFound",
+        @"onCameraPositionReceived",
+        @"onVisibleRegionReceived",
+        @"onCameraPositionChange",
+        @"onMapPress",
+        @"onMapLongPress"
+    ];
 }
 
 - (instancetype)init {
@@ -31,10 +38,10 @@ RCT_EXPORT_MODULE()
     return map;
 }
 
-- (void)setCenterForMap: (RNCYMView*) map center:(NSDictionary*) _center zoom:(float) zoom azimuth:(float) azimuth tilt:(float) tilt duration:(float) duration animation:(int) animation {
+- (void)setCenterForMap:(RNCYMView*)map center:(NSDictionary*)_center zoom:(float)zoom azimuth:(float)azimuth tilt:(float)tilt duration:(float)duration animation:(int)animation {
     YMKPoint *center = [RCTConvert YMKPoint:_center];
-    YMKCameraPosition* pos = [YMKCameraPosition cameraPositionWithTarget:center zoom:zoom azimuth:azimuth tilt:tilt];
-    [map setCenter: pos withDuration: duration withAnimation: animation];
+    YMKCameraPosition *pos = [YMKCameraPosition cameraPositionWithTarget:center zoom:zoom azimuth:azimuth tilt:tilt];
+    [map setCenter:pos withDuration:duration withAnimation:animation];
 }
 
 // props
@@ -46,29 +53,35 @@ RCT_EXPORT_VIEW_PROPERTY(onMapPress, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onMapLongPress, RCTBubblingEventBlock)
 
 RCT_CUSTOM_VIEW_PROPERTY(userLocationAccuracyFillColor, NSNumber, RNCYMView) {
-    [view setUserLocationAccuracyFillColor: [RCTConvert UIColor:json]];
+    [view setUserLocationAccuracyFillColor:[RCTConvert UIColor:json]];
 }
 
 RCT_CUSTOM_VIEW_PROPERTY(clusterColor, NSNumber, RNCYMView) {
-    [view setClusterColor: [RCTConvert UIColor:json]];
+    [view setClusterColor:[RCTConvert UIColor:json]];
 }
 
 RCT_CUSTOM_VIEW_PROPERTY(clusteredMarkers, NSArray<YMKRequestPoint*>*_Nonnull, RNCYMView) {
-    [view setClusteredMarkers: [RCTConvert NSArray:json]];
+    [view setClusteredMarkers:[RCTConvert NSArray:json]];
 }
 
 RCT_CUSTOM_VIEW_PROPERTY(userLocationAccuracyStrokeColor, NSNumber, RNCYMView) {
-    [view setUserLocationAccuracyStrokeColor: [RCTConvert UIColor:json]];
+    [view setUserLocationAccuracyStrokeColor:[RCTConvert UIColor:json]];
 }
 
 
 RCT_CUSTOM_VIEW_PROPERTY(userLocationAccuracyStrokeWidth, NSNumber, RNCYMView) {
-    [view setUserLocationAccuracyStrokeWidth: [json floatValue]];
+    [view setUserLocationAccuracyStrokeWidth:[json floatValue]];
 }
 
 RCT_CUSTOM_VIEW_PROPERTY(userLocationIcon, NSString, RNCYMView) {
     if (json && view) {
-        [view setUserLocationIcon: json];
+        [view setUserLocationIcon:json];
+    }
+}
+
+RCT_CUSTOM_VIEW_PROPERTY(userLocationIconScale, NSNumber, RNCYMView) {
+    if (json && view) {
+        [view setUserLocationIconScale:[json floatValue]];
     }
 }
 
@@ -81,7 +94,6 @@ RCT_CUSTOM_VIEW_PROPERTY(showUserPosition, BOOL, RNCYMView) {
 RCT_CUSTOM_VIEW_PROPERTY(followUser, BOOL, RNCYMView) {
     [view setFollowUser: json ? [json boolValue] : NO];
 }
-
 
 RCT_CUSTOM_VIEW_PROPERTY(nightMode, BOOL, RNCYMView) {
     if (view) {
@@ -127,7 +139,7 @@ RCT_CUSTOM_VIEW_PROPERTY(fastTapEnabled, BOOL, RNCYMView) {
 
 RCT_CUSTOM_VIEW_PROPERTY(mapType, NSString, RNCYMView) {
     if (view) {
-        [view setMapType: json];
+        [view setMapType:json];
     }
 }
 
