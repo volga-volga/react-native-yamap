@@ -83,7 +83,7 @@ RCT_CUSTOM_VIEW_PROPERTY(userLocationIcon, NSString, RNYMView) {
 
 RCT_CUSTOM_VIEW_PROPERTY(userLocationIconScale, NSNumber, RNYMView) {
     if (json && view) {
-        [view setUserLocationIconScale:[json floatValue]];
+        [view setUserLocationIconScale:json];
     }
 }
 
