@@ -33,8 +33,7 @@ const { yamap: NativeYamapModule } = NativeModules;
 
 export interface YaMapProps extends ViewProps {
   userLocationIcon?: ImageSourcePropType;
-  withClusters?: boolean;
-  clusterColor?: string;
+  userLocationIconScale?: number;
   showUserPosition?: boolean;
   nightMode?: boolean;
   mapStyle?: string;

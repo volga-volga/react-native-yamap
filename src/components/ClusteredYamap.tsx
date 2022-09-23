@@ -35,6 +35,7 @@ const { yamap: NativeYamapModule } = NativeModules;
 
 export interface ClusteredYaMapProps<T = any> extends ViewProps {
   userLocationIcon?: ImageSourcePropType;
+  userLocationIconScale?: number;
   clusteredMarkers: ReadonlyArray<{point: Point, data: T}>
   renderMarker: (info: {point: Point, data: ListRenderItemInfo<T>}, index: number) => React.ReactElement
   clusterColor?: string;

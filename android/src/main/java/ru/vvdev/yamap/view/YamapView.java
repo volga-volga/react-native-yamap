@@ -99,6 +99,7 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         put("walk", "#333333");
     }};
     private String userLocationIcon = "";
+    private float userLocationIconScale = 1.f;
     private Bitmap userLocationBitmap = null;
     private RouteManager routeMng = new RouteManager();
     private MasstransitRouter masstransitRouter = TransportFactory.getInstance().createMasstransitRouter();
@@ -432,6 +433,11 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
                 }
             }
         });
+    }
+
+    public void setUserLocationIconScale(float scale) {
+        userLocationIconScale = scale;
+        updateUserLocationIcon();
     }
 
     public void setUserLocationAccuracyFillColor(int color) {
@@ -799,11 +805,14 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     private void updateUserLocationIcon() {
         if (userLocationView != null) {
+            IconStyle userIconStyle = new IconStyle();
+            userIconStyle.setScale(userLocationIconScale);
+
             PlacemarkMapObject pin = userLocationView.getPin();
             PlacemarkMapObject arrow = userLocationView.getArrow();
             if (userLocationBitmap != null) {
-                pin.setIcon(ImageProvider.fromBitmap(userLocationBitmap));
-                arrow.setIcon(ImageProvider.fromBitmap(userLocationBitmap));
+                pin.setIcon(ImageProvider.fromBitmap(userLocationBitmap), userIconStyle);
+                arrow.setIcon(ImageProvider.fromBitmap(userLocationBitmap), userIconStyle);
             }
             CircleMapObject circle = userLocationView.getAccuracyCircle();
             if (userLocationAccuracyFillColor != 0) {
