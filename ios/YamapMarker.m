@@ -80,30 +80,38 @@ RCT_CUSTOM_VIEW_PROPERTY(source, NSString, YamapMarkerView) {
 
 // REF
 RCT_EXPORT_METHOD(animatedMoveTo:(nonnull NSNumber*)reactTag json:(NSDictionary*)json duration:(NSNumber*_Nonnull)duration) {
-    [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber*, UIView*> *viewRegistry) {
-        YamapMarkerView* view = (YamapMarkerView*)viewRegistry[reactTag];
+    @try  {
+        [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber*, UIView*> *viewRegistry) {
+            YamapMarkerView* view = (YamapMarkerView*)viewRegistry[reactTag];
 
-        if (!view || ![view isKindOfClass:[YamapMarkerView class]]) {
-            RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
-            return;
-        }
+            if (!view || ![view isKindOfClass:[YamapMarkerView class]]) {
+                RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
+                return;
+            }
 
-        YMKPoint* point = [RCTConvert YMKPoint:json];
-        [view animatedMoveTo:point withDuration:[duration floatValue]];
-    }];
+            YMKPoint* point = [RCTConvert YMKPoint:json];
+            [view animatedMoveTo:point withDuration:[duration floatValue]];
+        }];
+    } @catch (NSException *exception) {
+        NSLog(@"Reason: %@ ",exception.reason);
+    }
 }
 
 RCT_EXPORT_METHOD(animatedRotateTo:(nonnull NSNumber*)reactTag  angle:(NSNumber*_Nonnull)angle duration:(NSNumber*_Nonnull)duration) {
-    [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber*, UIView*> *viewRegistry) {
-        YamapMarkerView* view = (YamapMarkerView*)viewRegistry[reactTag];
+    @try  {
+        [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber*, UIView*> *viewRegistry) {
+            YamapMarkerView* view = (YamapMarkerView*)viewRegistry[reactTag];
 
-        if (!view || ![view isKindOfClass:[YamapMarkerView class]]) {
-            RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
-            return;
-        }
+            if (!view || ![view isKindOfClass:[YamapMarkerView class]]) {
+                RCTLogError(@"Cannot find NativeView with tag #%@", reactTag);
+                return;
+            }
 
-        [view animatedRotateTo:[angle floatValue] withDuration:[duration floatValue]];
-    }];
+            [view animatedRotateTo:[angle floatValue] withDuration:[duration floatValue]];
+        }];
+    } @catch (NSException *exception) {
+        NSLog(@"Reason: %@ ",exception.reason);
+    }
 }
 
 @end
