@@ -80,8 +80,8 @@ public class YamapMarker extends ReactViewGroup implements MapObjectTapListener,
         updateMarker();
     }
 
-    public void setRotated(Boolean rotated) {
-        rotated = rotated;
+    public void setRotated(Boolean _rotated) {
+        rotated = _rotated;
         updateMarker();
     }
 
