@@ -50,6 +50,7 @@
 - (void)removeMarkerReactSubview:(UIView *_Nullable)subview;
 - (void)setFollowUser:(BOOL)follow;
 - (void)setLogoPosition:(NSDictionary *_Nullable)logoPosition;
+- (void)setLogoPadding:(NSDictionary *_Nullable)logoPadding;
 
 @end
 

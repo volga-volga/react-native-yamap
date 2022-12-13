@@ -320,6 +320,13 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
         }
     }
 
+    @ReactProp(name = "logoPadding")
+    public void setLogoPadding(View view, ReadableMap params) {
+        if (params != null) {
+            castToYaMapView(view).setLogoPadding(params);
+        }
+    }
+
     @Override
     public void addView(YamapView parent, View child, int index) {
         parent.addFeature(child, index);

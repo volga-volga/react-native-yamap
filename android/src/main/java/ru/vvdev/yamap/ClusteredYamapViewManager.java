@@ -330,6 +330,13 @@ public class ClusteredYamapViewManager extends ViewGroupManager<ClusteredYamapVi
         }
     }
 
+    @ReactProp(name = "logoPadding")
+    public void setLogoPadding(View view, ReadableMap params) {
+        if (params != null) {
+            castToYaMapView(view).setLogoPadding(params);
+        }
+    }
+
     @Override
     public void addView(ClusteredYamapView parent, View child, int index) {
         parent.addFeature(child, index);

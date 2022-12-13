@@ -50,6 +50,7 @@ import com.yandex.mapkit.map.VisibleRegion;
 import com.yandex.mapkit.map.MapType;
 import com.yandex.mapkit.mapview.MapView;
 import com.yandex.mapkit.logo.Alignment;
+import com.yandex.mapkit.logo.Padding;
 import com.yandex.mapkit.logo.HorizontalAlignment;
 import com.yandex.mapkit.logo.VerticalAlignment;
 import com.yandex.mapkit.transport.TransportFactory;
@@ -532,6 +533,12 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         }
 
         getMap().getLogo().setAlignment(new Alignment(horizontalAlignment, verticalAlignment));
+    }
+
+    public void setLogoPadding(@Nullable ReadableMap params) {
+        int horizontalPadding = (params.hasKey("horizontal") && !params.isNull("horizontal")) ? params.getInt("horizontal") : 0;
+        int verticalPadding = (params.hasKey("vertical") && !params.isNull("vertical")) ? params.getInt("vertical") : 0;
+        getMap().getLogo().setPadding(new Padding(horizontalPadding, verticalPadding));
     }
 
     public void setMaxFps(float fps) {

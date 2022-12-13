@@ -596,6 +596,14 @@
     [self.mapWindow.map.logo setAlignmentWithAlignment:[YMKLogoAlignment alignmentWithHorizontalAlignment:horizontalAlignment verticalAlignment:verticalAlignment]];
 }
 
+- (void)setLogoPadding:(NSDictionary *)logoPadding {
+    NSUInteger *horizontalPadding = [logoPadding valueForKey:@"horizontal"] != nil ? [logoPadding[@"horizontal"] unsignedIntegerValue] : 0;
+    NSUInteger *verticalPadding = [logoPadding valueForKey:@"vertical"] != nil ? [logoPadding[@"vertical"] unsignedIntegerValue] : 0;
+
+    YMKLogoPadding *padding = [YMKLogoPadding paddingWithHorizontalPadding:horizontalPadding verticalPadding:verticalPadding];
+    [self.mapWindow.map.logo setPaddingWithPadding:padding];
+}
+
 // PROPS
 - (void)setUserLocationIcon:(NSString *)iconSource {
     userLocationImage = [self resolveUIImage:iconSource];

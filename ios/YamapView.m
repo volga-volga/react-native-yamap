@@ -165,6 +165,12 @@ RCT_CUSTOM_VIEW_PROPERTY(logoPosition, BOOL, RNYMView) {
     }
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(logoPadding, BOOL, RNYMView) {
+    if (json && view) {
+        [view setLogoPadding:json];
+    }
+}
+
 // REF
 RCT_EXPORT_METHOD(fitAllMarkers:(nonnull NSNumber *)reactTag) {
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {

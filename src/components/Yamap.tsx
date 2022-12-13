@@ -25,7 +25,8 @@ import {
   MapType,
   Animation,
   MapLoaded,
-  YandexLogo
+  YandexLogoPosition,
+  YandexLogoPadding
 } from '../interfaces';
 import { processColorProps } from '../utils';
 
@@ -54,7 +55,8 @@ export interface YaMapProps extends ViewProps {
   initialRegion?: InitialRegion;
   maxFps?: number;
   followUser?: boolean;
-  logoPosition?: YandexLogo;
+  logoPosition?: YandexLogoPosition;
+  logoPadding?: YandexLogoPadding;
 }
 
 const YaMapNativeComponent = requireNativeComponent<YaMapProps>('YamapView');
