@@ -218,9 +218,14 @@ type YamapSuggestWithCoords = {
   uri?: string;
 }
 
-type YandexLogo = {
+type YandexLogoPosition = {
   horizontal: 'left' | 'center' | 'right';
   vertical: 'top' | 'bottom';
+}
+
+type YandexLogoPadding = {
+  horizontal?: number;
+  vertical?: number;
 }
 ```
 
@@ -250,7 +255,8 @@ type YandexLogo = {
 | fastTapEnabled | boolean | true | Убрана ли задержка в 300мс при клике/тапе |
 | clusterColor | string | 'red' | Цвет фона метки-кластера |
 | maxFps | number | 60 | Максимальная частота обновления карты |
-| logoPosition | YandexLogo | {} | Позиция логотипа Яндекса на карте |
+| logoPosition | YandexLogoPosition | {} | Позиция логотипа Яндекса на карте |
+| logoPadding | YandexLogoPadding | {} | Отступ логотипа Яндекса на карте |
 | mapType | string | 'vector' | Тип карты |
 | mapStyle | string | {} | Стили карты согласно [документации](https://yandex.ru/dev/maps/mapkit/doc/dg/concepts/style.html) |
 
