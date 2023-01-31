@@ -1,5 +1,10 @@
 #import <React/RCTComponent.h>
 #import <React/UIView+React.h>
+#import <TargetConditionals.h>
+
+#if TARGET_IPHONE_SIMULATOR
+#import <mach-o/arch.h>
+#endif
 
 #import <MapKit/MapKit.h>
 #import "../Converter/RCTConvert+Yamap.m"
@@ -45,7 +50,19 @@
 }
 
 - (instancetype)init {
-    self = [super init];
+    BOOL vulcanPreferred = NO;
+
+#if TARGET_IPHONE_SIMULATOR
+    NXArchInfo *info = NXGetLocalArchInfo();
+    NSString *typeOfCpu = [NSString stringWithUTF8String:info->description];
+
+    if ([typeOfCpu hasPrefix:@"arm64"]) {
+        NSLog(@"Using Vulcan for YMKMapView on ARM-based iOS simulator");
+        vulcanPreferred = YES;
+    }
+#endif
+
+    self = [super initWithFrame:CGRectZero vulcanPreferred:vulcanPreferred];
     _reactSubviews = [[NSMutableArray alloc] init];
     masstransitRouter = [[YMKTransport sharedInstance] createMasstransitRouter];
     drivingRouter = [[YMKDirections sharedInstance] createDrivingRouter];
