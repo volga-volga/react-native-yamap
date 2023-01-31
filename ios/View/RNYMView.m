@@ -49,15 +49,13 @@
 }
 
 - (instancetype)init {
-    BOOL vulcanPreferred = NO;
-
 #if TARGET_OS_SIMULATOR
     NXArchInfo *archInfo = NXGetLocalArchInfo();
     NSString *cpuArch = [NSString stringWithUTF8String:archInfo->description];
-    vulcanPreferred = [cpuArch hasPrefix:@"ARM64"];
+    self = [super initWithFrame:CGRectZero vulkanPreferred:[cpuArch hasPrefix:@"ARM64"]];
+#else
+    self = [super initWithFrame:CGRectZero];
 #endif
-
-    self = [super initWithFrame:CGRectZero vulkanPreferred:vulcanPreferred];
 
     _reactSubviews = [[NSMutableArray alloc] init];
     masstransitRouter = [[YMKTransport sharedInstance] createMasstransitRouter];
