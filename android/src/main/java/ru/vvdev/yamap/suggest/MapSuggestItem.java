@@ -3,7 +3,6 @@ package ru.vvdev.yamap.suggest;
 import javax.annotation.Nullable;
 
 public class MapSuggestItem {
-
     private String searchText;
     private String title;
     @Nullable

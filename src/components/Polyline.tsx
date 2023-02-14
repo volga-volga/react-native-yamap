@@ -22,9 +22,11 @@ const NativePolylineComponent = requireNativeComponent<PolylineProps>('YamapPoly
 export class Polyline extends React.Component<PolylineProps> {
   render() {
     const props = { ...this.props };
+
     processColorProps(props, 'fillColor' as keyof PolylineProps);
     processColorProps(props, 'strokeColor' as keyof PolylineProps);
     processColorProps(props, 'outlineColor' as keyof PolylineProps);
+
     return <NativePolylineComponent {...props} />;
   }
 }

@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.List;
 
 public class RNYandexSuggestPackage implements ReactPackage {
-
     @NonNull
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {

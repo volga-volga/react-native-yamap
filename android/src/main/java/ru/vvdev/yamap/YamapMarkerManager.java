@@ -3,6 +3,10 @@ package ru.vvdev.yamap;
 import android.graphics.PointF;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
+import com.facebook.infer.annotation.Assertions;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.ThemedReactContext;
@@ -13,8 +17,10 @@ import com.yandex.mapkit.geometry.Point;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import ru.vvdev.yamap.view.YamapMarker;
+import ru.vvdev.yamap.view.YamapView;
 
 public class YamapMarkerManager extends ViewGroupManager<YamapMarker> {
     public static final String REACT_CLASS = "YamapMarker";
@@ -48,7 +54,7 @@ public class YamapMarkerManager extends ViewGroupManager<YamapMarker> {
         return new YamapMarker(context);
     }
 
-    // props
+    // PROPS
     @ReactProp(name = "point")
     public void setPoint(View view, ReadableMap markerPoint) {
         if (markerPoint != null) {
@@ -67,6 +73,16 @@ public class YamapMarkerManager extends ViewGroupManager<YamapMarker> {
     @ReactProp(name = "scale")
     public void setScale(View view, float scale) {
         castToMarkerView(view).setScale(scale);
+    }
+
+    @ReactProp(name = "rotated")
+    public void setRotated(View view, Boolean rotated) {
+        castToMarkerView(view).setRotated(rotated != null ? rotated : true);
+    }
+
+    @ReactProp(name = "visible")
+    public void setVisible(View view, Boolean visible) {
+        castToMarkerView(view).setVisible(visible != null ? visible : true);
     }
 
     @ReactProp(name = "source")
@@ -91,5 +107,32 @@ public class YamapMarkerManager extends ViewGroupManager<YamapMarker> {
     public void removeViewAt(YamapMarker parent, int index) {
         parent.removeChildView(index);
         super.removeViewAt(parent, index);
+    }
+
+    @Override
+    public void receiveCommand(
+            @NonNull YamapMarker view,
+            String commandType,
+            @Nullable ReadableArray args) {
+        switch (commandType) {
+            case "animatedMoveTo":
+                ReadableMap markerPoint = args.getMap(0);
+                int moveDuration = args.getInt(1);
+                float lon = (float) markerPoint.getDouble("lon");
+                float lat = (float) markerPoint.getDouble("lat");
+                Point point = new Point(lat, lon);
+                castToMarkerView(view).animatedMoveTo(point, moveDuration);
+                return;
+            case "animatedRotateTo":
+                int angle = args.getInt(0);
+                int rotateDuration = args.getInt(1);
+                castToMarkerView(view).animatedRotateTo(angle, rotateDuration);
+                return;
+            default:
+                throw new IllegalArgumentException(String.format(
+                        "Unsupported command %d received by %s.",
+                        commandType,
+                        getClass().getSimpleName()));
+        }
     }
 }

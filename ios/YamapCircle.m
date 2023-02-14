@@ -17,20 +17,25 @@
 
 RCT_EXPORT_MODULE()
 
-- (NSArray<NSString *> *)supportedEvents {
+- (NSArray<NSString*>*)supportedEvents {
     return @[@"onPress"];
 }
 
 - (instancetype)init {
     self = [super init];
+
     return self;
 }
 
-- (UIView *_Nullable)view {
++ (BOOL)requiresMainQueueSetup {
+    return YES;
+}
+
+- (UIView* _Nullable)view {
     return [[YamapCircleView alloc] init];
 }
 
-// props
+// PROPS
 RCT_EXPORT_VIEW_PROPERTY(onPress, RCTBubblingEventBlock)
 
 RCT_CUSTOM_VIEW_PROPERTY (center, YMKPoint, YamapCircleView) {

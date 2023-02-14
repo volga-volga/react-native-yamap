@@ -1,18 +1,15 @@
 package ru.vvdev.yamap;
 
-import androidx.annotation.NonNull;
-
 import com.facebook.react.bridge.Callback;
-import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.yandex.mapkit.MapKitFactory;
 import com.yandex.mapkit.transport.TransportFactory;
 import com.yandex.runtime.i18n.I18nManagerFactory;
-import com.yandex.runtime.i18n.LocaleListener;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,12 +57,13 @@ public class RNYamapModule extends ReactContextBaseJavaModule {
                     } catch (Throwable exception) {
                         apiKeyException = exception;
                     }
+
                     MapKitFactory.initialize(reactContext);
                     TransportFactory.initialize(reactContext);
                     MapKitFactory.getInstance().onStart();
                     promise.resolve(null);
                 } catch (Exception exception) {
-                    if(apiKeyException != null) {
+                    if (apiKeyException != null) {
                         promise.reject(apiKeyException);
                         return;
                     }
@@ -91,12 +89,8 @@ public class RNYamapModule extends ReactContextBaseJavaModule {
         runOnUiThread(new Thread(new Runnable() {
             @Override
             public void run() {
-                I18nManagerFactory.getLocale(new LocaleListener() {
-                    @Override
-                    public void onLocaleReceived(@NonNull String s) {
-                        successCb.invoke(s);
-                    }
-                });
+                String locale = I18nManagerFactory.getLocale();
+                successCb.invoke(locale);
             }
         }));
     }
@@ -107,7 +101,7 @@ public class RNYamapModule extends ReactContextBaseJavaModule {
             @Override
             public void run() {
                 I18nManagerFactory.setLocale(null);
-                successCb.invoke(null);
+                successCb.invoke();
             }
         }));
     }

@@ -21,10 +21,10 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import ru.vvdev.yamap.view.YamapView;
+import ru.vvdev.yamap.view.ClusteredYamapView;
 
-public class YamapViewManager extends ViewGroupManager<YamapView> {
-    public static final String REACT_CLASS = "YamapView";
+public class ClusteredYamapViewManager extends ViewGroupManager<ClusteredYamapView> {
+    public static final String REACT_CLASS = "ClusteredYamapView";
 
     private static final int SET_CENTER = 1;
     private static final int FIT_ALL_MARKERS = 2;
@@ -37,7 +37,7 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     private static final int GET_SCREEN_POINTS = 9;
     private static final int GET_WORLD_POINTS = 10;
 
-    YamapViewManager() {
+    ClusteredYamapViewManager() {
     }
 
     @Override
@@ -48,22 +48,22 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     @Override
     public Map<String, Object> getExportedCustomDirectEventTypeConstants() {
         return MapBuilder.<String, Object>builder()
-            .build();
+                .build();
     }
 
     public Map getExportedCustomBubblingEventTypeConstants() {
         return MapBuilder.builder()
-            .put("routes", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onRouteFound")))
-            .put("cameraPosition", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionReceived")))
-            .put("cameraPositionChange", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionChange")))
-            .put("cameraPositionChangeEnd", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionChangeEnd")))
-            .put("visibleRegion", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onVisibleRegionReceived")))
-            .put("onMapPress", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapPress")))
-            .put("onMapLongPress", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapLongPress")))
-            .put("onMapLoaded", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapLoaded")))
-            .put("screenToWorldPoints", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onScreenToWorldPointsReceived")))
-            .put("worldToScreenPoints", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onWorldToScreenPointsReceived")))
-            .build();
+                .put("routes", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onRouteFound")))
+                .put("cameraPosition", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionReceived")))
+                .put("cameraPositionChange", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionChange")))
+                .put("cameraPositionChangeEnd", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onCameraPositionChangeEnd")))
+                .put("visibleRegion", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onVisibleRegionReceived")))
+                .put("onMapPress", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapPress")))
+                .put("onMapLongPress", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapLongPress")))
+                .put("onMapLoaded", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onMapLoaded")))
+                .put("screenToWorldPoints", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onScreenToWorldPointsReceived")))
+                .put("worldToScreenPoints", MapBuilder.of("phasedRegistrationNames", MapBuilder.of("bubbled", "onWorldToScreenPointsReceived")))
+                .build();
     }
 
     @Override
@@ -85,91 +85,100 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
 
     @Override
     public void receiveCommand(
-        @NonNull YamapView view,
-        String commandType,
-        @Nullable ReadableArray args) {
-            Assertions.assertNotNull(view);
-            Assertions.assertNotNull(args);
+            @NonNull ClusteredYamapView view,
+            String commandType,
+            @Nullable ReadableArray args) {
+        Assertions.assertNotNull(view);
+        Assertions.assertNotNull(args);
 
-            switch (commandType) {
-                case "setCenter":
-                    setCenter(castToYaMapView(view), args.getMap(0), (float) args.getDouble(1), (float) args.getDouble(2), (float) args.getDouble(3), (float) args.getDouble(4), args.getInt(5));
-                    break;
+        switch (commandType) {
+            case "setCenter":
+                setCenter(castToYaMapView(view), args.getMap(0), (float) args.getDouble(1), (float) args.getDouble(2), (float) args.getDouble(3), (float) args.getDouble(4), args.getInt(5));
+                break;
 
-                case "fitAllMarkers":
-                    fitAllMarkers(view);
-                    break;
+            case "fitAllMarkers":
+                fitAllMarkers(view);
+                break;
 
-                case "fitMarkers":
-                    if (args != null) {
-                        fitMarkers(view, args.getArray(0));
-                    }
-                    break;
+            case "fitMarkers":
+                if (args != null) {
+                    fitMarkers(view, args.getArray(0));
+                }
+                break;
 
-                case "findRoutes":
-                    if (args != null) {
-                        findRoutes(view, args.getArray(0), args.getArray(1), args.getString(2));
-                    }
-                    break;
+            case "findRoutes":
+                if (args != null) {
+                    findRoutes(view, args.getArray(0), args.getArray(1), args.getString(2));
+                }
+                break;
 
-                case "setZoom":
-                    if (args != null) {
-                        view.setZoom((float)args.getDouble(0), (float)args.getDouble(1), args.getInt(2));
-                    }
-                    break;
+            case "setZoom":
+                if (args != null) {
+                    view.setZoom((float)args.getDouble(0), (float)args.getDouble(1), args.getInt(2));
+                }
+                break;
 
-                case "getCameraPosition":
-                    if (args != null) {
-                        view.emitCameraPositionToJS(args.getString(0));
-                    }
-                    break;
+            case "getCameraPosition":
+                if (args != null) {
+                    view.emitCameraPositionToJS(args.getString(0));
+                }
+                break;
 
-                case "getVisibleRegion":
-                    if (args != null) {
-                        view.emitVisibleRegionToJS(args.getString(0));
-                    }
-                    break;
+            case "getVisibleRegion":
+                if (args != null) {
+                    view.emitVisibleRegionToJS(args.getString(0));
+                }
+                break;
             case "setTrafficVisible":
                 if (args != null) {
                     view.setTrafficVisible(args.getBoolean(0));
                 }
                 break;
 
-                case "getScreenPoints":
-                    if (args != null) {
-                        view.emitWorldToScreenPoints(args.getArray(0), args.getString(1));
-                    }
-                    break;
+            case "getScreenPoints":
+                if (args != null) {
+                    view.emitWorldToScreenPoints(args.getArray(0), args.getString(1));
+                }
+                break;
 
-                case "getWorldPoints":
-                    if (args != null) {
-                        view.emitScreenToWorldPoints(args.getArray(0), args.getString(1));
-                    }
-                    break;
+            case "getWorldPoints":
+                if (args != null) {
+                    view.emitScreenToWorldPoints(args.getArray(0), args.getString(1));
+                }
+                break;
 
-                default:
-                    throw new IllegalArgumentException(String.format(
-                            "Unsupported command %d received by %s.",
-                            commandType,
-                            getClass().getSimpleName()));
+            default:
+                throw new IllegalArgumentException(String.format(
+                        "Unsupported command %d received by %s.",
+                        commandType,
+                        getClass().getSimpleName()));
         }
     }
 
-    private YamapView castToYaMapView(View view) {
-        return (YamapView) view;
+    @ReactProp(name = "clusteredMarkers")
+    public void setClusteredMarkers(View view, ReadableArray points) {
+        castToYaMapView(view).setClusteredMarkers(points.toArrayList());
+    }
+
+    @ReactProp(name = "clusterColor")
+    public void setClusterColor(View view, int color) {
+        castToYaMapView(view).setClustersColor(color);
+    }
+
+    private ClusteredYamapView castToYaMapView(View view) {
+        return (ClusteredYamapView) view;
     }
 
     @Nonnull
     @Override
-    public YamapView createViewInstance(@Nonnull ThemedReactContext context) {
-        YamapView view = new YamapView(context);
+    public ClusteredYamapView createViewInstance(@Nonnull ThemedReactContext context) {
+        ClusteredYamapView view = new ClusteredYamapView(context);
         MapKitFactory.getInstance().onStart();
         view.onStart();
-
         return view;
     }
 
-    private void setCenter(YamapView view, ReadableMap center, float zoom, float azimuth, float tilt, float duration, int animation) {
+    private void setCenter(ClusteredYamapView view, ReadableMap center, float zoom, float azimuth, float tilt, float duration, int animation) {
         if (center != null) {
             Point centerPosition = new Point(center.getDouble("lat"), center.getDouble("lon"));
             CameraPosition pos = new CameraPosition(centerPosition, zoom, azimuth, tilt);
@@ -199,22 +208,18 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     private void findRoutes(View view, ReadableArray jsPoints, ReadableArray jsVehicles, String id) {
         if (jsPoints != null) {
             ArrayList<Point> points = new ArrayList<>();
-
             for (int i = 0; i < jsPoints.size(); ++i) {
                 ReadableMap point = jsPoints.getMap(i);
                 if (point != null) {
                     points.add(new Point(point.getDouble("lat"), point.getDouble("lon")));
                 }
             }
-
             ArrayList<String> vehicles = new ArrayList<>();
-
             if (jsVehicles != null) {
                 for (int i = 0; i < jsVehicles.size(); ++i) {
                     vehicles.add(jsVehicles.getString(i));
                 }
             }
-
             castToYaMapView(view).findRoutes(points, vehicles, id);
         }
     }
@@ -250,6 +255,11 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     @ReactProp(name = "showUserPosition")
     public void setShowUserPosition(View view, Boolean show) {
         castToYaMapView(view).setShowUserPosition(show);
+    }
+
+    @ReactProp(name = "followUser")
+    public void setFollowUser(View view, Boolean follow) {
+      castToYaMapView(view).setFollowUser(follow);
     }
 
     @ReactProp(name = "nightMode")
@@ -328,13 +338,13 @@ public class YamapViewManager extends ViewGroupManager<YamapView> {
     }
 
     @Override
-    public void addView(YamapView parent, View child, int index) {
+    public void addView(ClusteredYamapView parent, View child, int index) {
         parent.addFeature(child, index);
         super.addView(parent, child, index);
     }
 
     @Override
-    public void removeViewAt(YamapView parent, int index) {
+    public void removeViewAt(ClusteredYamapView parent, int index) {
         parent.removeChild(index);
         super.removeViewAt(parent, index);
     }

@@ -19,6 +19,11 @@ static NSString * _selectedMarkerIcon;
     return self;
 }
 
++ (BOOL)requiresMainQueueSetup
+{
+    return YES;
+}
+
 - (void)initWithKey:(NSString *) apiKey {
     [YMKMapKit setApiKey: apiKey];
 }
@@ -28,16 +33,16 @@ static NSString * _selectedMarkerIcon;
 }
 
 RCT_EXPORT_METHOD(init: (NSString *) apiKey
-              resolver:(RCTPromiseResolveBlock)resolve
-              rejecter:(RCTPromiseRejectBlock)reject) {
+          resolver:(RCTPromiseResolveBlock)resolve
+          rejecter:(RCTPromiseRejectBlock)reject) {
     @try {
         [self initWithKey: apiKey];
         resolve(nil);
     } @catch (NSException *exception) {
-        NSError *error = nil; 
+        NSError *error = nil;
         if (exception.userInfo.count > 0) {
             error = [NSError errorWithDomain:NSCocoaErrorDomain code:0 userInfo:exception.userInfo];
-        } 
+        }
         reject(exception.name, exception.reason ?: @"Error initiating YMKMapKit", error);
     }
 }
@@ -53,9 +58,8 @@ RCT_EXPORT_METHOD(resetLocale:(RCTResponseSenderBlock)successCb errorCallback:(R
 }
 
 RCT_EXPORT_METHOD(getLocale:(RCTResponseSenderBlock)successCb errorCallback:(RCTResponseSenderBlock) errorCb) {
-    [YRTI18nManagerFactory getLocaleWithLocaleDelegate:^(NSString * _Nonnull locale) {
-        successCb(@[locale]);
-    }];
+    NSString * locale = [YRTI18nManagerFactory getLocale];
+    successCb(@[locale]);
 }
 
 RCT_EXPORT_MODULE()
