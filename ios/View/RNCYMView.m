@@ -136,15 +136,21 @@
 }
 
 - (void)removeReactSubview:(UIView<RCTComponent>*) subview {
-     if ([subview isKindOfClass:[YamapMarkerView class]]) {
-        YamapMarkerView* marker = (YamapMarkerView*) subview;
-        [clusterCollection removeWithMapObject:[marker getMapObject]];
-    } else {
+   //    YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
+//    YamapPolygonView *polygon = (YamapPolygonView *) subview;
+//    [objects removeWithMapObject:[polygon getMapObject]];
+    
+//     if ([subview isKindOfClass:[YamapMarkerView class]]) {
+//
+//        YamapMarkerView* marker = (YamapMarkerView*) subview;
+//        [clusterCollection removeWithMapObject:[marker getMapObject]];
+//     }
+//     else {
         NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
         for (int i = 0; i < childSubviews.count; i++) {
             [self removeReactSubview:(UIView *)childSubviews[i]];
         }
-    }
+//    }
     [_reactSubviews removeObject:subview];
     [super removeMarkerReactSubview:subview];
 }
