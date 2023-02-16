@@ -95,7 +95,8 @@ public class ClusteredYamapView extends YamapView implements ClusterListener, Cl
             if (child == null) return;
             final MapObject mapObject = child.getMapObject();
             if (mapObject == null || !mapObject.isValid()) return;
-            clusterCollection.remove(mapObject);
+            // clusterCollection.remove(mapObject);
+            clusterCollection.clear();
             placemarksMap.remove("" + child.point.getLatitude() + child.point.getLongitude());
         }
     }
