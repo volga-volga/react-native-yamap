@@ -30,7 +30,7 @@ export enum SuggestTypes {
   YMKSuggestTypeTransit = 0b01 << 2,
 }
 
-type SuggestOptions = {
+export type SuggestOptions = {
   userPosition?: Point;
   boundingBox?: BoundingBox;
   suggestWords?: boolean;
