@@ -35,12 +35,13 @@ void runOnMainQueueWithoutDeadlocking(void (^block)(void)) {
 
 NSString* ERR_NO_REQUEST_ARG = @"YANDEX_SUGGEST_ERR_NO_REQUEST_ARG";
 NSString* ERR_SUGGEST_FAILED = @"YANDEX_SUGGEST_ERR_SUGGEST_FAILED";
+NSString* YandexSuggestErrorDomain = @"YandexSuggestErrorDomain";
 
 - (YMKSearchSuggestSession*_Nonnull)getSuggestClient {
     if (suggestClient) {
         return suggestClient;
     }
-    
+
     if (!searchManager) {
         runOnMainQueueWithoutDeadlocking(^{
             self->searchManager = [[YMKSearch sharedInstance] createSearchManagerWithSearchManagerType:YMKSearchSearchManagerTypeOnline];
@@ -54,13 +55,13 @@ NSString* ERR_SUGGEST_FAILED = @"YANDEX_SUGGEST_ERR_SUGGEST_FAILED";
     return suggestClient;
 }
 
--(void)suggestHandler: (nonnull NSString*) searchQuery options:(YMKSuggestOptions*) options resolver:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock) reject {
+-(void)suggestHandler: (nonnull NSString*) searchQuery options:(YMKSuggestOptions*) options boundingBox:(nonnull YMKBoundingBox*) boundingBox resolver:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock) reject {
 	@try {
 		YMKSearchSuggestSession* session = [self getSuggestClient];
 
 		dispatch_async(dispatch_get_main_queue(), ^{
 			[session suggestWithText:searchQuery
-												window:self->defaultBoundingBox
+												window:boundingBox
 								suggestOptions:options
 							 responseHandler:^(NSArray<YMKSuggestItem *> * _Nullable suggestList, NSError * _Nullable error) {
 				if (error) {
@@ -89,14 +90,44 @@ NSString* ERR_SUGGEST_FAILED = @"YANDEX_SUGGEST_ERR_SUGGEST_FAILED";
 	}
 }
 
+-(NSError * _Nonnull)makeErrorWithText: (nonnull NSString*) descriptionText {
+	NSDictionary *errorDictionary = @{ NSLocalizedDescriptionKey : descriptionText };
+  NSError *errorObject = [[NSError alloc] initWithDomain:YandexSuggestErrorDomain code:0 userInfo:errorDictionary];
+	return errorObject;
+}
+
+-(YMKPoint *)mapPoint: (nonnull NSDictionary*) fromDictionary withKey:(nonnull NSString*) pointKey error:(NSError **) outError {
+	NSDictionary *pointDictionary = fromDictionary[pointKey];
+	if(![pointDictionary isKindOfClass: [NSDictionary class]]){
+		*outError = [self makeErrorWithText:[NSString stringWithFormat:@"search request: %@ is not an Object", pointKey]];
+		return nil;
+	}
+	if(pointDictionary[@"lat"] == nil || pointDictionary[@"lon"] == nil){
+		*outError = [self makeErrorWithText:[NSString stringWithFormat:@"search request: lon and lat cannot be empty in %@", pointKey]];
+		return nil;
+	}
+
+	NSNumber *lat =  pointDictionary[@"lat"];
+	NSNumber *lon =  pointDictionary[@"lon"];
+
+	if(![lat isKindOfClass: [NSNumber class]] || ![lon isKindOfClass:[NSNumber class]]){
+		*outError = [self makeErrorWithText:[NSString stringWithFormat:@"search request: lat or lon is not a Number in %@", pointKey]];
+		return nil;
+	}
+
+	YMKPoint	*point = [YMKPoint pointWithLatitude:[lat doubleValue] longitude:[lon doubleValue]];
+	return point;
+}
+
 RCT_EXPORT_METHOD(suggest:(nonnull NSString*) searchQuery resolver:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock) reject {
-	[self suggestHandler:searchQuery options:self->suggestOptions resolver:resolve rejecter:reject];
+	[self suggestHandler:searchQuery options:self->suggestOptions boundingBox:self->defaultBoundingBox resolver:resolve rejecter:reject];
 })
 
 RCT_EXPORT_METHOD(suggestWithOptions:(nonnull NSString*) searchQuery options:(NSDictionary *) options resolver:(RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock) reject {
 	NSArray *suggestTypes = options[@"suggestTypes"];
-	NSDictionary *userPosition = options[@"userPosition"];
+	NSDictionary *boxDictionary = options[@"boundingBox"];
 	YMKSuggestType suggestType = YMKSuggestTypeGeo;
+	YMKBoundingBox *boundingBox = self->defaultBoundingBox;
 
 	YMKSuggestOptions *opt = [[YMKSuggestOptions alloc] init];
 
@@ -129,29 +160,43 @@ RCT_EXPORT_METHOD(suggestWithOptions:(nonnull NSString*) searchQuery options:(NS
 
 	[opt setSuggestTypes:suggestType];
 
-	if(userPosition != nil) {
-		if(![userPosition isKindOfClass: [NSDictionary class]]){
-			reject(ERR_NO_REQUEST_ARG, [NSString stringWithFormat:@"search request: userPosition is not an Object"], nil);
-			return;
-		}
-		if(userPosition[@"lat"] == nil || userPosition[@"lon"] == nil){
-			reject(ERR_NO_REQUEST_ARG, [NSString stringWithFormat:@"search request: lon and lat cannot be empty"], nil);
-			return;
-		}
-
-		NSNumber *lat =  userPosition[@"lat"];
-		NSNumber *lon =  userPosition[@"lon"];
-
-		if(![lat isKindOfClass: [NSNumber class]] || ![lon isKindOfClass:[NSNumber class]]){
-			reject(ERR_NO_REQUEST_ARG, [NSString stringWithFormat:@"search request: lat or lon is not a Number"], nil);
+	if(options[@"userPosition"] != nil){
+		NSError *pointError;
+		YMKPoint *userPoint = [self mapPoint:options withKey:@"userPosition" error:&pointError];
+		if(!userPoint){
+			reject(ERR_NO_REQUEST_ARG, [pointError localizedDescription], nil);
 			return;
 		}
 
-		YMKPoint	*userPoint = [YMKPoint pointWithLatitude:[lat doubleValue] longitude:[lon doubleValue]];
 		[opt setUserPosition:userPoint];
 	}
 
-    [self suggestHandler:searchQuery options:opt resolver:resolve rejecter:reject];
+	if(boxDictionary != nil){
+		if(![boxDictionary isKindOfClass: [NSDictionary class]]){
+			reject(ERR_NO_REQUEST_ARG, [NSString stringWithFormat:@"search request: boundingBox is not an Object"], nil);
+			return;
+		}
+		if(boxDictionary[@"southWest"] == nil || boxDictionary[@"northEast"] == nil){
+			reject(ERR_NO_REQUEST_ARG, [NSString stringWithFormat:@"search request: southWest and northEast cannot be empty"], nil);
+			return;
+		}
+
+    NSError *boxError;
+		YMKPoint *southWest = [self mapPoint:boxDictionary withKey:@"southWest" error:&boxError];
+		if(!southWest){
+			reject(ERR_NO_REQUEST_ARG, [boxError localizedDescription], nil);
+			return;
+		}
+		YMKPoint *northEast = [self mapPoint:boxDictionary withKey:@"northEast" error:&boxError];
+		if(!northEast){
+			reject(ERR_NO_REQUEST_ARG, [boxError localizedDescription], nil);
+			return;
+		}
+
+		boundingBox = [YMKBoundingBox boundingBoxWithSouthWest:southWest northEast:northEast];
+	}
+
+	[self suggestHandler:searchQuery options:opt boundingBox:boundingBox resolver:resolve rejecter:reject];
 })
 
 RCT_EXPORT_METHOD(reset: (RCTPromiseResolveBlock) resolve rejecter:(RCTPromiseRejectBlock) reject {

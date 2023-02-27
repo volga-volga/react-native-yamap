@@ -45,14 +45,14 @@ public class YandexMapSuggestClient implements MapSuggestClient {
         suggestOptions.setSuggestTypes(SearchType.GEO.value);
     }
 
-    public void suggestHandler(final String text, final SuggestOptions options, final Callback<List<MapSuggestItem>> onSuccess, final Callback<Throwable> onError) {
+    private void suggestHandler(final String text, final SuggestOptions options, final BoundingBox boundingBox, final Callback<List<MapSuggestItem>> onSuccess, final Callback<Throwable> onError) {
         if (suggestSession == null) {
             suggestSession = searchManager.createSuggestSession();
         }
 
         suggestSession.suggest(
                 text,
-                defaultGeometry,
+                boundingBox,
                 options,
                 new SuggestSession.SuggestListener() {
                     @Override
@@ -81,22 +81,47 @@ public class YandexMapSuggestClient implements MapSuggestClient {
         );
     }
 
+    private Point mapPoint(final ReadableMap readableMap, final String pointKey) {
+        final String lonKey = "lon";
+        final String latKey = "lat";
+
+        if (readableMap.getType(pointKey) != ReadableType.Map) {
+            throw new IllegalStateException("suggest error: " + pointKey + " is not an Object");
+        }
+        final ReadableMap pointMap = readableMap.getMap(pointKey);
+
+        if (!pointMap.hasKey(latKey) || !pointMap.hasKey(lonKey)) {
+            throw new IllegalStateException("suggest error: " + pointKey + " does not have lat or lon");
+        }
+
+        if (pointMap.getType(latKey) != ReadableType.Number || pointMap.getType(lonKey) != ReadableType.Number) {
+            throw new IllegalStateException("suggest error: lat or lon is not a Number");
+        }
+
+        final double lat = pointMap.getDouble(latKey);
+        final double lon = pointMap.getDouble(lonKey);
+
+        return new Point(lat, lon);
+    }
+
     @Override
     public void suggest(final String text, final Callback<List<MapSuggestItem>> onSuccess, final Callback<Throwable> onError) {
-        this.suggestHandler(text, this.suggestOptions, onSuccess, onError);
+        this.suggestHandler(text, this.suggestOptions, this.defaultGeometry, onSuccess, onError);
     }
 
     @Override
     public void suggest(final String text, final ReadableMap options, final Callback<List<MapSuggestItem>> onSuccess, final Callback<Throwable> onError) {
-        String userPositionKey = "userPosition";
-        String lonKey = "lon";
-        String latKey = "lat";
-        String suggestWordsKey = "suggestWords";
-        String suggestTypesKey = "suggestTypes";
+        final String userPositionKey = "userPosition";
+        final String suggestWordsKey = "suggestWords";
+        final String suggestTypesKey = "suggestTypes";
+        final String boundingBoxKey = "boundingBox";
+        final String southWestKey = "southWest";
+        final String northEastKey = "northEast";
 
         SuggestOptions options_ = new SuggestOptions();
 
         int suggestType = SuggestType.GEO.value;
+        BoundingBox boundingBox = this.defaultGeometry;
 
         if (options.hasKey(suggestWordsKey) && !options.isNull(suggestWordsKey)) {
             if (options.getType(suggestWordsKey) != ReadableType.Boolean) {
@@ -108,28 +133,36 @@ public class YandexMapSuggestClient implements MapSuggestClient {
             options_.setSuggestWords(suggestWords);
         }
 
+        if (options.hasKey(boundingBoxKey) && !options.isNull(boundingBoxKey)) {
+            if (options.getType(boundingBoxKey) != ReadableType.Map) {
+                onError.invoke(new IllegalStateException("suggest error: " + boundingBoxKey + " is not an Object"));
+                return;
+            }
+            final ReadableMap boundingBoxMap = options.getMap(boundingBoxKey);
+
+            if (!boundingBoxMap.hasKey(southWestKey) || !boundingBoxMap.hasKey(northEastKey)) {
+                onError.invoke(new IllegalStateException("suggest error: " + boundingBoxKey + " does not have southWest or northEast"));
+                return;
+            }
+
+            try {
+                final Point southWest = mapPoint(boundingBoxMap, southWestKey);
+                final Point northEast = mapPoint(boundingBoxMap, northEastKey);
+                boundingBox = new BoundingBox(southWest, northEast);
+            } catch (Exception bbex) {
+                onError.invoke(bbex);
+                return;
+            }
+        }
+
         if (options.hasKey(userPositionKey) && !options.isNull(userPositionKey)) {
-            if (options.getType(userPositionKey) != ReadableType.Map) {
-                onError.invoke(new IllegalStateException("suggest error: " + userPositionKey + " is not an Object"));
+            try {
+                final Point userPosition = mapPoint(options, userPositionKey);
+                options_.setUserPosition(userPosition);
+            } catch (Exception upex) {
+                onError.invoke(upex);
                 return;
             }
-            ReadableMap userPositionMap = options.getMap(userPositionKey);
-
-            if (!userPositionMap.hasKey(latKey) || !userPositionMap.hasKey(lonKey)) {
-                onError.invoke(new IllegalStateException("suggest error: " + userPositionKey + " does not have lat or lon"));
-                return;
-            }
-
-            if (userPositionMap.getType(latKey) != ReadableType.Number || userPositionMap.getType(lonKey) != ReadableType.Number) {
-                onError.invoke(new IllegalStateException("suggest error: lat or lon is not a Number"));
-                return;
-            }
-
-            double lat = userPositionMap.getDouble(latKey);
-            double lon = userPositionMap.getDouble(lonKey);
-            Point userPosition = new Point(lat, lon);
-
-            options_.setUserPosition(userPosition);
         }
 
         if (options.hasKey(suggestTypesKey) && !options.isNull(suggestTypesKey)) {
@@ -150,7 +183,7 @@ public class YandexMapSuggestClient implements MapSuggestClient {
         }
 
         options_.setSuggestTypes(suggestType);
-        this.suggestHandler(text, options_, onSuccess, onError);
+        this.suggestHandler(text, options_, boundingBox, onSuccess, onError);
     }
 
     @Override

@@ -3,6 +3,11 @@ export interface Point {
   lon: number;
 }
 
+export interface BoundingBox {
+  southWest: Point;
+  northEast: Point;
+}
+
 export interface ScreenPoint {
   x: number;
   y: number;
