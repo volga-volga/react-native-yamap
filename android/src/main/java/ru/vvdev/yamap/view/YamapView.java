@@ -308,7 +308,10 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
             ArrayList<RequestPoint> _points = new ArrayList<>();
             for (int i = 0; i < points.size(); ++i) {
                 Point point = points.get(i);
-                RequestPoint _p = new RequestPoint(point, RequestPointType.WAYPOINT, null);
+                RequestPoint _p = new RequestPoint();
+//                RequestPoint _p = new RequestPoint(point, RequestPointType.WAYPOINT);
+
+//                RequestPoint _p = new RequestPoint(point, RequestPointType.WAYPOINT, null);
                 _points.add(_p);
             }
             drivingRouter.requestRoutes(_points, new DrivingOptions(), new VehicleOptions(), listener);
@@ -317,7 +320,9 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         ArrayList<RequestPoint> _points = new ArrayList<>();
         for (int i = 0; i < points.size(); ++i) {
             Point point = points.get(i);
-            _points.add(new RequestPoint(point, RequestPointType.WAYPOINT, null));
+//            _points.add(new RequestPoint(point, RequestPointType.WAYPOINT, null));
+            _points.add(new RequestPoint());
+
         }
         Session.RouteListener listener = new Session.RouteListener() {
             @Override
@@ -416,7 +421,9 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
             getMap().move(new CameraPosition(center, 15, 0, 0));
             return;
         }
-        CameraPosition cameraPosition = getMap().cameraPosition(calculateBoundingBox(points));
+//        CameraPosition cameraPosition = getMap().cameraPosition(calculateBoundingBox(points));
+//        CameraPosition cameraPosition = getMap().cameraPosition(calculateBoundingBox(points));
+        CameraPosition cameraPosition = getMapWindow().getMap().getCameraPosition();
         cameraPosition = new CameraPosition(cameraPosition.getTarget(), cameraPosition.getZoom() - 0.8f, cameraPosition.getAzimuth(), cameraPosition.getTilt());
         getMap().move(cameraPosition, new Animation(Animation.Type.SMOOTH, 0.7f), null);
     }
@@ -543,7 +550,8 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
 
     public void setMaxFps(float fps) {
         maxFps = fps;
-        getMapWindow().setMaxFps(maxFps);
+//        getMapWindow().setMaxFps(maxFps);
+//        getMapWindow().se
     }
 
     public void setInteractive(boolean interactive) {
@@ -777,7 +785,8 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
             _child.setMapObject(obj);
         } else if (child instanceof YamapCircle) {
             YamapCircle _child = (YamapCircle) child;
-            CircleMapObject obj = getMap().getMapObjects().addCircle(_child.circle, 0, 0.f, 0);
+//            CircleMapObject obj = getMap().getMapObjects().addCircle(_child.circle, 0, 0.f, 0);
+            CircleMapObject obj = getMapWindow().getMap().getMapObjects().addCircle(_child.circle);
             _child.setMapObject(obj);
         }
     }
