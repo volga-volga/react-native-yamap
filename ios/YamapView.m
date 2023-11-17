@@ -211,12 +211,10 @@ RCT_EXPORT_METHOD(findRoutes:(nonnull NSNumber *)reactTag json:(NSDictionary *)j
         NSArray<YMKPoint *> *points = [RCTConvert Points:json[@"points"]];
         NSMutableArray<YMKRequestPoint *> *requestPoints = [[NSMutableArray alloc] init];
 
-        for (int i = 0; i < [points count]; ++i) {
+//        for (int i = 0; i < [points count]; ++i) {
 //            YMKRequestPoint *requestPoint = [YMKRequestPoint requestPointWithPoint:[points objectAtIndex:i] type:YMKRequestPointTypeWaypoint pointContext:nil];
-            YMKRequestPoint *requestPoint = [YMKRequestPoint requestPointWithPoint:[points objectAtIndex:i] type:YMKRequestPointTypeWaypoint pointContext:nil drivingArrivalPointId:nil];
-
-            [requestPoints addObject:requestPoint];
-        }
+//            [requestPoints addObject:requestPoint];
+//        }
 
         NSArray<NSString *> *vehicles = [RCTConvert Vehicles:json[@"vehicles"]];
         [view findRoutes: requestPoints vehicles: vehicles withId:json[@"id"]];
