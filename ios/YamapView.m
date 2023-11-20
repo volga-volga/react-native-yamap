@@ -216,8 +216,8 @@ RCT_EXPORT_METHOD(findRoutes:(nonnull NSNumber *)reactTag json:(NSDictionary *)j
 //            [requestPoints addObject:requestPoint];
 //        }
 
-        NSArray<NSString *> *vehicles = [RCTConvert Vehicles:json[@"vehicles"]];
-        [view findRoutes: requestPoints vehicles: vehicles withId:json[@"id"]];
+//        NSArray<NSString *> *vehicles = [RCTConvert Vehicles:json[@"vehicles"]];
+//        [view findRoutes: requestPoints vehicles: vehicles withId:json[@"id"]];
     }];
 }
 
