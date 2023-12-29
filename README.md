@@ -189,6 +189,8 @@ interface CameraPosition {
   tilt: number;
   azimuth: number;
   point: Point;
+  reason: 'GESTURES' | 'APPLICATION';
+  finished: boolean;
 }
 
 type VisibleRegion = {
