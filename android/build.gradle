@@ -30,5 +30,5 @@ repositories {
 dependencies {
     implementation 'com.google.android.gms:play-services-location:+'
     implementation 'com.facebook.react:react-native:+'
-    implementation 'com.yandex.android:maps.mobile:+'
+   implementation 'com.yandex.android:maps.mobile:4.5.1-full'
 }
