@@ -5,7 +5,9 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewParent;
 
 import androidx.annotation.NonNull;
 
@@ -98,6 +100,8 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         put("trolleybus", "#55CfDC");
         put("walk", "#333333");
     }};
+
+    private ViewParent mViewParent;
     private String userLocationIcon = "";
     private Boolean userClusters = false;
     private int clusterColor = 0;
@@ -134,6 +138,32 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         } else {
             getMap().move(position);
         }
+    }
+    public void setViewParent(@Nullable final ViewParent viewParent) { //any ViewGroup
+        mViewParent = viewParent;
+    }
+    @Override
+    public boolean onInterceptTouchEvent(final MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                if (null == mViewParent) {
+                    getParent().requestDisallowInterceptTouchEvent(true);
+                } else {
+                    mViewParent.requestDisallowInterceptTouchEvent(true);
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                if (null == mViewParent) {
+                    getParent().requestDisallowInterceptTouchEvent(false);
+                } else {
+                    mViewParent.requestDisallowInterceptTouchEvent(false);
+                }
+                break;
+            default:
+                break;
+        }
+
+        return super.onInterceptTouchEvent(event);
     }
 
     private WritableMap positionToJSON(CameraPosition position, CameraUpdateReason reason, boolean finished) {
