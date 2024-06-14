@@ -16,6 +16,7 @@ import com.yandex.mapkit.search.SearchManagerType;
 import com.yandex.mapkit.search.SearchType;
 import com.yandex.mapkit.search.SuggestItem;
 import com.yandex.mapkit.search.SuggestOptions;
+import com.yandex.mapkit.search.SuggestResponse;
 import com.yandex.mapkit.search.SuggestSession;
 import com.yandex.mapkit.search.SuggestType;
 import com.yandex.runtime.Error;
@@ -55,11 +56,12 @@ public class YandexMapSuggestClient implements MapSuggestClient {
                 boundingBox,
                 options,
                 new SuggestSession.SuggestListener() {
+
                     @Override
-                    public void onResponse(@NonNull List<SuggestItem> list) {
-                        List<MapSuggestItem> result = new ArrayList<>(list.size());
-                        for (int i = 0; i < list.size(); i++) {
-                            SuggestItem rawSuggest = list.get(i);
+                    public void onResponse(@NonNull SuggestResponse suggestResponse) {
+                        List<MapSuggestItem> result = new ArrayList<>(suggestResponse.getItems().size());
+                        for (int i = 0; i < suggestResponse.getItems().size(); i++) {
+                            SuggestItem rawSuggest = suggestResponse.getItems().get(i);
                             MapSuggestItem suggest = new MapSuggestItem();
                             suggest.setSearchText(rawSuggest.getSearchText());
                             suggest.setTitle(rawSuggest.getTitle().getText());

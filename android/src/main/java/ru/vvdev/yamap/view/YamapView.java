@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.view.View;
+import android.view.ViewParent;
 
 import androidx.annotation.NonNull;
 
@@ -28,6 +29,7 @@ import com.yandex.mapkit.directions.driving.DrivingRouter;
 import com.yandex.mapkit.directions.driving.DrivingSection;
 import com.yandex.mapkit.directions.driving.DrivingSession;
 import com.yandex.mapkit.directions.driving.VehicleOptions;
+import com.yandex.mapkit.directions.driving.DrivingRouterType;
 import com.yandex.mapkit.geometry.BoundingBox;
 import com.yandex.mapkit.geometry.Point;
 import com.yandex.mapkit.geometry.Polyline;
@@ -99,6 +101,8 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         put("trolleybus", "#55CfDC");
         put("walk", "#333333");
     }};
+
+    private ViewParent mViewParent;
     private String userLocationIcon = "";
     private float userLocationIconScale = 1.f;
     private Bitmap userLocationBitmap = null;
@@ -157,6 +161,32 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
         } else {
             getMap().move(position);
         }
+    }
+    public void setViewParent(@Nullable final ViewParent viewParent) { //any ViewGroup
+        mViewParent = viewParent;
+    }
+    @Override
+    public boolean onInterceptTouchEvent(final MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                if (null == mViewParent) {
+                    getParent().requestDisallowInterceptTouchEvent(true);
+                } else {
+                    mViewParent.requestDisallowInterceptTouchEvent(true);
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                if (null == mViewParent) {
+                    getParent().requestDisallowInterceptTouchEvent(false);
+                } else {
+                    mViewParent.requestDisallowInterceptTouchEvent(false);
+                }
+                break;
+            default:
+                break;
+        }
+
+        return super.onInterceptTouchEvent(event);
     }
 
     private WritableMap positionToJSON(CameraPosition position, CameraUpdateReason reason, boolean finished) {
@@ -308,16 +338,17 @@ public class YamapView extends MapView implements UserLocationObjectListener, Ca
             ArrayList<RequestPoint> _points = new ArrayList<>();
             for (int i = 0; i < points.size(); ++i) {
                 Point point = points.get(i);
-                RequestPoint _p = new RequestPoint(point, RequestPointType.WAYPOINT, null);
+                RequestPoint _p = new RequestPoint(point, RequestPointType.WAYPOINT, null, null);
                 _points.add(_p);
             }
-            drivingRouter.requestRoutes(_points, new DrivingOptions(), new VehicleOptions(), listener);
+
+            drivingRouter.requestRoutes(_points, new DrivingOptions().setRoutesCount(1), new VehicleOptions(), listener);
             return;
         }
         ArrayList<RequestPoint> _points = new ArrayList<>();
         for (int i = 0; i < points.size(); ++i) {
             Point point = points.get(i);
-            _points.add(new RequestPoint(point, RequestPointType.WAYPOINT, null));
+            _points.add(new RequestPoint(point, RequestPointType.WAYPOINT, null, null));
         }
         Session.RouteListener listener = new Session.RouteListener() {
             @Override

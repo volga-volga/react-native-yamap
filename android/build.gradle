@@ -9,14 +9,14 @@ buildscript {
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion "30.0.3"
+    compileSdkVersion 32
+    buildToolsVersion "33.0.2"
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 32
         versionCode 1
-        versionName "1.0"
+        versionName "1.1"
     }
     lintOptions {
         abortOnError false
@@ -28,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-location:20.0.0'
+    implementation 'com.google.android.gms:play-services-location:+'
     implementation 'com.facebook.react:react-native:+'
-    implementation 'com.yandex.android:maps.mobile:4.2.2-full'
+   implementation 'com.yandex.android:maps.mobile:4.5.1-full'
 }
