@@ -2,6 +2,7 @@
 #import <React/UIView+React.h>
 
 #import <MapKit/MapKit.h>
+#import "../Converter/RCTConvert+Yamap.m"
 @import YandexMapsMobile;
 
 #ifndef MAX
@@ -191,6 +192,24 @@
     }
     [self fitMarkers:lastKnownMarkers];
     return YES;
+}
+
+- (void)setInitialRegion:(NSDictionary *)initialParams {
+    if ([initialParams valueForKey:@"lat"] == nil || [initialParams valueForKey:@"lon"] == nil) return;
+
+    float initialZoom = 10.f;
+    float initialAzimuth = 0.f;
+    float initialTilt = 0.f;
+
+    if ([initialParams valueForKey:@"zoom"] != nil) initialZoom = [initialParams[@"zoom"] floatValue];
+
+    if ([initialParams valueForKey:@"azimuth"] != nil) initialTilt = [initialParams[@"azimuth"] floatValue];
+
+    if ([initialParams valueForKey:@"tilt"] != nil) initialTilt = [initialParams[@"tilt"] floatValue];
+
+    YMKPoint *initialRegionCenter = [RCTConvert YMKPoint:@{@"lat" : [initialParams valueForKey:@"lat"], @"lon" : [initialParams valueForKey:@"lon"]}];
+    YMKCameraPosition *initialRegioPosition = [YMKCameraPosition cameraPositionWithTarget:initialRegionCenter zoom:initialZoom azimuth:initialAzimuth tilt:initialTilt];
+    [self.mapWindow.map moveWithCameraPosition:initialRegioPosition];
 }
 
 

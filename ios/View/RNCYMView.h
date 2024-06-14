@@ -12,6 +12,7 @@
 
 - (void)setClusterColor:(UIColor*_Nullable)color;
 - (void)setClusteredMarkers:(NSArray<YMKRequestPoint*>*_Nonnull)points;
+- (void)setInitialRegion:(NSDictionary *_Nullable)initialRegion;
 
 @end
 
