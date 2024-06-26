@@ -15,6 +15,4 @@ Pod::Spec.new do |s|
 
     s.dependency "React"
     s.dependency "YandexMapsMobile", "4.6.1-full"
-    s.dependency "YMKStylingAutomotiveNavigation", "4.6.1"
-    s.dependency "YMKStylingRoadEvents", "4.6.1"
 end
