@@ -91,7 +91,6 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
     private var userLocationAccuracyStrokeWidth = 0f
     private var trafficLayer: TrafficLayer? = null
     private var maxFps = 60f
-    private var mapObjects: MapObjectCollection? = null
 
     fun setImage(iconSource: String, mapObject: PlacemarkMapObject?, iconStyle: IconStyle?) {
         if (icons[iconSource] == null) {
@@ -125,18 +124,18 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
 
     init {
         drivingRouter = DirectionsFactory.getInstance().createDrivingRouter(DrivingRouterType.ONLINE)
-        map.addCameraListener(this)
-        map.addInputListener(this)
-        map.setMapLoadedListener(this)
+        mapWindow.map.addCameraListener(this)
+        mapWindow.map.addInputListener(this)
+        mapWindow.map.setMapLoadedListener(this)
     }
 
     // REF
     fun setCenter(position: CameraPosition?, duration: Float, animation: Int) {
         if (duration > 0) {
             val anim = if (animation == 0) Animation.Type.SMOOTH else Animation.Type.LINEAR
-            map.move(position!!, Animation(anim, duration), null)
+            mapWindow.map.move(position!!, Animation(anim, duration), null)
         } else {
-            map.move(position!!)
+            mapWindow.map.move(position!!)
         }
     }
 
@@ -228,7 +227,7 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
     }
 
     fun emitCameraPositionToJS(id: String?) {
-        val position = map.cameraPosition
+        val position = mapWindow.map.cameraPosition
         val cameraPosition =
             positionToJSON(position, CameraUpdateReason.valueOf("APPLICATION"), true)
         cameraPosition.putString("id", id)
@@ -238,7 +237,7 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
     }
 
     fun emitVisibleRegionToJS(id: String?) {
-        val visibleRegion = map.visibleRegion
+        val visibleRegion = mapWindow.map.visibleRegion
         val result = visibleRegionToJSON(visibleRegion)
         result.putString("id", id)
         val reactContext = context as ReactContext
@@ -285,7 +284,7 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
     }
 
     fun setZoom(zoom: Float?, duration: Float, animation: Int) {
-        val prevPosition = map.cameraPosition
+        val prevPosition = mapWindow.map.cameraPosition
         val position =
             CameraPosition(prevPosition.target, zoom!!, prevPosition.azimuth, prevPosition.tilt)
         setCenter(position, duration, animation)
@@ -434,17 +433,17 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
             val center = Point(
                 points[0]!!.latitude, points[0]!!.longitude
             )
-            map.move(CameraPosition(center, 15f, 0f, 0f))
+            mapWindow.map.move(CameraPosition(center, 15f, 0f, 0f))
             return
         }
-        var cameraPosition = map.cameraPosition(Geometry.fromBoundingBox(calculateBoundingBox(points)))
+        var cameraPosition = mapWindow.map.cameraPosition(Geometry.fromBoundingBox(calculateBoundingBox(points)))
         cameraPosition = CameraPosition(
             cameraPosition.target,
             cameraPosition.zoom - 0.8f,
             cameraPosition.azimuth,
             cameraPosition.tilt
         )
-        map.move(cameraPosition, Animation(Animation.Type.SMOOTH, 0.7f), null)
+        mapWindow.map.move(cameraPosition, Animation(Animation.Type.SMOOTH, 0.7f), null)
     }
 
     // PROPS
@@ -483,16 +482,16 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
 
     fun setMapStyle(style: String?) {
         if (style != null) {
-            map.setMapStyle(style)
+            mapWindow.map.setMapStyle(style)
         }
     }
 
     fun setMapType(type: String?) {
         if (type != null) {
             when (type) {
-                "none" -> map.mapType = MapType.NONE
-                "raster" -> map.mapType = MapType.MAP
-                else -> map.mapType = MapType.VECTOR_MAP
+                "none" -> mapWindow.map.mapType = MapType.NONE
+                "raster" -> mapWindow.map.mapType = MapType.MAP
+                else -> mapWindow.map.mapType = MapType.VECTOR_MAP
             }
         }
     }
@@ -547,7 +546,7 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
             }
         }
 
-        map.logo.setAlignment(Alignment(horizontalAlignment, verticalAlignment))
+        mapWindow.map.logo.setAlignment(Alignment(horizontalAlignment, verticalAlignment))
     }
 
     fun setLogoPadding(params: ReadableMap?) {
@@ -555,7 +554,7 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
             if ((params!!.hasKey("horizontal") && !params.isNull("horizontal"))) params.getInt("horizontal") else 0
         val verticalPadding =
             if ((params.hasKey("vertical") && !params.isNull("vertical"))) params.getInt("vertical") else 0
-        map.logo.setPadding(Padding(horizontalPadding, verticalPadding))
+        mapWindow.map.logo.setPadding(Padding(horizontalPadding, verticalPadding))
     }
 
     fun setMaxFps(fps: Float) {
@@ -568,27 +567,27 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
     }
 
     fun setNightMode(nightMode: Boolean?) {
-        map.isNightModeEnabled = nightMode!!
+        mapWindow.map.isNightModeEnabled = nightMode!!
     }
 
     fun setScrollGesturesEnabled(scrollGesturesEnabled: Boolean?) {
-        map.isScrollGesturesEnabled = scrollGesturesEnabled!!
+        mapWindow.map.isScrollGesturesEnabled = scrollGesturesEnabled!!
     }
 
     fun setZoomGesturesEnabled(zoomGesturesEnabled: Boolean?) {
-        map.isZoomGesturesEnabled = zoomGesturesEnabled!!
+        mapWindow.map.isZoomGesturesEnabled = zoomGesturesEnabled!!
     }
 
     fun setRotateGesturesEnabled(rotateGesturesEnabled: Boolean?) {
-        map.isRotateGesturesEnabled = rotateGesturesEnabled!!
+        mapWindow.map.isRotateGesturesEnabled = rotateGesturesEnabled!!
     }
 
     fun setFastTapEnabled(fastTapEnabled: Boolean?) {
-        map.isFastTapEnabled = fastTapEnabled!!
+        mapWindow.map.isFastTapEnabled = fastTapEnabled!!
     }
 
     fun setTiltGesturesEnabled(tiltGesturesEnabled: Boolean?) {
-        map.isTiltGesturesEnabled = tiltGesturesEnabled!!
+        mapWindow.map.isTiltGesturesEnabled = tiltGesturesEnabled!!
     }
 
     fun setTrafficVisible(isVisible: Boolean) {
@@ -795,19 +794,19 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
     open fun addFeature(child: View?, index: Int) {
         if (child is YamapPolygon) {
             val _child = child
-            val obj = map.mapObjects.addPolygon(_child.polygon)
+            val obj = mapWindow.map.mapObjects.addPolygon(_child.polygon)
             _child.setPolygonMapObject(obj)
         } else if (child is YamapPolyline) {
             val _child = child
-            val obj = map.mapObjects.addPolyline(_child.polyline)
+            val obj = mapWindow.map.mapObjects.addPolyline(_child.polyline)
             _child.setPolylineMapObject(obj)
         } else if (child is YamapMarker) {
             val _child = child
-            val obj = map.mapObjects.addPlacemark(_child.point!!)
+            val obj = mapWindow.map.mapObjects.addPlacemark(_child.point!!)
             _child.setMarkerMapObject(obj)
         } else if (child is YamapCircle) {
             val _child = child
-            val obj = map.mapObjects.addCircle(_child.circle)
+            val obj = mapWindow.map.mapObjects.addCircle(_child.circle)
             _child.setCircleMapObject(obj)
         }
     }
@@ -818,7 +817,7 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
             val mapObject = child.rnMapObject
             if (mapObject == null || !mapObject.isValid) return
 
-            map.mapObjects.remove(mapObject)
+            mapWindow.map.mapObjects.remove(mapObject)
         }
     }
 

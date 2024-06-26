@@ -29,7 +29,7 @@ void runOnMainQueueWithoutDeadlocking(void (^block)(void)) {
     if ([NSThread isMainThread]) {
         block();
     } else {
-        dispatch_sync(dispatch_get_main_queue(), block);
+        dispatch_async(dispatch_get_main_queue(), block);
     }
 }
 
@@ -68,19 +68,19 @@ NSString* YandexSuggestErrorDomain = @"YandexSuggestErrorDomain";
                                reject(ERR_SUGGEST_FAILED, [NSString stringWithFormat:@"search request: %@", searchQuery], error);
                                return;
                            }
-//           
+//
                            NSMutableArray *suggestsToPass = [NSMutableArray new];
-//           
+//
                            for (YMKSuggestItem* suggestItem in [suggest items]) {
                                NSMutableDictionary *suggestToPass = [NSMutableDictionary new];
-           
+
                                [suggestToPass setValue:[[suggestItem title] text] forKey:@"title"];
                                [suggestToPass setValue:[[suggestItem subtitle] text] forKey:@"subtitle"];
                                [suggestToPass setValue:[suggestItem uri] forKey:@"uri"];
-           
+
                                [suggestsToPass addObject:suggestToPass];
                            }
-           
+
                            resolve(suggestsToPass);
                        }
 			];

@@ -18,7 +18,7 @@ import kotlin.math.sqrt
 
 class ClusteredYamapView(context: Context?) : YamapView(context), ClusterListener,
     ClusterTapListener {
-    private val clusterCollection = map.mapObjects.addClusterizedPlacemarkCollection(this)
+    private val clusterCollection = mapWindow.map.mapObjects.addClusterizedPlacemarkCollection(this)
     private var clusterColor = 0
     private val placemarksMap: HashMap<String?, PlacemarkMapObject?> = HashMap<String?, PlacemarkMapObject?>()
     private var pointsList = ArrayList<Point>()
