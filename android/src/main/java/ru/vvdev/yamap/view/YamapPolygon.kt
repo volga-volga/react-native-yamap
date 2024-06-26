@@ -39,6 +39,12 @@ class YamapPolygon(context: Context?) : ViewGroup(context), MapObjectTapListener
         updatePolygon()
     }
 
+    fun setPolygonInnerRings(_innerRings: ArrayList<ArrayList<Point>>?) {
+        innerRings = _innerRings ?: ArrayList()
+        updatePolygonGeometry()
+        updatePolygon()
+    }
+
 //    fun setInnerRings(_innerRings: ArrayList<ArrayList<Point>>?) {
 //        innerRings = _innerRings ?: ArrayList()
 //        updatePolygonGeometry()
@@ -83,6 +89,12 @@ class YamapPolygon(context: Context?) : ViewGroup(context), MapObjectTapListener
             (rnMapObject as PolygonMapObject).fillColor = fillColor
             (rnMapObject as PolygonMapObject).zIndex = zIndex.toFloat()
         }
+    }
+
+    fun setPolygonMapObject(obj: MapObject?) {
+        rnMapObject = obj as PolygonMapObject?
+        rnMapObject!!.addTapListener(this)
+        updatePolygon()
     }
 
 //    fun setRnMapObject(obj: MapObject?) {

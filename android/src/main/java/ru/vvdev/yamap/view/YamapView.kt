@@ -41,11 +41,11 @@ import com.yandex.mapkit.logo.VerticalAlignment
 import com.yandex.mapkit.map.CameraListener
 import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.map.CameraUpdateReason
-import com.yandex.mapkit.map.ClusterizedPlacemarkCollection
 import com.yandex.mapkit.map.IconStyle
 import com.yandex.mapkit.map.InputListener
 import com.yandex.mapkit.map.MapLoadStatistics
 import com.yandex.mapkit.map.MapLoadedListener
+import com.yandex.mapkit.map.MapObjectCollection
 import com.yandex.mapkit.map.MapType
 import com.yandex.mapkit.map.PlacemarkMapObject
 import com.yandex.mapkit.map.VisibleRegion
@@ -74,6 +74,7 @@ import ru.vvdev.yamap.utils.RouteManager
 import java.util.Objects
 import javax.annotation.Nonnull
 
+
 open class YamapView(context: Context?) : MapView(context), UserLocationObjectListener,
     CameraListener, InputListener, TrafficListener, MapLoadedListener {
     private var mViewParent: ViewParent? = null
@@ -83,7 +84,6 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
     private val routeMng = RouteManager()
     private val masstransitRouter = TransportFactory.getInstance().createMasstransitRouter()
     private val drivingRouter: DrivingRouter
-    private val clusterCollection: ClusterizedPlacemarkCollection? = null
     private val pedestrianRouter = TransportFactory.getInstance().createPedestrianRouter()
     private var userLocationLayer: UserLocationLayer? = null
     private var userLocationAccuracyFillColor = 0
@@ -91,6 +91,8 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
     private var userLocationAccuracyStrokeWidth = 0f
     private var trafficLayer: TrafficLayer? = null
     private var maxFps = 60f
+    private var mapObjects: MapObjectCollection? = null
+
     fun setImage(iconSource: String, mapObject: PlacemarkMapObject?, iconStyle: IconStyle?) {
         if (icons[iconSource] == null) {
             DownloadImageBitmap(context, iconSource, object : Callback<Bitmap?> {
@@ -122,7 +124,6 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
     private var userLocationView: UserLocationView? = null
 
     init {
-        DirectionsFactory.initialize(context)
         drivingRouter = DirectionsFactory.getInstance().createDrivingRouter(DrivingRouterType.ONLINE)
         map.addCameraListener(this)
         map.addInputListener(this)
@@ -366,11 +367,11 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
             }
         }
         if (vehicles.size == 0) {
-            pedestrianRouter.requestRoutes(_points, TimeOptions(), listener)
+            pedestrianRouter.requestRoutes(_points, TimeOptions(), true, listener)
             return
         }
         val transitOptions = TransitOptions(FilterVehicleTypes.NONE.value, TimeOptions())
-        masstransitRouter.requestRoutes(_points, transitOptions, listener)
+        masstransitRouter.requestRoutes(_points, transitOptions, true, listener)
     }
 
     fun fitAllMarkers() {
@@ -736,7 +737,6 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
         val routeMetadata = Arguments.createMap()
         val routeWeightData = Arguments.createMap()
         val sectionWeightData = Arguments.createMap()
-        val transports: Map<String, ArrayList<String>> = HashMap()
         routeWeightData.putString("time", routeWeight.time.text)
         routeWeightData.putString("timeWithTraffic", routeWeight.timeWithTraffic.text)
         routeWeightData.putDouble("distance", routeWeight.distance.value)
@@ -796,19 +796,19 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
         if (child is YamapPolygon) {
             val _child = child
             val obj = map.mapObjects.addPolygon(_child.polygon)
-            _child.rnMapObject = obj
+            _child.setPolygonMapObject(obj)
         } else if (child is YamapPolyline) {
             val _child = child
             val obj = map.mapObjects.addPolyline(_child.polyline)
-            _child.rnMapObject = obj
+            _child.setPolylineMapObject(obj)
         } else if (child is YamapMarker) {
             val _child = child
             val obj = map.mapObjects.addPlacemark(_child.point!!)
-            _child.rnMapObject = obj
+            _child.setMarkerMapObject(obj)
         } else if (child is YamapCircle) {
             val _child = child
             val obj = map.mapObjects.addCircle(_child.circle)
-            _child.rnMapObject = obj
+            _child.setCircleMapObject(obj)
         }
     }
 

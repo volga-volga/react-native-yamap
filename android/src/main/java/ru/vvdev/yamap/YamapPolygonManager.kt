@@ -74,7 +74,7 @@ class YamapPolygonManager internal constructor() : ViewGroupManager<YamapPolygon
                 }
             }
         }
-        castToPolygonView(view).innerRings = rings
+        castToPolygonView(view).setPolygonInnerRings(rings)
     }
 
     @ReactProp(name = "strokeWidth")

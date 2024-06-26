@@ -113,6 +113,12 @@ class YamapMarker(context: Context?) : ReactViewGroup(context), MapObjectTapList
         }
     }
 
+    fun setMarkerMapObject(obj: MapObject?) {
+        rnMapObject = obj as PlacemarkMapObject?
+        rnMapObject!!.addTapListener(this)
+        updateMarker()
+    }
+
 //    fun setRnMapObject(obj: MapObject?) {
 //        rnMapObject = obj as PlacemarkMapObject?
 //        rnMapObject!!.addTapListener(this)

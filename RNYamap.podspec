@@ -14,5 +14,7 @@ Pod::Spec.new do |s|
     # s.requires_arc = true
 
     s.dependency "React"
-    s.dependency "YandexMapsMobile", "4.2.2-full"
+    s.dependency "YandexMapsMobile", "4.6.1-full"
+    s.dependency "YMKStylingAutomotiveNavigation", "4.6.1"
+    s.dependency "YMKStylingRoadEvents", "4.6.1"
 end

@@ -10,12 +10,11 @@ apply plugin: 'com.android.library'
 apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
-    compileSdkVersion 32
-    buildToolsVersion "33.0.2"
 
     defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 32
+        compileSdkVersion 34
+        minSdkVersion 23
+        targetSdkVersion 34
         versionCode 1
         versionName "1.1"
     }
@@ -34,6 +33,6 @@ repositories {
 dependencies {
     implementation 'com.google.android.gms:play-services-location:+'
     implementation 'com.facebook.react:react-native:+'
-   implementation 'com.yandex.android:maps.mobile:4.5.1-full'
+    implementation 'com.yandex.android:maps.mobile:4.6.1-full'
     implementation 'androidx.core:core-ktx:1.13.1'
 }

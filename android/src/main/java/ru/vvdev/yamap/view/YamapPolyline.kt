@@ -95,6 +95,11 @@ class YamapPolyline(context: Context?) : ViewGroup(context), MapObjectTapListene
         }
     }
 
+    fun setPolylineMapObject(obj: MapObject?) {
+        rnMapObject = obj as PolylineMapObject?
+        rnMapObject!!.addTapListener(this)
+        updatePolyline()
+    }
 //    fun setRnMapObject(obj: MapObject?) {
 //        rnMapObject = obj as PolylineMapObject?
 //        rnMapObject!!.addTapListener(this)

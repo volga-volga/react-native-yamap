@@ -24,6 +24,7 @@ class YamapCircle(context: Context?) : ViewGroup(context), MapObjectTapListener,
     private var strokeWidth = 1f
     private var center = Point(0.0, 0.0)
     private var radius = 0f
+    private var geodesic = false
 
     init {
         circle = Circle(center, radius)
@@ -77,6 +78,12 @@ class YamapCircle(context: Context?) : ViewGroup(context), MapObjectTapListener,
             (rnMapObject as CircleMapObject).fillColor = fillColor
             (rnMapObject as CircleMapObject).zIndex = zIndex.toFloat()
         }
+    }
+
+    fun setCircleMapObject(obj: MapObject?) {
+        rnMapObject = obj as CircleMapObject?
+        rnMapObject!!.addTapListener(this)
+        updateCircle()
     }
 
 //    fun setRnMapObject(obj: MapObject?) {

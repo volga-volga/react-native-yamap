@@ -8,7 +8,6 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.yandex.mapkit.MapKitFactory;
-import com.yandex.mapkit.transport.TransportFactory;
 import com.yandex.runtime.i18n.I18nManagerFactory;
 
 import java.util.HashMap;
@@ -59,7 +58,6 @@ public class RNYamapModule extends ReactContextBaseJavaModule {
                     }
 
                     MapKitFactory.initialize(reactContext);
-                    TransportFactory.initialize(reactContext);
                     MapKitFactory.getInstance().onStart();
                     promise.resolve(null);
                 } catch (Exception exception) {

@@ -15,7 +15,7 @@
     YMKPoint* southWestPoint = [YMKPoint pointWithLatitude:-90.0 longitude:-180.0];
     YMKPoint* northEastPoint = [YMKPoint pointWithLatitude:90.0 longitude:180.0];
     defaultBoundingBox = [YMKBoundingBox boundingBoxWithSouthWest:southWestPoint northEast:northEastPoint];
-    suggestOptions = [YMKSuggestOptions suggestOptionsWithSuggestTypes: YMKSuggestTypeGeo userPosition:nil suggestWords:true];
+    suggestOptions = [YMKSuggestOptions suggestOptionsWithSuggestTypes: YMKSuggestTypeUnspecified userPosition:nil suggestWords:false];
 
     return self;
 }
@@ -44,7 +44,7 @@ NSString* YandexSuggestErrorDomain = @"YandexSuggestErrorDomain";
 
     if (!searchManager) {
         runOnMainQueueWithoutDeadlocking(^{
-            self->searchManager = [[YMKSearch sharedInstance] createSearchManagerWithSearchManagerType:YMKSearchSearchManagerTypeOnline];
+            self->searchManager = [[YMKSearchFactory instance] createSearchManagerWithSearchManagerType:YMKSearchManagerTypeOnline];
         });
     }
 
@@ -59,30 +59,31 @@ NSString* YandexSuggestErrorDomain = @"YandexSuggestErrorDomain";
 	@try {
 		YMKSearchSuggestSession* session = [self getSuggestClient];
 
-		dispatch_async(dispatch_get_main_queue(), ^{
+        runOnMainQueueWithoutDeadlocking(^{
 			[session suggestWithText:searchQuery
 												window:boundingBox
 								suggestOptions:options
-							 responseHandler:^(NSArray<YMKSuggestItem *> * _Nullable suggestList, NSError * _Nullable error) {
-				if (error) {
-					reject(ERR_SUGGEST_FAILED, [NSString stringWithFormat:@"search request: %@", searchQuery], error);
-					return;
-				}
-
-				NSMutableArray *suggestsToPass = [NSMutableArray new];
-
-				for (YMKSuggestItem* suggest in suggestList) {
-					NSMutableDictionary *suggestToPass = [NSMutableDictionary new];
-
-					[suggestToPass setValue:[[suggest title] text] forKey:@"title"];
-					[suggestToPass setValue:[[suggest subtitle] text] forKey:@"subtitle"];
-					[suggestToPass setValue:[suggest uri] forKey:@"uri"];
-
-					[suggestsToPass addObject:suggestToPass];
-				}
-
-				resolve(suggestsToPass);
-			}];
+                     responseHandler:^(YMKSuggestResponse * _Nullable suggest, NSError * _Nullable error) {
+                           if (error) {
+                               reject(ERR_SUGGEST_FAILED, [NSString stringWithFormat:@"search request: %@", searchQuery], error);
+                               return;
+                           }
+//           
+                           NSMutableArray *suggestsToPass = [NSMutableArray new];
+//           
+                           for (YMKSuggestItem* suggestItem in [suggest items]) {
+                               NSMutableDictionary *suggestToPass = [NSMutableDictionary new];
+           
+                               [suggestToPass setValue:[[suggestItem title] text] forKey:@"title"];
+                               [suggestToPass setValue:[[suggestItem subtitle] text] forKey:@"subtitle"];
+                               [suggestToPass setValue:[suggestItem uri] forKey:@"uri"];
+           
+                               [suggestsToPass addObject:suggestToPass];
+                           }
+           
+                           resolve(suggestsToPass);
+                       }
+			];
 		});
 	}
 	@catch ( NSException *error ) {

@@ -32,7 +32,6 @@ class YandexMapSuggestClient(context: Context?) : MapSuggestClient {
     private val defaultGeometry = BoundingBox(Point(-90.0, -180.0), Point(90.0, 180.0))
 
     init {
-        SearchFactory.initialize(context)
         searchManager = SearchFactory.getInstance().createSearchManager(SearchManagerType.COMBINED)
         suggestOptions.setSuggestTypes(SearchType.GEO.value)
     }

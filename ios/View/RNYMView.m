@@ -58,9 +58,9 @@
 #endif
 
     _reactSubviews = [[NSMutableArray alloc] init];
-    masstransitRouter = [[YMKTransport sharedInstance] createMasstransitRouter];
-    drivingRouter = [[YMKDirections sharedInstance] createDrivingRouter];
-    pedestrianRouter = [[YMKTransport sharedInstance] createPedestrianRouter];
+    masstransitRouter = [[YMKTransportFactory instance] createMasstransitRouter];
+    drivingRouter = [[YMKDirectionsFactory instance] createDrivingRouterWithType:YMKDrivingRouterTypeOnline];
+    pedestrianRouter = [[YMKTransportFactory instance] createPedestrianRouter];
     transitOptions = [YMKTransitOptions transitOptionsWithAvoid:YMKFilterVehicleTypesNone timeOptions:[[YMKTimeOptions alloc] init]];    acceptVehicleTypes = [[NSMutableArray<NSString *> alloc] init];
     routes = [[NSMutableArray alloc] init];
     currentRouteInfo = [[NSMutableArray alloc] init];
@@ -118,7 +118,8 @@
 
     [routeMetadata setObject:wTransports forKey:@"transports"];
     NSMutableArray* points = [[NSMutableArray alloc] init];
-    YMKPolyline* subpolyline = YMKMakeSubpolyline(route.geometry, section.geometry);
+    YMKPolyline* subpolyline = [YMKSubpolylineHelper subpolylineWithPolyline:route.geometry subpolyline:section.geometry];
+
 
     for (int i = 0; i < [subpolyline.points count]; ++i) {
         YMKPoint* point = [subpolyline.points objectAtIndex:i];
@@ -203,7 +204,7 @@
 
     [routeMetadata setObject:wTransports forKey:@"transports"];
     NSMutableArray *points = [[NSMutableArray alloc] init];
-    YMKPolyline *subpolyline = YMKMakeSubpolyline(route.geometry, section.geometry);
+    YMKPolyline* subpolyline = [YMKSubpolylineHelper subpolylineWithPolyline:route.geometry subpolyline:section.geometry];
 
     for (int i = 0; i < [subpolyline.points count]; ++i) {
         YMKPoint *point = [subpolyline.points objectAtIndex:i];
@@ -222,7 +223,7 @@
     __weak RNYMView *weakSelf = self;
 
     if ([vehicles count] == 1 && [[vehicles objectAtIndex:0] isEqualToString:@"car"]) {
-        YMKDrivingDrivingOptions *drivingOptions = [[YMKDrivingDrivingOptions alloc] init];
+        YMKDrivingOptions *drivingOptions = [[YMKDrivingOptions alloc] init];
         YMKDrivingVehicleOptions *vehicleOptions = [[YMKDrivingVehicleOptions alloc] init];
 
         drivingSession = [drivingRouter requestRoutesWithPoints:_points drivingOptions:drivingOptions
@@ -289,12 +290,12 @@
     };
 
     if ([vehicles count] == 0) {
-        walkSession = [pedestrianRouter requestRoutesWithPoints:_points timeOptions:[[YMKTimeOptions alloc] init] routeHandler:_routeHandler];
+        walkSession = [pedestrianRouter requestRoutesWithPoints:_points timeOptions:[[YMKTimeOptions alloc] init] avoidSteep:true routeHandler:_routeHandler];
         return;
     }
 
     YMKTransitOptions *_transitOptions = [YMKTransitOptions transitOptionsWithAvoid:YMKFilterVehicleTypesNone timeOptions:[[YMKTimeOptions alloc] init]];
-    masstransitSession = [masstransitRouter requestRoutesWithPoints:_points transitOptions:_transitOptions routeHandler:_routeHandler];
+    masstransitSession = [masstransitRouter requestRoutesWithPoints:_points transitOptions:_transitOptions avoidSteep:true routeHandler:_routeHandler];
 }
 
 - (UIImage*)resolveUIImage:(NSString*)uri {
@@ -327,7 +328,7 @@
 - (void)setCenter:(YMKCameraPosition *)position withDuration:(float)duration withAnimation:(int)animation {
     if (duration > 0) {
         YMKAnimationType anim = animation == 0 ? YMKAnimationTypeSmooth : YMKAnimationTypeLinear;
-        [self.mapWindow.map moveWithCameraPosition:position animationType:[YMKAnimation animationWithType:anim duration: duration] cameraCallback:^(BOOL completed) {}];
+        [self.mapWindow.map moveWithCameraPosition:position animation:[YMKAnimation animationWithType:anim duration: duration] cameraCallback:^(BOOL completed) {}];
     } else {
         [self.mapWindow.map moveWithCameraPosition:position];
     }
@@ -585,9 +586,9 @@
         [self.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:15 azimuth:0 tilt:0]];
         return;
     }
-    YMKCameraPosition *cameraPosition = [self.mapWindow.map cameraPositionWithBoundingBox:[self calculateBoundingBox:points]];
+    YMKCameraPosition *cameraPosition = [self.mapWindow.map cameraPositionWithGeometry:[YMKGeometry geometryWithBoundingBox:[self calculateBoundingBox:points]]];
     cameraPosition = [YMKCameraPosition cameraPositionWithTarget:cameraPosition.target zoom:cameraPosition.zoom - 0.8f azimuth:cameraPosition.azimuth tilt:cameraPosition.tilt];
-    [self.mapWindow.map moveWithCameraPosition:cameraPosition animationType:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:1.0] cameraCallback:^(BOOL completed){}];
+    [self.mapWindow.map moveWithCameraPosition:cameraPosition animation:[YMKAnimation animationWithType:YMKAnimationTypeSmooth duration:1.0] cameraCallback:^(BOOL completed){}];
 }
 
 - (void)setLogoPosition:(NSDictionary *)logoPosition {
@@ -743,7 +744,7 @@
     } else if ([subview isKindOfClass:[YamapCircleView class]]) {
         YMKMapObjectCollection *objects = self.mapWindow.map.mapObjects;
         YamapCircleView *circle = (YamapCircleView*) subview;
-        YMKCircleMapObject *obj = [objects addCircleWithCircle:[circle getCircle] strokeColor:UIColor.blackColor strokeWidth:0.f fillColor:UIColor.blackColor];
+        YMKCircleMapObject *obj = [objects addCircleWithCircle:[circle getCircle]];
         [circle setMapObject:obj];
     } else {
         NSArray<id<RCTComponent>> *childSubviews = [subview reactSubviews];
@@ -821,7 +822,7 @@
 }
 
 - (void)setMaxFps:(float)maxFps {
-    [self.mapWindow setMaxFpsWithFps:maxFps];
+//    [self.mapWindow setMaxFpsWithFps:maxFps];
 }
 
 - (void)setInteractive:(BOOL)interactive {
