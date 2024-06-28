@@ -5,7 +5,7 @@ var CallbacksManager = /** @class */ (function () {
     function CallbacksManager() {
     }
     CallbacksManager.addCallback = function (callback) {
-        var id = index_1.guid();
+        var id = (0, index_1.guid)();
         CallbacksManager.callbacks[id] = function () {
             var args = [];
             for (var _i = 0; _i < arguments.length; _i++) {
