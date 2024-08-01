@@ -1,6 +1,7 @@
 package ru.vvdev.yamap.suggest
 
 import com.facebook.react.bridge.ReadableMap
+import com.yandex.mapkit.geometry.Point
 import ru.vvdev.yamap.utils.Callback
 
 interface MapSuggestClient {
@@ -18,6 +19,18 @@ interface MapSuggestClient {
         text: String?,
         options: ReadableMap?,
         onSuccess: Callback<List<MapSuggestItem?>?>?,
+        onError: Callback<Throwable?>?
+    )
+
+    fun suggestPoint(
+        point: Point,
+        onSuccess: Callback<MapSearchItem?>,
+        onError: Callback<Throwable?>?
+    )
+
+    fun suggestAddress(
+        text: String,
+        onSuccess: Callback<Point?>,
         onError: Callback<Throwable?>?
     )
 

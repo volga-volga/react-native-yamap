@@ -1,18 +1,22 @@
 package ru.vvdev.yamap.suggest
 
+import YandexSearchRNArgsHelper
 import android.content.Context
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.UiThreadUtil
+import com.yandex.mapkit.geometry.Point
 import ru.vvdev.yamap.utils.Callback
 
 class RNYandexSuggestModule(reactContext: ReactApplicationContext?) :
     ReactContextBaseJavaModule(reactContext) {
     private var suggestClient: MapSuggestClient? = null
     private val argsHelper = YandexSuggestRNArgsHelper()
+    private val searchArgsHelper = YandexSearchRNArgsHelper()
 
     override fun getName(): String {
         return "YamapSuggests"
@@ -38,6 +42,58 @@ class RNYandexSuggestModule(reactContext: ReactApplicationContext?) :
                     }
                 }
             )
+        }
+    }
+
+    @ReactMethod
+    fun geoToAddress(markerPoint: ReadableMap?, promise: Promise) {
+        if (markerPoint != null) {
+            val lon = markerPoint.getDouble("lon")
+            val lat = markerPoint.getDouble("lat")
+            val point = com.yandex.mapkit.geometry.Point(lat, lon)
+            UiThreadUtil.runOnUiThread {
+                getSuggestClient(reactApplicationContext).suggestPoint(point,
+                    object : Callback<MapSearchItem?> {
+                        override fun invoke(arg: MapSearchItem?) {
+                            promise.resolve(searchArgsHelper.createSearchMapFrom(arg))
+                        }
+                    },
+                    object : Callback<Throwable?> {
+                        override fun invoke(arg: Throwable?) {
+                            promise.reject(ERR_SUGGEST_FAILED, "suggest request: " + arg?.message)
+                        }
+                    }
+                )
+            }
+        } else {
+            promise.reject(ERR_NO_REQUEST_ARG, "suggest request: text arg is not provided")
+            return
+        }
+    }
+
+    @ReactMethod
+    fun addressToGeo(text: String?, promise: Promise) {
+        if (text != null) {
+            UiThreadUtil.runOnUiThread {
+                getSuggestClient(reactApplicationContext).suggestAddress(text,
+                    object : Callback<Point?> {
+                        override fun invoke(arg: Point?) {
+                            val resultPoint = Arguments.createMap()
+                            arg?.latitude?.let { resultPoint.putDouble("lat", it) }
+                            arg?.longitude?.let { resultPoint.putDouble("lon", it) }
+                            promise.resolve(resultPoint)
+                        }
+                    },
+                    object : Callback<Throwable?> {
+                        override fun invoke(arg: Throwable?) {
+                            promise.reject(ERR_SUGGEST_FAILED, "suggest request: " + arg?.message)
+                        }
+                    }
+                )
+            }
+        } else {
+            promise.reject(ERR_NO_REQUEST_ARG, "suggest request: text arg is not provided")
+            return
         }
     }
 

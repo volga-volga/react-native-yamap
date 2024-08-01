@@ -1,5 +1,6 @@
 import { BoundingBox, Point } from './interfaces';
 import { NativeModules } from 'react-native';
+import { Address } from './geocoding';
 
 const { YamapSuggests } = NativeModules;
 
@@ -38,11 +39,20 @@ export type SuggestOptions = {
 };
 
 type SuggestFetcher = (query: string, options?: SuggestOptions) => Promise<Array<YamapSuggest>>;
+type SuggestPointFetcher = (point: Point, options?: SuggestOptions) => Promise<Address>;
 const suggest: SuggestFetcher = (query, options) => {
   if (options) {
     return YamapSuggests.suggestWithOptions(query, options);
   }
   return YamapSuggests.suggest(query);
+}
+
+const suggestPoint: SuggestPointFetcher = (point: Point) => {
+  return YamapSuggests.geoToAddress(point);
+}
+
+const suggestAddress: SuggestFetcher = (address: string) => {
+  return YamapSuggests.addressToGeo(address);
 }
 
 type SuggestWithCoordsFetcher = (query: string, options?: SuggestOptions) => Promise<Array<YamapSuggestWithCoords>>;
@@ -62,7 +72,7 @@ const reset: SuggestResetter = () => YamapSuggests.reset();
 type LatLonGetter = (suggest: YamapSuggest) => YamapCoords | undefined;
 const getCoordsFromSuggest: LatLonGetter = (suggest) => {
   const coords = suggest.uri
-    ?.split('?')[1]
+                        ?.split('?')[1]
     ?.split('&')
     ?.find((param) => param.startsWith('ll'))
     ?.split('=')[1];
@@ -77,6 +87,8 @@ const getCoordsFromSuggest: LatLonGetter = (suggest) => {
 
 const Suggest = {
   suggest,
+  suggestPoint,
+  suggestAddress,
   suggestWithCoords,
   reset,
   getCoordsFromSuggest
