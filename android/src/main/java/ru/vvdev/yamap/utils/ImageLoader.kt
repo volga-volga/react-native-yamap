@@ -46,9 +46,7 @@ object ImageLoader {
             override fun run() {
                 try {
                     val bitmap = getBitmap(context, url)
-                    if (bitmap != null) {
-                        Handler(Looper.getMainLooper()).post { cb.invoke(bitmap) }
-                    }
+                    Handler(Looper.getMainLooper()).post { cb.invoke(bitmap) }
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

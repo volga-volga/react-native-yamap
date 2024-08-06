@@ -92,34 +92,6 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
     private var trafficLayer: TrafficLayer? = null
     private var maxFps = 60f
 
-    fun setImage(iconSource: String, mapObject: PlacemarkMapObject?, iconStyle: IconStyle?) {
-        if (icons[iconSource] == null) {
-            DownloadImageBitmap(context, iconSource, object : Callback<Bitmap?> {
-                override fun invoke(arg: Bitmap?) {
-                    try {
-                        if (mapObject != null) {
-                            val icon = ImageProvider.fromBitmap(arg)
-                            icons[iconSource] = icon
-                            mapObject.setIcon(icon)
-                            mapObject.setIconStyle(iconStyle!!)
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
-            })
-        } else {
-            Objects.requireNonNull(
-                icons[iconSource]
-            )?.let {
-                mapObject!!.setIcon(
-                    it
-                )
-            }
-            mapObject?.setIconStyle(iconStyle!!)
-        }
-    }
-
     private var userLocationView: UserLocationView? = null
 
     init {
@@ -933,7 +905,5 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
                     put("walk", "#333333")
                 }
             }
-
-        private val icons = HashMap<String, ImageProvider?>()
     }
 }
