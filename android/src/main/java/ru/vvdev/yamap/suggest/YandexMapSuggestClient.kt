@@ -4,30 +4,24 @@ import android.content.Context
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReadableType
 import com.yandex.mapkit.geometry.BoundingBox
-import com.yandex.mapkit.geometry.Geometry
 import com.yandex.mapkit.geometry.Point
-import com.yandex.mapkit.search.Response
 import com.yandex.mapkit.search.SearchFactory
 import com.yandex.mapkit.search.SearchManager
 import com.yandex.mapkit.search.SearchManagerType
-import com.yandex.mapkit.search.SearchOptions
 import com.yandex.mapkit.search.SearchType
-import com.yandex.mapkit.search.Session
-import com.yandex.mapkit.search.Session.SearchListener
 import com.yandex.mapkit.search.SuggestOptions
 import com.yandex.mapkit.search.SuggestResponse
 import com.yandex.mapkit.search.SuggestSession
 import com.yandex.mapkit.search.SuggestSession.SuggestListener
 import com.yandex.mapkit.search.SuggestType
-import com.yandex.mapkit.search.ToponymObjectMetadata
 import com.yandex.runtime.Error
 import ru.vvdev.yamap.utils.Callback
 
 class YandexMapSuggestClient(context: Context?) : MapSuggestClient {
     private val searchManager: SearchManager
     private val suggestOptions = SuggestOptions()
-    private val searchOptions = SearchOptions()
     private var suggestSession: SuggestSession? = null
+
     /**
      * Для Яндекса нужно указать географическую область поиска. В дефолтном варианте мы не знаем какие
      * границы для каждого конкретного города, поэтому поиск осуществляется по всему миру.
@@ -40,7 +34,6 @@ class YandexMapSuggestClient(context: Context?) : MapSuggestClient {
     init {
         searchManager = SearchFactory.getInstance().createSearchManager(SearchManagerType.COMBINED)
         suggestOptions.setSuggestTypes(SearchType.GEO.value)
-//        searchOptions.setSearchTypes(SearchType.GEO.value)
     }
 
     private fun suggestHandler(
@@ -186,52 +179,6 @@ class YandexMapSuggestClient(context: Context?) : MapSuggestClient {
 
         options_.setSuggestTypes(suggestType)
         this.suggestHandler(text, options_, boundingBox, onSuccess, onError)
-    }
-
-    override fun suggestPoint(
-        point: Point,
-        onSuccess: Callback<MapSearchItem?>,
-        onError: Callback<Throwable?>?
-    ) {
-        this.searchManager.submit(point, 10, this.searchOptions, object: SearchListener {
-            override fun onSearchResponse(suggestResponse: Response) {
-                val result: MapSearchItem = MapSearchItem()
-                result.formatted = suggestResponse.collection.children.firstOrNull()?.obj?.metadataContainer
-                    ?.getItem(ToponymObjectMetadata::class.java)?.address?.formattedAddress
-                result.country_code = suggestResponse.collection.children.firstOrNull()?.obj?.metadataContainer
-                    ?.getItem(ToponymObjectMetadata::class.java)?.address?.countryCode
-                result.Components = ArrayList(suggestResponse.collection.children.size);
-                for (i in suggestResponse.collection.children) {
-                    result.Components!!.add(MapSearchItemComponent().apply {
-                        name = i.obj?.name
-                        kind = i.obj?.metadataContainer
-                            ?.getItem(ToponymObjectMetadata::class.java)?.address?.components?.lastOrNull()?.kinds?.firstOrNull()?.name
-                    })
-                }
-                onSuccess!!.invoke(result)
-            }
-
-            override fun onSearchError(error: Error) {
-                onError!!.invoke(IllegalStateException("suggest error: $error"))
-            }
-        })
-    }
-
-    override fun suggestAddress(
-        text: String,
-        onSuccess: Callback<Point?>,
-        onError: Callback<Throwable?>?
-    ) {
-        this.searchManager.submit(text, Geometry.fromPoint(Point(0.0, 0.0)), this.searchOptions, object: SearchListener {
-            override fun onSearchResponse(suggestResponse: Response) {
-                val result: Point? = suggestResponse.collection.children.firstOrNull()?.obj?.geometry?.firstOrNull()?.point
-                onSuccess!!.invoke(result)
-            }
-
-            override fun onSearchError(error: Error) {
-                onError!!.invoke(IllegalStateException("suggest error: $error"))
-            }
-        })
     }
 
     override fun resetSuggest() {
