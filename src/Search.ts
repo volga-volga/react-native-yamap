@@ -55,11 +55,11 @@ export type SearchOptions = {
 
 type SearchFetcher = (query: string, options?: SearchOptions) => Promise<Array<YamapSearch>>;
 type SearchPointFetcher = (point: Point, options?: SearchOptions) => Promise<Address>;
-const serchText = (query: string, figure?: React.Component, options?: SearchOptions) => {
+const searchText = (query: string, figure?: React.Component, options?: SearchOptions) => {
     return YamapSearch.searchByAddress(query, figure, options);
 }
 
-const serchPoint = (point: Point, zoom?: number, options?: SearchOptions): Promise<Address[]> => {
+const searchPoint = (point: Point, zoom?: number, options?: SearchOptions): Promise<Address[]> => {
     return YamapSearch.searchByPoint(point, zoom, options);
 }
 
@@ -80,8 +80,8 @@ const geocodeAddress: SearchFetcher = (address: string) => {
 }
 
 const Search = {
-  serchText,
-  serchPoint,
+  searchText,
+  searchPoint,
   geocodePoint,
   geocodeAddress,
   resolveURI,
