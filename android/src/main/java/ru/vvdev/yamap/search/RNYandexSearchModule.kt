@@ -1,7 +1,6 @@
 package ru.vvdev.yamap.search
 
 import android.content.Context
-import android.view.View
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -9,16 +8,16 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.UiThreadUtil
+import com.yandex.mapkit.geometry.BoundingBox
 import com.yandex.mapkit.geometry.Geometry
+import com.yandex.mapkit.geometry.LinearRing
 import com.yandex.mapkit.geometry.Point
+import com.yandex.mapkit.geometry.Polygon
+import com.yandex.mapkit.geometry.Polyline
 import com.yandex.mapkit.search.SearchOptions
 import com.yandex.mapkit.search.SearchType
 import com.yandex.mapkit.search.Snippet
 import ru.vvdev.yamap.utils.Callback
-import ru.vvdev.yamap.view.YamapCircle
-import ru.vvdev.yamap.view.YamapMarker
-import ru.vvdev.yamap.view.YamapPolygon
-import ru.vvdev.yamap.view.YamapPolyline
 
 class RNYandexSearchModule(reactContext: ReactApplicationContext?) :
     ReactContextBaseJavaModule(reactContext) {
@@ -29,26 +28,53 @@ class RNYandexSearchModule(reactContext: ReactApplicationContext?) :
         return "YamapSearch"
     }
 
-    private fun getGeometry(child: View?): Geometry {
-        return when (child) {
-            is YamapPolygon -> {
-                Geometry.fromPolygon(child.polygon);
-            }
+    private fun getGeometry(figure: ReadableMap?): Geometry {
+        if (figure?.getMap("value")!=null && figure.getString("type") !=null) {
+            return when (figure.getString("type")) {
+                "POINT" -> {
+                   Geometry.fromPoint(Point(figure.getMap("value")!!.getDouble("lat"), figure.getMap("value")!!.getDouble("lon")));
+                }
 
-            is YamapPolyline -> {
-                Geometry.fromPolyline(child.polyline);
-            }
+                "BOUNDINGBOX" -> {
+                    val southWest = Point(figure.getMap("value")!!.getMap("southWest")!!.getDouble("lat"), figure.getMap("value")!!.getMap("southWest")!!.getDouble("lon"));
+                    val northEast = Point(figure.getMap("value")!!.getMap("northEast")!!.getDouble("lat"), figure.getMap("value")!!.getMap("northEast")!!.getDouble("lon"));
+                    Geometry.fromBoundingBox(BoundingBox(southWest, northEast));
+                }
 
-            is YamapMarker -> {
-                if (child.point!=null) Geometry.fromPoint(child.point!!) else Geometry.fromPoint(Point(0.0, 0.0))
-            }
+                "POLYLINE" -> {
+                    val polylinePoints: ArrayList<Point> = ArrayList()
+                    val points = figure.getMap("value")!!.getArray("points");
+                    for (i in 0 until points!!.size()) {
+                        val markerMap = points.getMap(i)
+                        if (markerMap != null) {
+                            val lon = markerMap.getDouble("lon")
+                            val lat = markerMap.getDouble("lat")
+                            val point = Point(lat, lon)
+                            polylinePoints.add(point)
+                        }
+                    }
+                    Geometry.fromPolyline(Polyline(polylinePoints))
+                }
 
-            is YamapCircle -> {
-                Geometry.fromCircle(child.circle);
-            }
+                "POLYGON" -> {
+                    val polygonPoints: ArrayList<Point> = ArrayList()
+                    val points = figure.getMap("value")!!.getArray("points");
+                    for (i in 0 until points!!.size()) {
+                        val markerMap = points.getMap(i)
+                        if (markerMap != null) {
+                            val lon = markerMap.getDouble("lon")
+                            val lat = markerMap.getDouble("lat")
+                            val point = Point(lat, lon)
+                            polygonPoints.add(point)
+                        }
+                    }
+                    Geometry.fromPolygon(Polygon(LinearRing(polygonPoints), ArrayList()));
+                }
 
-            else ->  Geometry.fromPoint(Point(0.0, 0.0))
+                else -> Geometry.fromPoint(Point(0.0, 0.0))
+            }
         }
+        return Geometry.fromPoint(Point(0.0, 0.0))
     }
 
     private fun getSearchOptions(options: ReadableMap?): SearchOptions {
@@ -67,7 +93,7 @@ class RNYandexSearchModule(reactContext: ReactApplicationContext?) :
     }
 
     @ReactMethod
-    fun searchByAddress(searchQuery: String?, figure: View?, options: ReadableMap?, promise: Promise) {
+    fun searchByAddress(searchQuery: String?, figure: ReadableMap?, options: ReadableMap?, promise: Promise) {
         if (searchQuery != null) {
             val searchOptions = getSearchOptions(options)
             UiThreadUtil.runOnUiThread {

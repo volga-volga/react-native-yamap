@@ -1,7 +1,6 @@
-import { Point } from './interfaces';
+import { BoundingBox, Point, Polyline, Polygon } from './interfaces';
 import { NativeModules } from 'react-native';
 import { Address } from './geocoding';
-import React from 'react';
 
 const { YamapSearch } = NativeModules;
 
@@ -53,14 +52,26 @@ export type SearchOptions = {
   searchTypes?: SearchTypes;
 };
 
+export enum GeoFigureType {
+  POINT="POINT",
+  BOUNDINGBOX="BOUNDINGBOX",
+  POLYLINE="POLYLINE",
+  POLYGON="POLYGON",
+}
+
+type FigureParams = {
+  type: GeoFigureType
+  value: Point | BoundingBox | Polygon | Polyline
+}
+
 type SearchFetcher = (query: string, options?: SearchOptions) => Promise<Array<YamapSearch>>;
 type SearchPointFetcher = (point: Point, options?: SearchOptions) => Promise<Address>;
-const searchText = (query: string, figure?: React.Component, options?: SearchOptions) => {
-    return YamapSearch.searchByAddress(query, figure, options);
+const searchText = (query: string, figure?: FigureParams, options?: SearchOptions) => {
+  return YamapSearch.searchByAddress(query, figure, options);
 }
 
 const searchPoint = (point: Point, zoom?: number, options?: SearchOptions): Promise<Address[]> => {
-    return YamapSearch.searchByPoint(point, zoom, options);
+  return YamapSearch.searchByPoint(point, zoom, options);
 }
 
 const resolveURI: SearchFetcher = (uri: string, options) => {
