@@ -514,6 +514,58 @@ const find = async (query: string, options?: SuggestOptions) => {
   Suggest.reset();
 }
 ```
+## Поиск по гео (GeoSearch)
+
+Для поиска нужно воспользоваться модулем Suggest:
+
+```typescript
+
+import { Search } from 'react-native-yamap';
+
+const find = async (query: string, options?: SuggestOptions) => {
+  // можно использовать Point, BoundingBox, Polyline и Polygon (4 точки, без innerRings)
+  const search = await Search.searchText(
+    'Москва',
+    { type: GeoFigureType.POINT, value: {lat: 54, lon: 53}},
+    { disableSpellingCorrection: true, geometry: true },
+  );
+
+  // второй параметр это зум, определяющий на сколько малые объекты искать
+  const searchByPoint = await Search.searchPoint({lat: 54, lon: 53}, 10, {
+    disableSpellingCorrection: true,
+    geometry: true,
+  });
+
+  const resolveURI = await Search.resolveURI("ymapsbm1://geo?data=IgoNAQBYQhUBAFhC", {
+    disableSpellingCorrection: true,
+    geometry: true,
+  });
+
+  const searchByURI = await Search.searchByURI("ymapsbm1://geo?data=IgoNAQBYQhUBAFhC", {
+    disableSpellingCorrection: true,
+    geometry: true,
+  });
+  
+//   {"Components": [{"kind": "4", "name": "Малиновский сельсовет"}, {"kind": "4", "name": "Белебеевский район"}, {"kind": "3", "name": "Республика Башкортостан"}, {"kind": "19", "name": "Понтийско-Каспийская степь"}, {"kind": "19", "name": "Понтийско-Каспийская степь"}, {"kind": "19", "name": "Понтийско-Каспийская степь"}, {"kind": "3", "name": "Приволжский федеральный округ"}, {"kind": "1", "name": "Россия"}], "country_code": "RU", "formatted": "Россия, Республика Башкортостан, Белебеевский район, Малиновский сельсовет", "uri": "ymapsbm1://geo?data=IgoNAQBYQhUBAFhC"}
+  
+}
+```
+
+Также теперь можно воспользоваться геокодированием из поиска
+
+```typescript
+
+import { Search } from 'react-native-yamap';
+
+const address = Search.geocodePoint({lat: 54, lon: 53});
+
+// {"Components": [{"kind": "4", "name": "Малиновский сельсовет"}, {"kind": "4", "name": "Белебеевский район"}, {"kind": "3", "name": "Республика Башкортостан"}, {"kind": "19", "name": "Понтийско-Каспийская степь"}, {"kind": "19", "name": "Понтийско-Каспийская степь"}, {"kind": "19", "name": "Понтийско-Каспийская степь"}, {"kind": "3", "name": "Приволжский федеральный округ"}, {"kind": "1", "name": "Россия"}], "country_code": "RU", "formatted": "Россия, Республика Башкортостан, Белебеевский район, Малиновский сельсовет", "uri": "ymapsbm1://geo?data=IgoNAQBYQhUBAFhC"}
+
+const point = Search.geocodeAddress(address.formatted);
+
+// возвращает координаты по адресу {"lat": 53.999187242158015, "lon": 54.089440735780194}
+
+```
 
 
 ### Использование компонента ClusteredYamap
