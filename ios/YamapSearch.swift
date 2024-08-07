@@ -83,28 +83,38 @@ class YamapSearch: NSObject {
         return YMKGeometry(boundingBox: self.defaultBoundingBox)
     }
 
-    private func convertSearchResponce(search: YMKSearchResponse?) -> [[String: Any]] {
-        var searchesToPass = [[String: Any]]()
+    private func convertSearchResponce(search: YMKSearchResponse?) -> [String: Any] {
+        var searchToPass = [String: Any]()
         let geoObjects = search?.collection.children.compactMap { $0.obj }
 
+        searchToPass["formatted"] = (
+            geoObjects?.first?.metadataContainer
+                .getItemOf(YMKSearchToponymObjectMetadata.self) as? YMKSearchToponymObjectMetadata
+        )?.address.formattedAddress
+
+        searchToPass["country_code"] = (
+            geoObjects?.first?.metadataContainer
+                .getItemOf(YMKSearchToponymObjectMetadata.self) as? YMKSearchToponymObjectMetadata
+        )?.address.countryCode
+
+        var components = [[String: Any]]()
+
         geoObjects?.forEach { geoItem in
-            var searchToPass = [String: Any]()
-            searchToPass["title"] = geoItem.name
-            searchToPass["address"] = (
+            var component = [String: Any]()
+            component["name"] = geoItem.name
+            component["kind"] = (
                 geoItem.metadataContainer
                     .getItemOf(YMKSearchToponymObjectMetadata.self) as? YMKSearchToponymObjectMetadata
-            )?.address.formattedAddress
-            let point = (
-                geoItem.metadataContainer
-                    .getItemOf(YMKSearchToponymObjectMetadata.self) as? YMKSearchToponymObjectMetadata
-            )?.balloonPoint
-            searchToPass["point"] = ["lat": point?.latitude, "lon": point?.longitude];
-            searchToPass["uri"] = (
-                geoItem.metadataContainer.getItemOf(YMKUriObjectMetadata.self) as? YMKUriObjectMetadata
-            )?.uris.first?.value
-            searchesToPass.append(searchToPass)
+            )?.address.components.last?.kinds.first?.stringValue
+            components.append(component)
         }
-        return searchesToPass;
+
+        searchToPass["Components"] = components
+        searchToPass["uri"] = (
+            geoObjects?.first?.metadataContainer.getItemOf(YMKUriObjectMetadata.self) as? YMKUriObjectMetadata
+        )?.uris.first?.value
+
+        return searchToPass;
     }
 
     @objc func searchByAddress(_ searchQuery: String, figure: [String: Any]?, options: [String: Any]?, resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
@@ -182,37 +192,7 @@ class YamapSearch: NSObject {
                     return
                 }
 
-                var searchToPass = [String: Any]()
-                let geoObjects = search?.collection.children.compactMap { $0.obj }
-
-                searchToPass["formatted"] = (
-                    geoObjects?.first?.metadataContainer
-                        .getItemOf(YMKSearchToponymObjectMetadata.self) as? YMKSearchToponymObjectMetadata
-                )?.address.formattedAddress
-
-                searchToPass["country_code"] = (
-                    geoObjects?.first?.metadataContainer
-                        .getItemOf(YMKSearchToponymObjectMetadata.self) as? YMKSearchToponymObjectMetadata
-                )?.address.countryCode
-
-                var components = [[String: Any]]()
-
-                geoObjects?.forEach { geoItem in
-                    var component = [String: Any]()
-                    component["name"] = geoItem.name
-                    component["kind"] = (
-                        geoItem.metadataContainer
-                            .getItemOf(YMKSearchToponymObjectMetadata.self) as? YMKSearchToponymObjectMetadata
-                    )?.address.components.last?.kinds.first?.stringValue
-                    components.append(component)
-                }
-
-                searchToPass["Components"] = components
-                searchToPass["uri"] = (
-                    geoObjects?.first?.metadataContainer.getItemOf(YMKUriObjectMetadata.self) as? YMKUriObjectMetadata
-                )?.uris.first?.value
-
-                resolver(searchToPass)
+                resolver(self.convertSearchResponce(search: search))
             })
         }
     }
