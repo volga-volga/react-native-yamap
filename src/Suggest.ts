@@ -62,7 +62,7 @@ const reset: SuggestResetter = () => YamapSuggests.reset();
 type LatLonGetter = (suggest: YamapSuggest) => YamapCoords | undefined;
 const getCoordsFromSuggest: LatLonGetter = (suggest) => {
   const coords = suggest.uri
-    ?.split('?')[1]
+                        ?.split('?')[1]
     ?.split('&')
     ?.find((param) => param.startsWith('ll'))
     ?.split('=')[1];
