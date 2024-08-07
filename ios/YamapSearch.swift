@@ -3,11 +3,15 @@ import UIKit
 
 @objc(YamapSearch)
 class YamapSearch: NSObject {
+    enum ArrayError: Error {
+        case indexOutOfBounds
+    }
+
     var searchManager: YMKSearchManager?
     let defaultBoundingBox: YMKBoundingBox
     var searchSession: YMKSearchSession?
     var searchOptions: YMKSearchOptions
-    
+
     let ERR_NO_REQUEST_ARG = "YANDEX_SEARCH_ERR_NO_REQUEST_ARG"
     let ERR_SEARCH_FAILED = "YANDEX_SEARCH_ERR_SEARCH_FAILED"
     let YandexSuggestErrorDomain = "YandexSuggestErrorDomain"
@@ -19,7 +23,7 @@ class YamapSearch: NSObject {
         self.searchOptions = YMKSearchOptions()
         super.init()
     }
-    
+
     private func setSearchOptions(options: [String: Any]?) -> Void {
         self.searchOptions = YMKSearchOptions();
         if ((options?.keys) != nil) {
@@ -28,7 +32,7 @@ class YamapSearch: NSObject {
             }
         }
     }
-    
+
     func runOnMainQueueWithoutDeadlocking(_ block: @escaping () -> Void) {
         if Thread.isMainThread {
             block()
@@ -36,7 +40,7 @@ class YamapSearch: NSObject {
             DispatchQueue.main.sync(execute: block)
         }
     }
-    
+
     func initSearchManager() -> Void {
         if searchManager == nil {
             runOnMainQueueWithoutDeadlocking {
@@ -44,31 +48,45 @@ class YamapSearch: NSObject {
             }
         }
     }
-    
-    private func getGeometry(figure: UIView?) -> YMKGeometry {
-        if ((figure?.isKind(of: YamapMarkerView.self)) != nil) {
-            let marker = figure as? YamapMarkerView;
-            return YMKGeometry.init(point: marker!.getPoint())
+
+    private func getGeometry(figure: [String: Any]?) throws -> YMKGeometry {
+        if (figure == nil) {
+            return YMKGeometry(boundingBox: self.defaultBoundingBox)
         }
-        if ((figure?.isKind(of: YamapCircleView.self)) != nil) {
-            let circle = figure as? YamapCircleView;
-            return YMKGeometry.init(circle: circle!.getCircle())
+        if (figure!["type"] as! String=="POINT") {
+            return YMKGeometry.init(point: YMKPoint(latitude: (figure!["value"] as! [String: Any])["lat"] as! Double, longitude: (figure!["value"] as! [String: Any])["lon"] as! Double))
         }
-        if ((figure?.isKind(of: YamapPolygonView.self)) != nil) {
-            let polygon = figure as? YamapPolygonView;
-            return YMKGeometry.init(polygon: polygon!.getPolygon())
+        if (figure!["type"] as! String=="BOUNDINGBOX") {
+            var southWest = YMKPoint(latitude: ((figure!["value"] as! [String: Any])["southWest"] as! [String: Any])["lat"] as! Double, longitude: ((figure!["value"] as! [String: Any])["southWest"] as! [String: Any])["lon"] as! Double)
+            var northEast = YMKPoint(latitude: ((figure!["value"] as! [String: Any])["northEast"] as! [String: Any])["lat"] as! Double, longitude: ((figure!["value"] as! [String: Any])["northEast"] as! [String: Any])["lon"] as! Double)
+            return YMKGeometry.init(boundingBox: YMKBoundingBox(southWest: southWest, northEast: northEast))
         }
-        if ((figure?.isKind(of: YamapPolylineView.self)) != nil) {
-            let polyline = figure as? YamapPolylineView;
-            return YMKGeometry.init(polyline: polyline!.getPolyline())
+        if (figure!["type"] as! String=="POLYLINE") {
+            let points = (figure!["value"] as! [String: Any])["points"] as! [[String: Any]];
+            var convertedPoints = [YMKPoint]()
+            points.forEach{point in
+                convertedPoints.append(YMKPoint(latitude: point["lat"] as! Double, longitude: point["lon"] as! Double))
+            }
+            return YMKGeometry.init(polyline: YMKPolyline(points:convertedPoints))
+        }
+        if (figure!["type"] as! String=="POLYGON") {
+            let linearRingPoints = (figure!["value"] as! [String: Any])["points"] as! [[String: Any]];
+            if (linearRingPoints.count != 4) {
+                throw ArrayError.indexOutOfBounds
+            }
+            var convertedlinearRingPoints = [YMKPoint]()
+            linearRingPoints.forEach{point in
+                convertedlinearRingPoints.append(YMKPoint(latitude: point["lat"] as! Double, longitude: point["lon"] as! Double))
+            }
+            return YMKGeometry.init(polygon: YMKPolygon(outerRing: YMKLinearRing(points: convertedlinearRingPoints), innerRings: []))
         }
         return YMKGeometry(boundingBox: self.defaultBoundingBox)
     }
-    
+
     private func convertSearchResponce(search: YMKSearchResponse?) -> [[String: Any]] {
         var searchesToPass = [[String: Any]]()
         let geoObjects = search?.collection.children.compactMap { $0.obj }
-        
+
         geoObjects?.forEach { geoItem in
             var searchToPass = [String: Any]()
             searchToPass["title"] = geoItem.name
@@ -88,46 +106,55 @@ class YamapSearch: NSObject {
         }
         return searchesToPass;
     }
-    
-    @objc func searchByAddress(_ searchQuery: String, figure: UIView?, options: [String: Any]?, resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
+
+    @objc func searchByAddress(_ searchQuery: String, figure: [String: Any]?, options: [String: Any]?, resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
         self.initSearchManager()
-        self.setSearchOptions(options: options)
-        runOnMainQueueWithoutDeadlocking {
-            self.searchSession = self.searchManager?.submit(withText: searchQuery, geometry: self.getGeometry(figure: figure), searchOptions: self.searchOptions, responseHandler: { search, error in
-                if let error = error {
-                    rejecter(self.ERR_SEARCH_FAILED, "search request: \(searchQuery)", error)
-                    return
-                }
-                
-                resolver(self.convertSearchResponce(search: search))
-            })
+        do {
+            self.setSearchOptions(options: options)
+            let geometryFigure: YMKGeometry = try self.getGeometry(figure: figure)
+            runOnMainQueueWithoutDeadlocking {
+                self.searchSession = self.searchManager?.submit(withText: searchQuery, geometry: geometryFigure, searchOptions: self.searchOptions, responseHandler: { search, error in
+                    if let error = error {
+                        rejecter(self.ERR_SEARCH_FAILED, "search request: \(searchQuery)", error)
+                        return
+                    }
+
+                    resolver(self.convertSearchResponce(search: search))
+                })
+            }
+        } catch {
+            rejecter(ERR_NO_REQUEST_ARG, "search request: \(searchQuery)", nil)
         }
     }
-    
+
     @objc func addressToGeo(_ searchQuery: String, resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
         self.initSearchManager()
-        self.setSearchOptions(options: nil)
-        runOnMainQueueWithoutDeadlocking {
-            self.searchSession = self.searchManager?.submit(withText: searchQuery, geometry: self.getGeometry(figure: nil), searchOptions: self.searchOptions, responseHandler: { search, error in
-                if let error = error {
-                    rejecter(self.ERR_SEARCH_FAILED, "search request: \(searchQuery)", error)
-                    return
-                }
-                
-                let geoObjects = search?.collection.children.compactMap { $0.obj }
-                
-                let point = (
-                    geoObjects?.first?.metadataContainer
-                        .getItemOf(YMKSearchToponymObjectMetadata.self) as? YMKSearchToponymObjectMetadata
-                )?.balloonPoint
-                var searchPoint = ["lat": point?.latitude, "lon": point?.longitude];
-              
-                resolver(searchPoint)
-              
-            })
+        do {
+            self.setSearchOptions(options: nil)
+            runOnMainQueueWithoutDeadlocking {
+                self.searchSession = self.searchManager?.submit(withText: searchQuery, geometry: YMKGeometry(boundingBox: self.defaultBoundingBox), searchOptions: self.searchOptions, responseHandler: { search, error in
+                    if let error = error {
+                        rejecter(self.ERR_SEARCH_FAILED, "search request: \(searchQuery)", error)
+                        return
+                    }
+
+                    let geoObjects = search?.collection.children.compactMap { $0.obj }
+
+                    let point = (
+                        geoObjects?.first?.metadataContainer
+                            .getItemOf(YMKSearchToponymObjectMetadata.self) as? YMKSearchToponymObjectMetadata
+                    )?.balloonPoint
+                    let searchPoint = ["lat": point?.latitude, "lon": point?.longitude];
+
+                    resolver(searchPoint)
+
+                })
+            }
+        } catch {
+            rejecter(ERR_NO_REQUEST_ARG, "search request: \(searchQuery)", nil)
         }
     }
-    
+
     @objc func searchByPoint(_ point: [String: Any], zoom: NSNumber, options: [String: Any]?, resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
         let searchPoint = YMKPoint(latitude: point["lat"] as! Double, longitude: point["lat"] as! Double)
         self.initSearchManager()
@@ -138,12 +165,12 @@ class YamapSearch: NSObject {
                     rejecter(self.ERR_SEARCH_FAILED, "search request: \(point)", error)
                     return
                 }
-              
+
                 resolver(self.convertSearchResponce(search: search))
             })
         }
     }
-    
+
     @objc func geoToAddress(_ point: [String: Any], resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
         let searchPoint = YMKPoint(latitude: point["lat"] as! Double, longitude: point["lat"] as! Double)
         self.initSearchManager()
@@ -154,22 +181,22 @@ class YamapSearch: NSObject {
                     rejecter(self.ERR_SEARCH_FAILED, "search request: \(point)", error)
                     return
                 }
-                
+
                 var searchToPass = [String: Any]()
                 let geoObjects = search?.collection.children.compactMap { $0.obj }
-                
+
                 searchToPass["formatted"] = (
                     geoObjects?.first?.metadataContainer
                         .getItemOf(YMKSearchToponymObjectMetadata.self) as? YMKSearchToponymObjectMetadata
                 )?.address.formattedAddress
-                
+
                 searchToPass["country_code"] = (
                     geoObjects?.first?.metadataContainer
                         .getItemOf(YMKSearchToponymObjectMetadata.self) as? YMKSearchToponymObjectMetadata
                 )?.address.countryCode
-                
+
                 var components = [[String: Any]]()
-                
+
                 geoObjects?.forEach { geoItem in
                     var component = [String: Any]()
                     component["name"] = geoItem.name
@@ -184,12 +211,12 @@ class YamapSearch: NSObject {
                 searchToPass["uri"] = (
                     geoObjects?.first?.metadataContainer.getItemOf(YMKUriObjectMetadata.self) as? YMKUriObjectMetadata
                 )?.uris.first?.value
-                
+
                 resolver(searchToPass)
             })
         }
     }
-    
+
     @objc func searchByURI(_ searchUri: NSString, options: [String: Any]?, resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
         self.initSearchManager()
         self.setSearchOptions(options: options)
@@ -199,12 +226,12 @@ class YamapSearch: NSObject {
                     rejecter(self.ERR_SEARCH_FAILED, "search request: \(searchUri)", error)
                     return
                 }
-              
+
                 resolver(self.convertSearchResponce(search: search))
             })
         }
     }
-    
+
     @objc func resolveURI(_ searchUri: NSString, options: [String: Any]?, resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
         self.initSearchManager()
         self.setSearchOptions(options: options)
@@ -214,7 +241,7 @@ class YamapSearch: NSObject {
                     rejecter(self.ERR_SEARCH_FAILED, "search request: \(searchUri)", error)
                     return
                 }
-              
+
                 resolver(self.convertSearchResponce(search: search))
             })
         }
