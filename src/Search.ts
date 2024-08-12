@@ -1,4 +1,4 @@
-import { BoundingBox, Point, Polyline, Polygon } from './interfaces';
+import { BoundingBox, Point } from './interfaces';
 import { NativeModules } from 'react-native';
 import { Address } from './geocoding';
 
@@ -59,10 +59,27 @@ export enum GeoFigureType {
   POLYGON="POLYGON",
 }
 
-type FigureParams = {
-  type: GeoFigureType
-  value: Point | BoundingBox | Polygon | Polyline
+export interface PointParams {
+  type: GeoFigureType.POINT
+  value: Point
 }
+
+export interface BoundingBoxParams {
+  type: GeoFigureType.BOUNDINGBOX
+  value: BoundingBox
+}
+
+export interface PolylineParams {
+  type: GeoFigureType.POLYLINE
+  value: PolylineParams
+}
+
+export interface PolygonParams {
+  type: GeoFigureType.POLYGON
+  value: PolygonParams
+}
+
+type FigureParams = PointParams | BoundingBoxParams | PolylineParams | PolygonParams
 
 type SearchFetcher = (query: string, options?: SearchOptions) => Promise<Array<YamapSearch>>;
 type SearchPointFetcher = (point: Point, options?: SearchOptions) => Promise<Address>;
