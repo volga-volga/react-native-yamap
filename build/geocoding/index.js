@@ -14,7 +14,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
@@ -80,7 +80,7 @@ var Geocoder = /** @class */ (function () {
             return __generator(this, function (_a) {
                 query = new Query_1.default({
                     apikey: Geocoder.API_KEY,
-                    geocode: geocode.lat + "," + geocode.lon,
+                    geocode: "".concat(geocode.lat, ",").concat(geocode.lon),
                     sco: 'latlong',
                     kind: kind,
                     format: 'json',
@@ -101,10 +101,10 @@ var Geocoder = /** @class */ (function () {
             skip: skip,
             lang: lang,
             rspn: rspn,
-            ll: ll ? ll.lat + "," + ll.lon : undefined,
-            spn: spn ? spn[0] + "," + spn[1] : undefined,
+            ll: ll ? "".concat(ll.lat, ",").concat(ll.lon) : undefined,
+            spn: spn ? "".concat(spn[0], ",").concat(spn[1]) : undefined,
             bbox: bbox
-                ? bbox[0].lat + "," + bbox[0].lon + "-" + bbox[1].lat + "," + bbox[1].lon
+                ? "".concat(bbox[0].lat, ",").concat(bbox[0].lon, "-").concat(bbox[1].lat, ",").concat(bbox[1].lon)
                 : undefined
         });
         return Geocoder.requestWithQuery(query);
@@ -131,12 +131,12 @@ var Geocoder = /** @class */ (function () {
             });
         });
     };
-    Geocoder.geoToAddress = function (geo) {
+    Geocoder.geoToAddress = function (geo, lang, kind) {
         return __awaiter(this, void 0, void 0, function () {
             var response, obj;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, Geocoder.geocode(geo)];
+                    case 0: return [4 /*yield*/, Geocoder.geocode(geo, kind, 1, 0, lang)];
                     case 1:
                         response = (_a.sent()).response;
                         if (response.GeoObjectCollection
