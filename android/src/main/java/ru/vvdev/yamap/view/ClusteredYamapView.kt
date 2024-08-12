@@ -37,6 +37,10 @@ class ClusteredYamapView(context: Context?) : YamapView(context), ClusterListene
             val placemark = placemarks[i]
             placemarksMap["" + placemark.geometry.latitude + placemark.geometry.longitude] =
                 placemark
+            val child: Any = getChildAt(i)
+            if (child is YamapMarker) {
+                child.setMarkerMapObject(placemark)
+            }
         }
         clusterCollection.clusterPlacemarks(50.0, 12)
     }
@@ -59,7 +63,7 @@ class ClusteredYamapView(context: Context?) : YamapView(context), ClusterListene
                 placemark
             val child: Any = getChildAt(i)
             if (child is YamapMarker) {
-                child.rnMapObject = placemark
+                child.setMarkerMapObject(placemark)
             }
         }
         clusterCollection.clusterPlacemarks(50.0, 12)
@@ -69,7 +73,7 @@ class ClusteredYamapView(context: Context?) : YamapView(context), ClusterListene
         val marker = child as YamapMarker?
         val placemark = placemarksMap["" + marker!!.point!!.latitude + marker.point!!.longitude]
         if (placemark != null) {
-            marker.rnMapObject = placemark
+            marker.setMarkerMapObject(placemark)
         }
     }
 

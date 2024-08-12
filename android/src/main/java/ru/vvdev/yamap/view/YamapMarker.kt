@@ -20,6 +20,8 @@ import com.yandex.mapkit.map.PlacemarkMapObject
 import com.yandex.mapkit.map.RotationType
 import com.yandex.runtime.image.ImageProvider
 import ru.vvdev.yamap.models.ReactMapObject
+import ru.vvdev.yamap.utils.Callback
+import ru.vvdev.yamap.utils.ImageLoader.DownloadImageBitmap
 
 class YamapMarker(context: Context?) : ReactViewGroup(context), MapObjectTapListener,
     ReactMapObject {
@@ -106,8 +108,19 @@ class YamapMarker(context: Context?) : ReactViewGroup(context), MapObjectTapList
             }
             if (childs.size == 0) {
                 if (iconSource != "") {
-                    val parent = parent as YamapView
-                    iconSource?.let { parent?.setImage(it, rnMapObject as PlacemarkMapObject, iconStyle) }
+                    iconSource?.let {
+                        DownloadImageBitmap(context, it, object : Callback<Bitmap?> {
+                            override fun invoke(arg: Bitmap?) {
+                                try {
+                                    val icon = ImageProvider.fromBitmap(arg)
+                                    (rnMapObject as PlacemarkMapObject).setIcon(icon)
+                                    (rnMapObject as PlacemarkMapObject).setIconStyle(iconStyle)
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
+                            }
+                        })
+                    }
                 }
             }
         }
@@ -118,12 +131,6 @@ class YamapMarker(context: Context?) : ReactViewGroup(context), MapObjectTapList
         rnMapObject!!.addTapListener(this)
         updateMarker()
     }
-
-//    fun setRnMapObject(obj: MapObject?) {
-//        rnMapObject = obj as PlacemarkMapObject?
-//        rnMapObject!!.addTapListener(this)
-//        updateMarker()
-//    }
 
     fun setChildView(view: View?) {
         if (view == null) {

@@ -20,7 +20,6 @@ interface MapSuggestClient {
         onSuccess: Callback<List<MapSuggestItem?>?>?,
         onError: Callback<Throwable?>?
     )
-
     /**
      * Остановить сессию поиска саджестов
      */
