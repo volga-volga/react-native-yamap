@@ -7,13 +7,6 @@ export interface BoundingBox {
   southWest: Point;
   northEast: Point;
 }
-export interface Polyline {
-  points: Point[];
-}
-
-export interface Polygon {
-  points: Point[];
-}
 
 export interface ScreenPoint {
   x: number;
