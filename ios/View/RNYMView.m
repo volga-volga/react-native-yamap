@@ -32,6 +32,7 @@
     YMKPedestrianRouter *pedestrianRouter;
     YMKTransitOptions *transitOptions;
     YMKMasstransitSessionRouteHandler routeHandler;
+    YMKRouteOptions *routeOptions;
     NSMutableArray<UIView*> *_reactSubviews;
     NSMutableArray *routes;
     NSMutableArray *currentRouteInfo;
@@ -62,6 +63,7 @@
     drivingRouter = [[YMKDirectionsFactory instance] createDrivingRouterWithType:YMKDrivingRouterTypeOnline];
     pedestrianRouter = [[YMKTransportFactory instance] createPedestrianRouter];
     transitOptions = [YMKTransitOptions transitOptionsWithAvoid:YMKFilterVehicleTypesNone timeOptions:[[YMKTimeOptions alloc] init]];    acceptVehicleTypes = [[NSMutableArray<NSString *> alloc] init];
+    routeOptions = [YMKRouteOptions routeOptionsWithFitnessOptions:[YMKFitnessOptions fitnessOptionsWithAvoidSteep:false]];
     routes = [[NSMutableArray alloc] init];
     currentRouteInfo = [[NSMutableArray alloc] init];
     lastKnownRoutePoints = [[NSMutableArray alloc] init];
@@ -290,12 +292,12 @@
     };
 
     if ([vehicles count] == 0) {
-        walkSession = [pedestrianRouter requestRoutesWithPoints:_points timeOptions:[[YMKTimeOptions alloc] init] avoidSteep:true routeHandler:_routeHandler];
+        walkSession = [pedestrianRouter requestRoutesWithPoints:_points timeOptions:[[YMKTimeOptions alloc] init] routeOptions:routeOptions routeHandler:_routeHandler];
         return;
     }
 
     YMKTransitOptions *_transitOptions = [YMKTransitOptions transitOptionsWithAvoid:YMKFilterVehicleTypesNone timeOptions:[[YMKTimeOptions alloc] init]];
-    masstransitSession = [masstransitRouter requestRoutesWithPoints:_points transitOptions:_transitOptions avoidSteep:true routeHandler:_routeHandler];
+    masstransitSession = [masstransitRouter requestRoutesWithPoints:_points transitOptions:_transitOptions routeOptions:routeOptions routeHandler:_routeHandler];
 }
 
 - (UIImage*)resolveUIImage:(NSString*)uri {

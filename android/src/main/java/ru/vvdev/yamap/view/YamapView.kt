@@ -55,7 +55,9 @@ import com.yandex.mapkit.traffic.TrafficLevel
 import com.yandex.mapkit.traffic.TrafficListener
 import com.yandex.mapkit.transport.TransportFactory
 import com.yandex.mapkit.transport.masstransit.FilterVehicleTypes
+import com.yandex.mapkit.transport.masstransit.FitnessOptions
 import com.yandex.mapkit.transport.masstransit.Route
+import com.yandex.mapkit.transport.masstransit.RouteOptions
 import com.yandex.mapkit.transport.masstransit.Section
 import com.yandex.mapkit.transport.masstransit.Session
 import com.yandex.mapkit.transport.masstransit.TimeOptions
@@ -82,6 +84,7 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
     private var userLocationIconScale = 1f
     private var userLocationBitmap: Bitmap? = null
     private val routeMng = RouteManager()
+    private var routeOptions: RouteOptions = RouteOptions(FitnessOptions(false))
     private val masstransitRouter = TransportFactory.getInstance().createMasstransitRouter()
     private val drivingRouter: DrivingRouter
     private val pedestrianRouter = TransportFactory.getInstance().createPedestrianRouter()
@@ -338,11 +341,11 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
             }
         }
         if (vehicles.size == 0) {
-            pedestrianRouter.requestRoutes(_points, TimeOptions(), true, listener)
+            pedestrianRouter.requestRoutes(_points, TimeOptions(), routeOptions, listener)
             return
         }
         val transitOptions = TransitOptions(FilterVehicleTypes.NONE.value, TimeOptions())
-        masstransitRouter.requestRoutes(_points, transitOptions, true, listener)
+        masstransitRouter.requestRoutes(_points, transitOptions, routeOptions, listener)
     }
 
     fun fitAllMarkers() {
