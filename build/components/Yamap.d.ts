@@ -1,13 +1,12 @@
 import React from 'react';
 import { ViewProps, ImageSourcePropType, NativeSyntheticEvent } from 'react-native';
-import { Point, ScreenPoint, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition, VisibleRegion, InitialRegion, MapType, Animation, MapLoaded, YandexLogoPosition, YandexLogoPadding } from '../interfaces';
+import { Point, ScreenPoint, DrivingInfo, MasstransitInfo, RoutesFoundEvent, Vehicles, CameraPosition, VisibleRegion, InitialRegion, Animation, MapLoaded, YandexLogoPosition, YandexLogoPadding } from '../interfaces';
 export interface YaMapProps extends ViewProps {
     userLocationIcon?: ImageSourcePropType;
     userLocationIconScale?: number;
     showUserPosition?: boolean;
     nightMode?: boolean;
     mapStyle?: string;
-    mapType?: MapType;
     onCameraPositionChange?: (event: NativeSyntheticEvent<CameraPosition>) => void;
     onCameraPositionChangeEnd?: (event: NativeSyntheticEvent<CameraPosition>) => void;
     onMapPress?: (event: NativeSyntheticEvent<Point>) => void;

@@ -30,7 +30,6 @@ export interface InitialRegion {
 }
 export type MasstransitVehicles = 'bus' | 'trolleybus' | 'tramway' | 'minibus' | 'suburban' | 'underground' | 'ferry' | 'cable' | 'funicular';
 export type Vehicles = MasstransitVehicles | 'walk' | 'car';
-export type MapType = 'none' | 'raster' | 'vector';
 export interface DrivingInfo {
     time: string;
     timeWithTraffic: string;
