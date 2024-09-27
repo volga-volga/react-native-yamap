@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         compileSdkVersion 34
-        minSdkVersion 23
+        minSdkVersion 26
         targetSdkVersion 34
         versionCode 1
         versionName "1.1"
@@ -33,6 +33,6 @@ repositories {
 dependencies {
     implementation 'com.google.android.gms:play-services-location:+'
     implementation 'com.facebook.react:react-native:+'
-    implementation 'com.yandex.android:maps.mobile:4.6.1-full'
+    implementation 'com.yandex.android:maps.mobile:4.8.0-full'
     implementation 'androidx.core:core-ktx:1.13.1'
 }

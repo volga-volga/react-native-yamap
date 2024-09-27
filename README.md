@@ -147,8 +147,6 @@ type MasstransitVehicles = 'bus' | 'trolleybus' | 'tramway' | 'minibus' | 'subur
 
 type Vehicles = MasstransitVehicles | 'walk' | 'car';
 
-type MapType = 'none' | 'raster' | 'vector';
-
 
 interface DrivingInfo {
   time: string;
@@ -259,7 +257,6 @@ type YandexLogoPadding = {
 | maxFps | number | 60 | Максимальная частота обновления карты |
 | logoPosition | YandexLogoPosition | {} | Позиция логотипа Яндекса на карте |
 | logoPadding | YandexLogoPadding | {} | Отступ логотипа Яндекса на карте |
-| mapType | string | 'vector' | Тип карты |
 | mapStyle | string | {} | Стили карты согласно [документации](https://yandex.ru/dev/maps/mapkit/doc/dg/concepts/style.html) |
 
 #### Доступные методы для компонента **MapView**:
