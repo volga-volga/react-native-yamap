@@ -205,6 +205,6 @@ class YamapMarker(context: Context?) : ReactViewGroup(context), MapObjectTapList
             id, "onPress", e
         )
 
-        return false
+        return true
     }
 }
