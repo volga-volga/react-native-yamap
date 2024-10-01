@@ -72,4 +72,12 @@ RCT_CUSTOM_VIEW_PROPERTY(zIndex, NSNumber, YamapPolygonView) {
     [view setZIndex: json];
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(handled, NSNumber, YamapPolygonView) {
+    if (json == nil || [json boolValue]) {
+        [view setHandled: YES];
+    } else {
+        [view setHandled: NO];
+    }
+}
+
 @end
