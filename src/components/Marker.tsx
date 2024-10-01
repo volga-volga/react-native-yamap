@@ -14,6 +14,7 @@ export interface MarkerProps {
   source?: ImageSourcePropType;
   anchor?: { x: number, y: number };
   visible?: boolean;
+  handled?: boolean;
 }
 
 const NativeMarkerComponent = requireNativeComponent<MarkerProps & { pointerEvents: 'none' }>('YamapMarker');
