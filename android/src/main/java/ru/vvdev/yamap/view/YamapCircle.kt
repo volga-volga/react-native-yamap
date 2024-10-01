@@ -18,6 +18,7 @@ class YamapCircle(context: Context?) : ViewGroup(context), MapObjectTapListener,
     var circle: Circle
 
     override var rnMapObject: MapObject? = null
+    private var handled = true
     private var fillColor = Color.BLACK
     private var strokeColor = Color.BLACK
     private var zIndex = 1
@@ -52,6 +53,10 @@ class YamapCircle(context: Context?) : ViewGroup(context), MapObjectTapListener,
     fun setZIndex(_zIndex: Int) {
         zIndex = _zIndex
         updateCircle()
+    }
+
+    fun setHandled(_handled: Boolean) {
+        handled = _handled
     }
 
     fun setStrokeColor(_color: Int) {
@@ -97,6 +102,6 @@ class YamapCircle(context: Context?) : ViewGroup(context), MapObjectTapListener,
             id, "onPress", e
         )
 
-        return false
+        return handled
     }
 }

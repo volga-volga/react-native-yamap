@@ -30,6 +30,7 @@ class YamapMarker(context: Context?) : ReactViewGroup(context), MapObjectTapList
     private var zIndex = 1
     private var scale = 1f
     private var visible = true
+    private var handled = true
     private var rotated = false
     private val YAMAP_FRAMES_PER_SECOND = 25
     private var markerAnchor: PointF? = null
@@ -58,6 +59,10 @@ class YamapMarker(context: Context?) : ReactViewGroup(context), MapObjectTapList
     fun setScale(_scale: Float) {
         scale = _scale
         updateMarker()
+    }
+
+    fun setHandled(_handled: Boolean) {
+        handled = _handled
     }
 
     fun setRotated(_rotated: Boolean) {
@@ -205,6 +210,6 @@ class YamapMarker(context: Context?) : ReactViewGroup(context), MapObjectTapList
             id, "onPress", e
         )
 
-        return true
+        return handled
     }
 }

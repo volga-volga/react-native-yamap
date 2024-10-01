@@ -93,6 +93,11 @@ class YamapPolylineManager internal constructor() : ViewGroupManager<YamapPolyli
         castToPolylineView(view).setOutlineColor(color)
     }
 
+    @ReactProp(name = "handled")
+    fun setHandled(view: View, handled: Boolean?) {
+        castToPolylineView(view).setHandled(handled ?: true)
+    }
+
     companion object {
         const val REACT_CLASS: String = "YamapPolyline"
     }
