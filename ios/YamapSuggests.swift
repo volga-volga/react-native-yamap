@@ -11,7 +11,7 @@ class YamapSuggests: NSObject {
         let southWestPoint = YMKPoint(latitude: -90.0, longitude: -180.0)
         let northEastPoint = YMKPoint(latitude: 90.0, longitude: 180.0)
         self.defaultBoundingBox = YMKBoundingBox(southWest: southWestPoint, northEast: northEastPoint)
-        self.suggestOptions = YMKSuggestOptions(suggestTypes: [], userPosition: nil, suggestWords: false)
+        self.suggestOptions = YMKSuggestOptions(suggestTypes: [], userPosition: nil, suggestWords: false, strictBounds: false)
         super.init()
     }
 
