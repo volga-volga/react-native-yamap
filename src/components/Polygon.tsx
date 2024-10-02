@@ -12,6 +12,7 @@ export interface PolygonProps {
   points: Point[];
   innerRings?: (Point[])[];
   children?: undefined;
+  handled?: boolean;
 }
 
 const NativePolygonComponent = requireNativeComponent<PolygonProps>('YamapPolygon');

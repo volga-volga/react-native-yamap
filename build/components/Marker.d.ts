@@ -14,6 +14,7 @@ export interface MarkerProps {
         y: number;
     };
     visible?: boolean;
+    handled?: boolean;
 }
 interface State {
     recreateKey: boolean;

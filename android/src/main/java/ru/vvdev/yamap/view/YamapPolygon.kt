@@ -24,6 +24,7 @@ class YamapPolygon(context: Context?) : ViewGroup(context), MapObjectTapListener
     private var strokeColor = Color.BLACK
     private var zIndex = 1
     private var strokeWidth = 1f
+    private var handled = true
 
     init {
         polygon = Polygon(LinearRing(ArrayList()), ArrayList())
@@ -97,6 +98,10 @@ class YamapPolygon(context: Context?) : ViewGroup(context), MapObjectTapListener
         updatePolygon()
     }
 
+    fun setHandled(_handled: Boolean) {
+        handled = _handled
+    }
+
 //    fun setRnMapObject(obj: MapObject?) {
 //        rnMapObject = obj as PolygonMapObject?
 //        rnMapObject!!.addTapListener(this)
@@ -109,6 +114,6 @@ class YamapPolygon(context: Context?) : ViewGroup(context), MapObjectTapListener
             id, "onPress", e
         )
 
-        return false
+        return handled
     }
 }

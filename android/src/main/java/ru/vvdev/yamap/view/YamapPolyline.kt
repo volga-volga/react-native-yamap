@@ -26,6 +26,7 @@ class YamapPolyline(context: Context?) : ViewGroup(context), MapObjectTapListene
     private var gapLength = 0
     private var dashOffset = 0f
     private var outlineWidth = 0
+    private var handled = true
 
     init {
         polyline = Polyline(ArrayList())
@@ -100,6 +101,10 @@ class YamapPolyline(context: Context?) : ViewGroup(context), MapObjectTapListene
         rnMapObject!!.addTapListener(this)
         updatePolyline()
     }
+
+    fun setHandled(_handled: Boolean) {
+        handled = _handled
+    }
 //    fun setRnMapObject(obj: MapObject?) {
 //        rnMapObject = obj as PolylineMapObject?
 //        rnMapObject!!.addTapListener(this)
@@ -112,6 +117,6 @@ class YamapPolyline(context: Context?) : ViewGroup(context), MapObjectTapListene
             id, "onPress", e
         )
 
-        return false
+        return handled
     }
 }

@@ -26,6 +26,7 @@
     NSString* lastSource;
     NSValue* anchor;
     NSNumber* visible;
+    BOOL handled;
     NSMutableArray<UIView*>* _reactSubviews;
     UIView* _childView;
 }
@@ -36,6 +37,7 @@
     scale = [[NSNumber alloc] initWithInt:1];
     rotated = [[NSNumber alloc] initWithInt:0];
     visible = [[NSNumber alloc] initWithInt:1];
+    handled = YES;
     _reactSubviews = [[NSMutableArray alloc] init];
     source = @"";
     lastSource = @"";
@@ -110,6 +112,10 @@
     [self updateMarker];
 }
 
+- (void)setHandled:(BOOL)_handled {
+    handled = _handled;
+}
+
 - (void)setPoint:(YMKPoint*)point {
     _point = point;
     [self updateMarker];
@@ -166,7 +172,7 @@
     if (self.onPress)
         self.onPress(@{});
 
-    return YES;
+    return handled;
 }
 
 - (YMKPoint*)getPoint {

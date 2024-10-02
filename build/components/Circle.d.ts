@@ -9,6 +9,7 @@ export interface CircleProps {
     center: Point;
     radius: number;
     children?: undefined;
+    handled?: boolean;
 }
 export declare class Circle extends React.Component<CircleProps> {
     static defaultProps: {};
