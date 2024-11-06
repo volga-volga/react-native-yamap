@@ -41,6 +41,7 @@
     UIColor* clusterColor;
     NSMutableArray<YMKPlacemarkMapObject *>* placemarks;
     BOOL userClusters;
+    Boolean initializedRegion;
 }
 
 - (instancetype)init {
@@ -50,6 +51,7 @@
     clusterColor=nil;
     userClusters=NO;
     clusterCollection = [self.mapWindow.map.mapObjects addClusterizedPlacemarkCollectionWithClusterListener:self];
+    initializedRegion = NO;
     return self;
 }
 
@@ -195,6 +197,7 @@
 }
 
 - (void)setInitialRegion:(NSDictionary *)initialParams {
+    if (initializedRegion) return;
     if ([initialParams valueForKey:@"lat"] == nil || [initialParams valueForKey:@"lon"] == nil) return;
 
     float initialZoom = 10.f;
@@ -210,6 +213,7 @@
     YMKPoint *initialRegionCenter = [RCTConvert YMKPoint:@{@"lat" : [initialParams valueForKey:@"lat"], @"lon" : [initialParams valueForKey:@"lon"]}];
     YMKCameraPosition *initialRegioPosition = [YMKCameraPosition cameraPositionWithTarget:initialRegionCenter zoom:initialZoom azimuth:initialAzimuth tilt:initialTilt];
     [self.mapWindow.map moveWithCameraPosition:initialRegioPosition];
+    initializedRegion = YES;
 }
 
 

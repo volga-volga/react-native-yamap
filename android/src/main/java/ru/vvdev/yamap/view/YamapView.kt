@@ -94,6 +94,7 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
     private var userLocationAccuracyStrokeWidth = 0f
     private var trafficLayer: TrafficLayer? = null
     private var maxFps = 60f
+    private var initializedRegion = false;
 
     private var userLocationView: UserLocationView? = null
 
@@ -472,6 +473,7 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
     }
 
     fun setInitialRegion(params: ReadableMap?) {
+        if (initializedRegion) return
         if ((!params!!.hasKey("lat") || params.isNull("lat")) || (!params.hasKey("lon") && params.isNull(
                 "lon"
             ))
@@ -500,6 +502,7 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
             initialRegionTilt
         )
         setCenter(initialCameraPosition, 0f, 0)
+        initializedRegion = true
     }
 
     fun setLogoPosition(params: ReadableMap?) {
