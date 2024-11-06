@@ -97,6 +97,11 @@ class YamapPolygonManager internal constructor() : ViewGroupManager<YamapPolygon
         castToPolygonView(view).setZIndex(zIndex)
     }
 
+    @ReactProp(name = "handled")
+    fun setHandled(view: View, handled: Boolean?) {
+        castToPolygonView(view).setHandled(handled ?: true)
+    }
+
     companion object {
         const val REACT_CLASS: String = "YamapPolygon"
     }

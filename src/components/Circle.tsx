@@ -12,6 +12,7 @@ export interface CircleProps {
   center: Point;
   radius: number;
   children?: undefined;
+  handled?: boolean;
 }
 
 const NativeCircleComponent = requireNativeComponent<CircleProps>('YamapCircle');

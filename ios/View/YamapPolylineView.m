@@ -21,6 +21,7 @@
     NSNumber* gapLength;
     NSNumber* outlineWidth;
     NSNumber* zIndex;
+    BOOL handled;
 }
 
 - (instancetype)init {
@@ -34,6 +35,7 @@
     outlineWidth =  [[NSNumber alloc] initWithInt:0];
     dashOffset =  [[NSNumber alloc] initWithInt:0];
     _points = [[NSMutableArray alloc] init];
+    handled = YES;
     polyline = [YMKPolyline polylineWithPoints:_points];
 
     return self;
@@ -105,11 +107,16 @@
     [self updatePolyline];
 }
 
+- (void)setHandled:(BOOL)_handled {
+    handled = _handled;
+}
+
+
 - (BOOL)onMapObjectTapWithMapObject:(nonnull YMKMapObject*)mapObject point:(nonnull YMKPoint*)point {
     if (self.onPress)
         self.onPress(@{});
 
-    return YES;
+    return handled;
 }
 
 - (NSMutableArray<YMKPoint*>*)getPoints {

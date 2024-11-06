@@ -11,7 +11,7 @@ class YamapSuggests: NSObject {
         let southWestPoint = YMKPoint(latitude: -90.0, longitude: -180.0)
         let northEastPoint = YMKPoint(latitude: 90.0, longitude: 180.0)
         self.defaultBoundingBox = YMKBoundingBox(southWest: southWestPoint, northEast: northEastPoint)
-        self.suggestOptions = YMKSuggestOptions(suggestTypes: [], userPosition: nil, suggestWords: false)
+        self.suggestOptions = YMKSuggestOptions(suggestTypes: [], userPosition: nil, suggestWords: false, strictBounds: false)
         super.init()
     }
 
@@ -26,7 +26,7 @@ class YamapSuggests: NSObject {
             DispatchQueue.main.sync(execute: block)
         }
     }
-    
+
     func runAsyncOnMainQueueWithoutDeadlocking(_ block: @escaping () -> Void) {
         if Thread.isMainThread {
             block()
@@ -60,7 +60,7 @@ class YamapSuggests: NSObject {
     @objc func suggestHandler(_ searchQuery: String, options: YMKSuggestOptions, boundingBox: YMKBoundingBox, resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
         do {
             let session = getSuggestClient()
-            
+
             runAsyncOnMainQueueWithoutDeadlocking {
                 session.suggest(withText: searchQuery, window: boundingBox, suggestOptions: options) { suggest, error in
                     if let error = error {

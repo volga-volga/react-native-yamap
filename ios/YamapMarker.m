@@ -56,6 +56,14 @@ RCT_CUSTOM_VIEW_PROPERTY(visible, NSNumber, YamapMarkerView) {
     [view setVisible: json];
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(handled, BOOL, YamapMarkerView) {
+    if (json == nil || [json boolValue]) {
+        [view setHandled: YES];
+    } else {
+        [view setHandled: NO];
+    }
+}
+
 RCT_CUSTOM_VIEW_PROPERTY(anchor, NSDictionary, YamapMarkerView) {
     CGPoint point;
 

@@ -21,6 +21,7 @@
 - (YMKPolyline*)getPolyline;
 - (YMKPolylineMapObject*)getMapObject;
 - (void)setMapObject:(YMKPolylineMapObject*)mapObject;
+- (void)setHandled:(BOOL)_handled;
 
 @end
 

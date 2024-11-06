@@ -58,6 +58,11 @@ class YamapMarkerManager internal constructor() : ViewGroupManager<YamapMarker>(
         castToMarkerView(view).setScale(scale)
     }
 
+    @ReactProp(name = "handled")
+    fun setHandled(view: View, handled: Boolean?) {
+        castToMarkerView(view).setHandled(handled ?: true)
+    }
+
     @ReactProp(name = "rotated")
     fun setRotated(view: View, rotated: Boolean?) {
         castToMarkerView(view).setRotated(rotated ?: true)

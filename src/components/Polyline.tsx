@@ -15,6 +15,7 @@ export interface PolylineProps {
   onPress?: () => void;
   points: Point[];
   children?: undefined;
+  handled?: boolean;
 }
 
 const NativePolylineComponent = requireNativeComponent<PolylineProps>('YamapPolyline');

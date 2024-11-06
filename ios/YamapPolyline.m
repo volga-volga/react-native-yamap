@@ -76,4 +76,12 @@ RCT_CUSTOM_VIEW_PROPERTY(zIndex, NSNumber, YamapPolylineView) {
     [view setZIndex: json];
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(handled, NSNumber, YamapPolylineView) {
+    if (json == nil || [json boolValue]) {
+        [view setHandled: YES];
+    } else {
+        [view setHandled: NO];
+    }
+}
+
 @end
