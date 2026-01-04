@@ -225,8 +225,8 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
         val screenPoints = Arguments.createArray()
 
         for (i in 0 until worldPoints.size()) {
-            val p = worldPoints.getMap(i)!!
-            val worldPoint = Point(p.getDouble("lat"), p.getDouble("lon"))
+            val p = worldPoints.getMap(i)
+            val worldPoint = Point(p?.getDouble("lat") ?: 0.0, p?.getDouble("lon") ?: 0.0)
             val screenPoint = mapWindow.worldToScreen(worldPoint)
             screenPoints.pushMap(screenPointToJSON(screenPoint))
         }
@@ -244,8 +244,8 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
         val worldPoints = Arguments.createArray()
 
         for (i in 0 until screenPoints.size()) {
-            val p = screenPoints.getMap(i)!!
-            val screenPoint = ScreenPoint(p.getDouble("x").toFloat(), p.getDouble("y").toFloat())
+            val p = screenPoints.getMap(i)
+            val screenPoint = ScreenPoint((p?.getDouble("x") ?: 0.0).toFloat(), (p?.getDouble("y") ?: 0.0).toFloat())
             val worldPoint = mapWindow.screenToWorld(screenPoint)
             worldPoints.pushMap(worldPointToJSON(worldPoint))
         }
@@ -493,7 +493,7 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
             params.getDouble("tilt").toFloat()
 
         val initialPosition = Point(
-            params.getDouble("lat"), params.getDouble("lon")
+            params?.getDouble("lat") ?: 0.0, params?.getDouble("lon") ?: 0.0
         )
         val initialCameraPosition = CameraPosition(
             initialPosition,
@@ -590,10 +590,10 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
         if (show) {
             userLocationLayer!!.setObjectListener(this)
             userLocationLayer!!.isVisible = true
-            userLocationLayer!!.isHeadingModeActive = true
+            // userLocationLayer!!.isHeadingEnabled = true  // Removed in SDK 4.19.0
         } else {
             userLocationLayer!!.isVisible = false
-            userLocationLayer!!.isHeadingModeActive = false
+            // userLocationLayer!!.isHeadingEnabled = false  // Removed in SDK 4.19.0
             userLocationLayer!!.setObjectListener(null)
         }
     }
@@ -685,9 +685,7 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
         val wTransports = Arguments.createMap()
 
         for ((key, value) in transports) {
-            if (value != null) {
-                wTransports.putArray(key, Arguments.fromList(value))
-            }
+            wTransports.putArray(key, Arguments.fromList(value))
         }
 
         routeMetadata.putMap("transports", wTransports)
