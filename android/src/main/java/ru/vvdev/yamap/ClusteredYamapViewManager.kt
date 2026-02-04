@@ -128,7 +128,7 @@ class ClusteredYamapViewManager internal constructor() : ViewGroupManager<Cluste
             }
 
             "findRoutes" -> if (args != null) {
-                findRoutes(view, args.getArray(0), args.getArray(1), args.getString(2))
+                findRoutes(view, args.getArray(0), args.getArray(1), args.getString(2) ?: "")
             }
 
             "setZoom" -> if (args != null) {
@@ -152,11 +152,19 @@ class ClusteredYamapViewManager internal constructor() : ViewGroupManager<Cluste
             }
 
             "getScreenPoints" -> if (args != null) {
-                view.emitWorldToScreenPoints(args.getArray(0), args.getString(1))
+                args.getArray(0)?.let { array ->
+                    args.getString(1)?.let { id ->
+                        view.emitWorldToScreenPoints(array, id)
+                    }
+                }
             }
 
             "getWorldPoints" -> if (args != null) {
-                view.emitScreenToWorldPoints(args.getArray(0), args.getString(1))
+                args.getArray(0)?.let { array ->
+                    args.getString(1)?.let { id ->
+                        view.emitScreenToWorldPoints(array, id)
+                    }
+                }
             }
 
             else -> throw IllegalArgumentException(
@@ -171,7 +179,8 @@ class ClusteredYamapViewManager internal constructor() : ViewGroupManager<Cluste
 
     @ReactProp(name = "clusteredMarkers")
     fun setClusteredMarkers(view: View, points: ReadableArray) {
-        castToYaMapView(view).setClusteredMarkers(points.toArrayList())
+        @Suppress("UNCHECKED_CAST")
+        castToYaMapView(view).setClusteredMarkers(points.toArrayList() as ArrayList<Any>)
     }
 
     @ReactProp(name = "clusterColor")
@@ -243,7 +252,7 @@ class ClusteredYamapViewManager internal constructor() : ViewGroupManager<Cluste
             val vehicles = ArrayList<String>()
             if (jsVehicles != null) {
                 for (i in 0 until jsVehicles.size()) {
-                    vehicles.add(jsVehicles.getString(i))
+                    jsVehicles.getString(i)?.let { vehicles.add(it) }
                 }
             }
             castToYaMapView(view).findRoutes(points, vehicles, id)

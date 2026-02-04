@@ -131,7 +131,7 @@ class YamapSuggests: NSObject {
 
         if let userPosition = options["userPosition"] as? [String: Any] {
             do {
-                if let userPoint = try mapPoint(fromDictionary: userPosition, withKey: "userPosition") {
+                if let userPoint = try mapPoint(fromDictionary: options, withKey: "userPosition") {
                     opt.userPosition = userPoint
                 }
             } catch {

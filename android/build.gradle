@@ -9,7 +9,14 @@ buildscript {
 apply plugin: 'com.android.library'
 apply plugin: 'org.jetbrains.kotlin.android'
 
+def safeExtGet(prop, fallback) {
+  rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+}
+
+def GOOGLE_PLAY_SERVICES_LOCATION_VERSION = safeExtGet('playServicesLocationVersion', "+")
+
 android {
+    namespace = 'ru.vvdev.yamap'
 
     defaultConfig {
         compileSdkVersion 34
@@ -31,8 +38,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-location:+'
+    implementation 'com.google.android.gms:play-services-location:$GOOGLE_PLAY_SERVICES_LOCATION_VERSION'
     implementation 'com.facebook.react:react-native:+'
-    implementation 'com.yandex.android:maps.mobile:4.8.0-full'
+    implementation 'com.yandex.android:maps.mobile:4.19.0-full'
     implementation 'androidx.core:core-ktx:1.13.1'
 }

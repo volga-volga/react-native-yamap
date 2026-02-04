@@ -128,7 +128,7 @@ class YamapViewManager internal constructor() : ViewGroupManager<YamapView>() {
             }
 
             "findRoutes" -> if (args != null) {
-                findRoutes(view, args.getArray(0), args.getArray(1), args.getString(2))
+                findRoutes(view, args.getArray(0), args.getArray(1), args.getString(2)!!)
             }
 
             "setZoom" -> if (args != null) {
@@ -152,11 +152,11 @@ class YamapViewManager internal constructor() : ViewGroupManager<YamapView>() {
             }
 
             "getScreenPoints" -> if (args != null) {
-                view.emitWorldToScreenPoints(args.getArray(0), args.getString(1))
+                view.emitWorldToScreenPoints(args.getArray(0)!!, args.getString(1))
             }
 
             "getWorldPoints" -> if (args != null) {
-                view.emitScreenToWorldPoints(args.getArray(0), args.getString(1))
+                view.emitScreenToWorldPoints(args.getArray(0)!!, args.getString(1))
             }
 
             else -> throw IllegalArgumentException(
@@ -237,7 +237,7 @@ class YamapViewManager internal constructor() : ViewGroupManager<YamapView>() {
 
             if (jsVehicles != null) {
                 for (i in 0 until jsVehicles.size()) {
-                    vehicles.add(jsVehicles.getString(i))
+                    vehicles.add(jsVehicles.getString(i)!!)
                 }
             }
 
