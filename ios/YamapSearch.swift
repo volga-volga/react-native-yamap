@@ -166,7 +166,7 @@ class YamapSearch: NSObject {
     }
 
     @objc func searchByPoint(_ point: [String: Any], zoom: NSNumber, options: [String: Any]?, resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
-        let searchPoint = YMKPoint(latitude: point["lat"] as! Double, longitude: point["lat"] as! Double)
+        let searchPoint = YMKPoint(latitude: point["lat"] as! Double, longitude: point["lon"] as! Double)
         self.initSearchManager()
         self.setSearchOptions(options: options)
         runOnMainQueueWithoutDeadlocking {
@@ -182,7 +182,7 @@ class YamapSearch: NSObject {
     }
 
     @objc func geoToAddress(_ point: [String: Any], resolver: @escaping RCTPromiseResolveBlock, rejecter: @escaping RCTPromiseRejectBlock) {
-        let searchPoint = YMKPoint(latitude: point["lat"] as! Double, longitude: point["lat"] as! Double)
+        let searchPoint = YMKPoint(latitude: point["lat"] as! Double, longitude: point["lon"] as! Double)
         self.initSearchManager()
         self.setSearchOptions(options: nil)
         runOnMainQueueWithoutDeadlocking {
