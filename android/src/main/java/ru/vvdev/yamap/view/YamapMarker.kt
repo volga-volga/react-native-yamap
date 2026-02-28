@@ -4,7 +4,9 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Paint
 import android.graphics.PointF
+import android.graphics.RectF
 import android.view.View
 import android.view.View.OnLayoutChangeListener
 import android.view.animation.LinearInterpolator
@@ -22,6 +24,13 @@ import com.yandex.runtime.image.ImageProvider
 import ru.vvdev.yamap.models.ReactMapObject
 import ru.vvdev.yamap.utils.Callback
 import ru.vvdev.yamap.utils.ImageLoader.DownloadImageBitmap
+import android.graphics.Color
+import android.graphics.Paint.ANTI_ALIAS_FLAG
+import android.graphics.Path
+import android.graphics.Shader
+import android.graphics.BitmapShader
+import android.graphics.BitmapFactory
+
 
 class YamapMarker(context: Context?) : ReactViewGroup(context), MapObjectTapListener,
     ReactMapObject {
@@ -38,6 +47,7 @@ class YamapMarker(context: Context?) : ReactViewGroup(context), MapObjectTapList
     private var _childView: View? = null
     override var rnMapObject: MapObject? = null
     private val childs = ArrayList<View>()
+    private var similarMarkersCount: Int? = null
 
     private val childLayoutListener =
         OnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom -> updateMarker() }
@@ -85,6 +95,11 @@ class YamapMarker(context: Context?) : ReactViewGroup(context), MapObjectTapList
         updateMarker()
     }
 
+    fun setSimilarMarkersCount(count: Int?) {
+        similarMarkersCount = count
+        updateMarker()
+    }
+    
     private fun updateMarker() {
         if (rnMapObject != null && rnMapObject!!.isValid) {
             val iconStyle = IconStyle()
@@ -97,38 +112,128 @@ class YamapMarker(context: Context?) : ReactViewGroup(context), MapObjectTapList
             (rnMapObject as PlacemarkMapObject).geometry = point!!
             (rnMapObject as PlacemarkMapObject).zIndex = zIndex.toFloat()
             (rnMapObject as PlacemarkMapObject).setIconStyle(iconStyle)
-
-            if (_childView != null) {
-                try {
-                    val b = Bitmap.createBitmap(
-                        _childView!!.width, _childView!!.height, Bitmap.Config.ARGB_8888
-                    )
-                    val c = Canvas(b)
-                    _childView!!.draw(c)
-                    (rnMapObject as PlacemarkMapObject).setIcon(ImageProvider.fromBitmap(b))
-                    (rnMapObject as PlacemarkMapObject).setIconStyle(iconStyle)
-                } catch (e: Exception) {
-                    e.printStackTrace()
+        // Проверяем, нужно ли отрисовывать текст
+        if (similarMarkersCount != null && similarMarkersCount!! > 1) {
+            drawTextMarker(similarMarkersCount!!)
+            } else { // если нет, то текущая логика
+                if (_childView != null) {
+                    try {
+                        val b = Bitmap.createBitmap(
+                            _childView!!.width, _childView!!.height, Bitmap.Config.ARGB_8888
+                        )
+                        val c = Canvas(b)
+                        _childView!!.draw(c)
+                        (rnMapObject as PlacemarkMapObject).setIcon(ImageProvider.fromBitmap(b))
+                        (rnMapObject as PlacemarkMapObject).setIconStyle(iconStyle)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
-            }
-            if (childs.size == 0) {
-                if (iconSource != "") {
-                    iconSource?.let {
-                        DownloadImageBitmap(context, it, object : Callback<Bitmap?> {
-                            override fun invoke(arg: Bitmap?) {
-                                try {
-                                    val icon = ImageProvider.fromBitmap(arg)
-                                    (rnMapObject as PlacemarkMapObject).setIcon(icon)
-                                    (rnMapObject as PlacemarkMapObject).setIconStyle(iconStyle)
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
+                if (childs.size == 0) {
+                    if (iconSource != "") { // если есть ссылка на ресурс отрисовывем картинку
+                        iconSource?.let {
+                            DownloadImageBitmap(context, it, object : Callback<Bitmap?> {
+                                override fun invoke(arg: Bitmap?) {
+                                    try {
+                                        if (arg != null) {
+                                            val scaledBitmap = Bitmap.createScaledBitmap(arg, 140, 140, true)
+                                            val icon = createRoundedMarkerImage(scaledBitmap)
+                                            // val icon = createRoundedMarkerImage(arg)
+                                            (rnMapObject as PlacemarkMapObject).setIcon(ImageProvider.fromBitmap(icon))
+                                            (rnMapObject as PlacemarkMapObject).setIconStyle(iconStyle)
+                                        }
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                    }
                                 }
-                            }
-                        })
+                            })
+                        }
                     }
                 }
             }
         }
+    }
+    // Создаем Bitmap для текстового маркера
+    private fun drawTextMarker(count: Int) {
+        val textBitmap = Bitmap.createBitmap(140, 140, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(textBitmap)
+    
+        // Рисуем белый фон с закругленными углами
+        val backgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            style = Paint.Style.FILL
+        }
+        val radius = 80f // Радиус закругления
+        canvas.drawRoundRect(RectF(0f, 0f, textBitmap.width.toFloat(), textBitmap.height.toFloat()), radius, radius, backgroundPaint)
+    
+        // Настраиваем Paint для текста
+        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.BLACK
+            textSize = 60f
+            textAlign = Paint.Align.CENTER
+        }
+    
+        // Отрисовываем текст в центре
+        canvas.drawText(count.toString(), (textBitmap.width / 2).toFloat(), (textBitmap.height / 2).toFloat() - (textPaint.descent() + textPaint.ascent()) / 2, textPaint)
+    
+        // Рисуем черную обводку вокруг закругленного фона
+        val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.BLACK
+            style = Paint.Style.STROKE
+            strokeWidth = 10f // Толщина обводки
+        }
+
+        // Рисуем обводку вокруг закругленного фона
+        canvas.drawRoundRect(RectF(10f, 10f, (textBitmap.width - 10f).toFloat(), (textBitmap.height - 10f).toFloat()), radius, radius, borderPaint)
+    
+        // Устанавливаем иконку маркера как текстовый Bitmap
+        (rnMapObject as PlacemarkMapObject).setIcon(ImageProvider.fromBitmap(textBitmap))
+    }
+
+    // Создаем Bitmap для изображения
+    private fun createRoundedMarkerImage(markerImage: Bitmap?): Bitmap? {
+        if (markerImage == null) return null
+    
+        val radius = 80f // Радиус закругления
+        val borderWidth = 10f // Ширина границы
+        val borderColor = Color.WHITE // Цвет границы
+    
+        // Создаем BitmapShader из изображения маркера
+        val shader = BitmapShader(markerImage, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+        val paint = Paint(ANTI_ALIAS_FLAG)
+        paint.shader = shader // Устанавливаем Shader для Paint
+    
+        // Создаем новый Bitmap для закругленного изображения
+        val roundedBitmap = Bitmap.createBitmap(
+            140 + (borderWidth * 2).toInt(), // Ширина с учётом границы
+            140 + (borderWidth * 2).toInt(), // Высота с учётом границы
+            Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(roundedBitmap)
+    
+        // Рисуем закругленный фон (с учётом отступов для границы)
+        canvas.drawRoundRect(
+            RectF(borderWidth, borderWidth, 
+                   (markerImage.width + borderWidth).toFloat(), 
+                   (markerImage.height + borderWidth).toFloat()), 
+            radius, radius, paint
+        )
+    
+        // Рисуем белую границу
+        val borderPaint = Paint(ANTI_ALIAS_FLAG)
+        borderPaint.color = borderColor
+        borderPaint.style = Paint.Style.STROKE // Устанавливаем стиль рисования: только обводка
+        borderPaint.strokeWidth = borderWidth // Устанавливаем толщину обводки
+    
+        // Рисуем границу вокруг закругленного изображения
+        canvas.drawRoundRect(
+            RectF(borderWidth, borderWidth, 
+                   (markerImage.width + borderWidth).toFloat(), 
+                   (markerImage.height + borderWidth).toFloat()), 
+            radius, radius, borderPaint
+        )
+    
+        return roundedBitmap
     }
 
     fun setMarkerMapObject(obj: MapObject?) {

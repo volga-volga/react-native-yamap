@@ -90,6 +90,11 @@ class YamapMarkerManager internal constructor() : ViewGroupManager<YamapMarker>(
         )
     }
 
+    @ReactProp(name = "similarMarkersCount") //отображение кол-во одинаковых по координатам маркеров в виде текста, не обязательное свойство
+    fun setSimilarMarkersCount(view: View, count: Int?) {
+        castToMarkerView(view).setSimilarMarkersCount(count)
+    }
+
     override fun addView(parent: YamapMarker, child: View, index: Int) {
         parent.addChildView(child, index)
         super.addView(parent, child, index)

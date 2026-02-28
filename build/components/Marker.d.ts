@@ -15,6 +15,7 @@ export interface MarkerProps {
     };
     visible?: boolean;
     handled?: boolean;
+    similarMarkersCount?: number; //кол-во одинаковых по координатам маркеров
 }
 interface State {
     recreateKey: boolean;
