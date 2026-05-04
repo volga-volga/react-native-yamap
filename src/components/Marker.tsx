@@ -1,98 +1,44 @@
-import React from 'react';
-import { requireNativeComponent, Platform, ImageSourcePropType, UIManager, findNodeHandle } from 'react-native';
-// @ts-ignore
-import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
-import { Point } from '../interfaces';
+import React, {forwardRef, useImperativeHandle, useMemo, useRef} from 'react';
+import {type ImageSourcePropType} from 'react-native';
+import {getImageUri, type OmitEx} from '../utils';
+import MarkerNativeComponent, {type MarkerNativeProps} from '../spec/MarkerNativeComponent';
+import {Commands} from '../spec/commands/marker';
+import type {Point} from "../";
 
-export interface MarkerProps {
-  children?: React.ReactElement;
-  zIndex?: number;
-  scale?: number;
-  rotated?: boolean;
-  onPress?: () => void;
-  point: Point;
+export type MarkerProps = OmitEx<MarkerNativeProps, 'source' | 'zI'> &  {
   source?: ImageSourcePropType;
-  anchor?: { x: number, y: number };
-  visible?: boolean;
-  handled?: boolean;
+  source3d?: ImageSourcePropType;
+  zIndex?: number;
 }
 
-const NativeMarkerComponent = requireNativeComponent<MarkerProps & { pointerEvents: 'none' }>('YamapMarker');
-
-interface State {
-  recreateKey: boolean;
-  children: any;
+export interface MarkerRef {
+  animatedMoveTo: (coords: Point, duration: number) => void;
+  animatedRotateTo: (angle: number, duration: number) => void;
 }
 
-export class Marker extends React.Component<MarkerProps, State> {
-  static defaultProps = {
-    rotated: false,
-  };
+export const Marker = forwardRef<MarkerRef, MarkerProps>(({source, source3d, zIndex, visible = true, ...props}, ref) => {
+  const nativeRef = useRef(null);
 
-  state = {
-    recreateKey: false,
-    children: this.props.children
-  };
+  const imageUri = useMemo(() => getImageUri(source), [source]);
 
-  private getCommand(cmd: string): any {
-    if (Platform.OS === 'ios') {
-      return UIManager.getViewManagerConfig('YamapMarker').Commands[cmd];
-    } else {
-      return cmd;
-    }
-  }
+  const image3dUri = useMemo(() => getImageUri(source3d), [source]);
 
-  static getDerivedStateFromProps(nextProps: MarkerProps, prevState: State): Partial<State> {
-    if (Platform.OS === 'ios') {
-      return {
-        children: nextProps.children,
-        recreateKey:
-          nextProps.children === prevState.children
-            ? prevState.recreateKey
-            : !prevState.recreateKey
-      };
-    }
+  useImperativeHandle<MarkerRef, any>(ref, () => ({
+    animatedMoveTo: (coords: Point, duration: number) =>
+      Commands.animatedMoveTo(nativeRef.current!, [{coords, duration}]),
+    animatedRotateTo: (angle: number, duration: number) =>
+      Commands.animatedRotateTo(nativeRef.current!, [{angle, duration}]),
+  }), []);
 
-    return {
-      children: nextProps.children,
-      recreateKey: Boolean(nextProps.children)
-    };
-  }
-
-  private resolveImageUri(img?: ImageSourcePropType) {
-    return img ? resolveAssetSource(img).uri : '';
-  }
-
-  private getProps() {
-    return {
-      ...this.props,
-      source: this.resolveImageUri(this.props.source)
-    };
-  }
-
-  public animatedMoveTo(coords: Point, duration: number) {
-    UIManager.dispatchViewManagerCommand(
-      findNodeHandle(this),
-      this.getCommand('animatedMoveTo'),
-      [coords, duration]
-    );
-  }
-
-  public animatedRotateTo(angle: number, duration: number) {
-    UIManager.dispatchViewManagerCommand(
-      findNodeHandle(this),
-      this.getCommand('animatedRotateTo'),
-      [angle, duration]
-    );
-  }
-
-  render() {
-    return (
-      <NativeMarkerComponent
-        {...this.getProps()}
-        key={String(this.state.recreateKey)}
-        pointerEvents='none'
-      />
-    );
-  }
-}
+  return (
+    <MarkerNativeComponent
+      zI={zIndex}
+      {...props}
+      ref={nativeRef}
+      source={imageUri}
+      source3d={image3dUri}
+      visible={visible}
+      pointerEvents="none"
+    />
+  );
+});

@@ -1,33 +1,21 @@
-import React from 'react';
-import { requireNativeComponent } from 'react-native';
-import { processColorProps } from '../utils';
-import { Point } from '../interfaces';
+import React, {type FC, useMemo} from 'react';
+import {type OmitEx, processColorsToNative} from '../utils';
+import PolygonNativeComponent, {type PolygonNativeProps} from '../spec/PolygonNativeComponent';
 
-export interface PolygonProps {
+export type PolygonProps = OmitEx<PolygonNativeProps, 'fillColor' | 'strokeColor' | 'zI'> & {
   fillColor?: string;
   strokeColor?: string;
-  strokeWidth?: number;
   zIndex?: number;
-  onPress?: () => void;
-  points: Point[];
-  innerRings?: (Point[])[];
-  children?: undefined;
-  handled?: boolean;
 }
 
-const NativePolygonComponent = requireNativeComponent<PolygonProps>('YamapPolygon');
+export const Polygon: FC<PolygonProps> = ({zIndex, ...props}) => {
+  const nativeProps = useMemo(() =>
+    processColorsToNative(props, ['fillColor', 'strokeColor']),
+    [props]
+  );
 
-export class Polygon extends React.Component<PolygonProps> {
-  static defaultProps = {
-    innerRings: []
-  };
-
-  render() {
-    const props = { ...this.props };
-
-    processColorProps(props, 'fillColor' as keyof PolygonProps);
-    processColorProps(props, 'strokeColor' as keyof PolygonProps);
-
-    return <NativePolygonComponent {...props} />;
-  }
-}
+  return <PolygonNativeComponent
+    zI={zIndex}
+    {...nativeProps}
+  />;
+};

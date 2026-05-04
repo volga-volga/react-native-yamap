@@ -1,33 +1,21 @@
-import React from 'react';
-import { requireNativeComponent } from 'react-native';
-import { processColorProps } from '../utils';
-import { Point } from '../interfaces';
+import React, {type FC, useMemo} from 'react';
+import {type OmitEx, processColorsToNative} from '../utils';
+import PolylineNativeComponent, {type PolylineNativeProps} from '../spec/PolylineNativeComponent';
 
-export interface PolylineProps {
+type PolylineProps = OmitEx<PolylineNativeProps, 'strokeColor' | 'outlineColor' | 'zI'> & {
   strokeColor?: string;
   outlineColor?: string;
-  strokeWidth?: number;
-  outlineWidth?: number;
-  dashLength?: number;
-  dashOffset?: number;
-  gapLength?: number;
   zIndex?: number;
-  onPress?: () => void;
-  points: Point[];
-  children?: undefined;
-  handled?: boolean;
 }
 
-const NativePolylineComponent = requireNativeComponent<PolylineProps>('YamapPolyline');
+export const Polyline: FC<PolylineProps> = ({zIndex, ...props}) => {
+  const nativeProps = useMemo(() =>
+    processColorsToNative(props, ['strokeColor', 'outlineColor']),
+    [props]
+  );
 
-export class Polyline extends React.Component<PolylineProps> {
-  render() {
-    const props = { ...this.props };
-
-    processColorProps(props, 'fillColor' as keyof PolylineProps);
-    processColorProps(props, 'strokeColor' as keyof PolylineProps);
-    processColorProps(props, 'outlineColor' as keyof PolylineProps);
-
-    return <NativePolylineComponent {...props} />;
-  }
-}
+  return <PolylineNativeComponent
+    zI={zIndex}
+    {...nativeProps}
+  />;
+};

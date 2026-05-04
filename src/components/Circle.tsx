@@ -1,32 +1,21 @@
-import React from 'react';
-import { requireNativeComponent } from 'react-native';
-import { processColorProps } from '../utils';
-import { Point } from '../interfaces';
+import React, {type FC, useMemo} from 'react';
+import {type OmitEx, processColorsToNative} from '../utils';
+import CircleNativeComponent, {type CircleNativeProps} from '../spec/CircleNativeComponent';
 
-export interface CircleProps {
+export type CircleProps = OmitEx<CircleNativeProps, 'fillColor' | 'strokeColor' | 'zI'> & {
   fillColor?: string;
   strokeColor?: string;
-  strokeWidth?: number;
   zIndex?: number;
-  onPress?: () => void;
-  center: Point;
-  radius: number;
-  children?: undefined;
-  handled?: boolean;
 }
 
-const NativeCircleComponent = requireNativeComponent<CircleProps>('YamapCircle');
+export const Circle: FC<CircleProps> = ({zIndex, ...props}) => {
+  const nativeProps = useMemo(() =>
+    processColorsToNative(props, ['fillColor', 'strokeColor']),
+    [props]
+  );
 
-export class Circle extends React.Component<CircleProps> {
-  static defaultProps = {
-  };
-
-  render() {
-    const props = { ...this.props };
-
-    processColorProps(props, 'fillColor' as keyof CircleProps);
-    processColorProps(props, 'strokeColor' as keyof CircleProps);
-
-    return <NativeCircleComponent {...props} />;
-  }
-}
+  return <CircleNativeComponent
+    zI={zIndex}
+    {...nativeProps}
+  />;
+};

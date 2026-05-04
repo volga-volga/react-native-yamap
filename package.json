@@ -1,9 +1,9 @@
 {
   "name": "react-native-yamap",
-  "version": "4.8.3",
+  "version": "4.9.0",
   "description": "Yandex.MapKit and Yandex.Geocoder for react-native",
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
+  "source": "src/index.ts",
+  "main": "src/index.ts",
   "scripts": {
     "prepublishOnly": "rm -rf build && tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -12,6 +12,7 @@
   "keywords": [
     "react-native",
     "mapkit",
+    "component",
     "yandex",
     "yamap",
     "polygon",
@@ -25,14 +26,50 @@
     "geocoder"
   ],
   "author": "Nikita Sirotkin",
-  "license": "",
+  "license": "MIT",
   "devDependencies": {
     "@types/react": "*",
     "@types/react-native": "*",
-    "typescript": "^4.9.5"
+    "typescript": "^5.8.3"
   },
   "peerDependencies": {
     "react": "*",
     "react-native": "*"
-  }
+  },
+  "files": [
+    "src",
+    "android",
+    "ios",
+    "*.podspec",
+    "tsconfig.json",
+    "!ios/build",
+    "!android/build",
+    "!android/local.properties",
+    "!**/__tests__",
+    "!**/__fixtures__",
+    "!**/__mocks__",
+    "!**/.*"
+  ],
+  "workspaces": [
+    "example"
+  ],
+  "codegenConfig": {
+    "name": "RNYamapPlusSpec",
+    "type": "all",
+    "jsSrcsDir": "./src/spec",
+    "android": {
+      "javaPackageName": "ru.yamap"
+    },
+    "ios": {
+      "componentProvider": {
+        "ClusteredYamapView": "ClusteredYamapView",
+        "CircleView": "CircleView",
+        "MarkerView": "MarkerView",
+        "PolygonView": "PolygonView",
+        "PolylineView": "PolylineView",
+        "YamapView": "YamapView"
+      }
+    }
+  },
+  "packageManager": "yarn@4.11.0"
 }

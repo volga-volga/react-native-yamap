@@ -1,45 +1,105 @@
-
 buildscript {
-    repositories {
-        jcenter()
-        mavenCentral()
-    }
+  ext.getExtOrDefault = {name ->
+    return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties['YamapPlus_' + name]
+  }
+
+  repositories {
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${getExtOrDefault("kotlinVersion")}"
+  }
 }
 
-apply plugin: 'com.android.library'
-apply plugin: 'org.jetbrains.kotlin.android'
-
-def safeExtGet(prop, fallback) {
-  rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+def isNewArchitectureEnabled() {
+  return rootProject.hasProperty("newArchEnabled") && rootProject.getProperty("newArchEnabled") == "true"
 }
 
-def GOOGLE_PLAY_SERVICES_LOCATION_VERSION = safeExtGet('playServicesLocationVersion', "+")
+def kotlin_version = getExtOrDefault("kotlinVersion")
+def play_services_location_version = getExtOrDefault("playServicesLocationVersion")
+def use_yandex_maps_lite = getExtOrDefault("useYandexMapsLite")
+def maps_mobile_full_version = getExtOrDefault("mapsMobileFullVersion")
+def maps_mobile_lite_version = getExtOrDefault("mapsMobileLiteVersion")
+
+println "isNewArchitectureEnabled=" + isNewArchitectureEnabled()
+println "kotlin_version=" + kotlin_version
+println "play_services_location_version=" + play_services_location_version
+println "use_yandex_maps_lite=" + use_yandex_maps_lite
+
+apply plugin: "com.android.library"
+apply plugin: "kotlin-android"
+
+if (isNewArchitectureEnabled()) {
+  apply plugin: "com.facebook.react"
+}
+
+def getExtOrIntegerDefault(name) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["YamapPlus_" + name]).toInteger()
+}
 
 android {
-    namespace = 'ru.vvdev.yamap'
+  namespace = "ru.yamap"
 
-    defaultConfig {
-        compileSdkVersion 34
-        minSdkVersion 26
-        targetSdkVersion 34
-        versionCode 1
-        versionName "1.1"
+  compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
+
+  defaultConfig {
+    minSdkVersion getExtOrIntegerDefault("minSdkVersion")
+    targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
+  }
+
+  kotlinOptions {
+    jvmTarget = "17"
+  }
+
+  sourceSets {
+    main {
+      if (isNewArchitectureEnabled()) {
+        java.srcDirs += [
+                "generated",
+                'src/newarch'
+        ]
+      } else {
+        java.srcDirs += [
+                'src/oldarch'
+        ]
+      }
+      if (use_yandex_maps_lite == true) {
+        java.srcDirs += [
+                'src/mapkit/lite'
+        ]
+      } else {
+        java.srcDirs += [
+                'src/mapkit/full'
+        ]
+      }
     }
-    lintOptions {
-        abortOnError false
-    }
-    kotlinOptions {
-        jvmTarget = '17'
-    }
+  }
 }
 
 repositories {
-    mavenCentral()
+  mavenCentral()
 }
 
 dependencies {
-    implementation 'com.google.android.gms:play-services-location:$GOOGLE_PLAY_SERVICES_LOCATION_VERSION'
-    implementation 'com.facebook.react:react-native:+'
-    implementation 'com.yandex.android:maps.mobile:4.19.0-full'
-    implementation 'androidx.core:core-ktx:1.13.1'
+  //noinspection GradleDynamicVersion
+  implementation "com.facebook.react:react-native:+"
+  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+  implementation "com.google.android.gms:play-services-location:$play_services_location_version"
+  if (use_yandex_maps_lite == true) {
+    println "maps_mobile_version=" + maps_mobile_lite_version
+    implementation "com.yandex.android:maps.mobile:$maps_mobile_lite_version"
+  } else {
+    println "maps_mobile_version=" + maps_mobile_full_version
+    implementation "com.yandex.android:maps.mobile:$maps_mobile_full_version"
+  }
+}
+
+if (isNewArchitectureEnabled()) {
+  react {
+    jsRootDir = file("../src/")
+    libraryName = "RNYamapPlus"
+    codegenJavaPackageName = "ru.yamap"
+  }
 }

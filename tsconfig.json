@@ -1,18 +1,21 @@
 {
   "compilerOptions": {
     "declaration": true,
-    "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "jsx": "react",
-    "lib": ["dom", "es5", "es6", "scripthost"],
-    "target": "es5",
+    "lib": ["esnext"],
+    "module": "esnext",
+    "moduleResolution": "node",
+    "target": "esnext",
+    "outDir": "lib",
     "rootDir": "./src",
-    "outDir": "build",
     "sourceMap": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true
   },
-  "exclude": ["node_modules"]
+  "exclude": ["example", "lib", "**/node_modules", "**/Pods"],
+  "include": ["**/*.ts", "**/*.tsx"]
 }

@@ -1,6 +1,6 @@
-import { guid } from './index';
+import { guid } from './guid';
 
-export default class CallbacksManager {
+export class CallbacksManager {
   static callbacks: { [id: string]: (...arg: any[]) => void} = {};
 
   static addCallback(callback: (...arg: any[]) => void) {
