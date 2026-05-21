@@ -35,6 +35,10 @@ class MarkerViewManager : ViewGroupManager<MarkerView>(), MarkerViewManagerInter
         implementation.setScale(view, scale)
     }
 
+    override fun setDirection(view: MarkerView, direction: Float) {
+        implementation.setDirection(view, direction)
+    }
+
     override fun setHandled(view: MarkerView, handled: Boolean) {
         implementation.setHandled(view, handled)
     }

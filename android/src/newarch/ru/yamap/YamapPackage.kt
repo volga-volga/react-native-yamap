@@ -6,6 +6,8 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.module.model.ReactModuleInfo
 import com.facebook.react.module.model.ReactModuleInfoProvider
 import com.facebook.react.uimanager.ViewManager
+import ru.yamap.module.CacheModule
+import ru.yamap.module.CacheModuleImpl
 import ru.yamap.module.SearchModule
 import ru.yamap.module.SearchModuleImpl
 import ru.yamap.module.SuggestsModule
@@ -29,9 +31,10 @@ class YamapPackage : BaseReactPackage() {
             SearchModuleImpl.NAME -> SearchModule(reactContext)
             SuggestsModuleImpl.NAME -> SuggestsModule(reactContext)
             YamapModuleImpl.NAME -> YamapModule(reactContext)
+            CacheModuleImpl.NAME -> CacheModule(reactContext)
 
             else -> null
-        }
+        } as NativeModule?
 
     override fun getReactModuleInfoProvider() = ReactModuleInfoProvider {
         mapOf(
@@ -62,6 +65,14 @@ class YamapPackage : BaseReactPackage() {
             YamapModuleImpl.NAME to ReactModuleInfo(
                 name = YamapModuleImpl.NAME,
                 className = YamapModuleImpl.NAME,
+                canOverrideExistingModule = false,
+                needsEagerInit = false,
+                isCxxModule = false,
+                isTurboModule = true
+            ),
+            CacheModuleImpl.NAME to ReactModuleInfo(
+                name = CacheModuleImpl.NAME,
+                className = CacheModuleImpl.NAME,
                 canOverrideExistingModule = false,
                 needsEagerInit = false,
                 isCxxModule = false,

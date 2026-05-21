@@ -36,6 +36,7 @@ class MarkerView(context: Context?) : ReactViewGroup(context), MapObjectTapListe
     var point: Point? = null
     private var _zIndex = 1f
     private var _scale = 1f
+    private var _direction = 0f
     private var _visible = true
     private var _handled = false
     private var _rotated = false
@@ -61,6 +62,11 @@ class MarkerView(context: Context?) : ReactViewGroup(context), MapObjectTapListe
 
     fun setZIndex(zIndex: Float) {
         _zIndex = zIndex
+        updateMarker()
+    }
+
+    fun setDirection(direction: Float) {
+        _direction = direction
         updateMarker()
     }
 
@@ -109,6 +115,7 @@ class MarkerView(context: Context?) : ReactViewGroup(context), MapObjectTapListe
             }
             (rnMapObject as PlacemarkMapObject).geometry = point!!
             (rnMapObject as PlacemarkMapObject).zIndex = _zIndex
+            (rnMapObject as PlacemarkMapObject).direction = _direction
             (rnMapObject as PlacemarkMapObject).setIconStyle(iconStyle)
 
             if (_childView != null) {

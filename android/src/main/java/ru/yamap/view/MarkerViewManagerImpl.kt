@@ -23,6 +23,10 @@ class MarkerViewManagerImpl() {
         view.setScale(scale)
     }
 
+    fun setDirection(view: MarkerView, direction: Float) {
+        view.setDirection(direction)
+    }
+
     fun setHandled(view: MarkerView, handled: Boolean) {
         view.setHandled(handled)
     }

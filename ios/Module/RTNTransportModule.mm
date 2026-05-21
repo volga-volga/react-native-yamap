@@ -3,7 +3,6 @@
 #ifdef USE_YANDEX_MAPS_FULL
 
 #import "ColorUtil.h"
-#import "ParkRouter.h"
 #import "../Util/RCTConvert+Yamap.mm"
 
 #import <YandexMapsMobile/YMKTransport.h>
@@ -145,18 +144,6 @@ NSMutableDictionary *vehicleColors;
                      zones:(NSArray *)zones
                    resolve:(RCTPromiseResolveBlock)resolve
                     reject:(RCTPromiseRejectBlock)reject {
-//    ParkRouter *router = [[ParkRouter alloc] initWithMapView:self.mapView];
-//
-//    [router buildRouteFrom:startPoint
-//                        to:endPoint
-//             outerBoundary:parkPolygon
-//            forbiddenZones:@[lakePolygon, flowerZone]
-//                completion:^(YMKRoute *route) {
-//
-//        if (route) {
-//            [self.mapView.map.mapObjects addPolylineWithPolyline:route.geometry];
-//        }
-//    }];
 }
 
 

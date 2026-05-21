@@ -34,6 +34,7 @@ using namespace facebook::react;
     YMKPoint* _point;
     YMKPlacemarkMapObject *mapObject;
     float zIndex;
+    float direction;
     NSNumber *scale;
     BOOL _rotated;
     NSString *source;
@@ -57,6 +58,7 @@ using namespace facebook::react;
 #endif
 
         zIndex = 1;
+        direction = 0;
         scale = [NSNumber numberWithInt:1];
         _rotated = NO;
         visible = YES;
@@ -99,6 +101,10 @@ using namespace facebook::react;
 
     if (oldViewProps.scale != newViewProps.scale) {
         scale = [NSNumber numberWithFloat:newViewProps.scale];
+    }
+
+    if (oldViewProps.direction != newViewProps.direction) {
+        direction = newViewProps.direction;
     }
 
     if (oldViewProps.zI != newViewProps.zI) {
@@ -156,6 +162,11 @@ using namespace facebook::react;
     [self updateMarker];
 }
 
+- (void)setDirection:(NSNumber *)direction {
+    direction = [direction floatValue];
+    [self updateMarker];
+}
+
 - (void)setVisible:(BOOL)_visible {
     visible = _visible;
     [self updateMarker];
@@ -208,6 +219,8 @@ using namespace facebook::react;
     if (mapObject != nil && [mapObject isValid]) {
         [mapObject setGeometry:_point];
         [mapObject setZIndex:zIndex];
+        [mapObject setDirection:direction];
+        [mapObject setDraggable:YES];
         YMKIconStyle* iconStyle = [[YMKIconStyle alloc] init];
         [iconStyle setScale:scale];
         [iconStyle setVisible:[NSNumber numberWithInt:visible]];
@@ -249,6 +262,7 @@ using namespace facebook::react;
     if (mapObject != nil && [mapObject isValid]) {
         [mapObject setGeometry:_point];
         [mapObject setZIndex:zIndex];
+        [mapObject setDirection:direction];
         YMKIconStyle* iconStyle = [[YMKIconStyle alloc] init];
         [iconStyle setScale:scale];
         [iconStyle setVisible:[NSNumber numberWithInt:visible]];

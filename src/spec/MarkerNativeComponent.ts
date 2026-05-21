@@ -25,6 +25,7 @@ export interface MarkerNativeProps extends ViewProps {
   source?: string;
   source3d?: string;
   zI?: Float;
+  direction?: Float;
 }
 
 export type MarkerComponentType = NativeComponentType<MarkerNativeProps> & Readonly<MarkerNativeCommands>;
