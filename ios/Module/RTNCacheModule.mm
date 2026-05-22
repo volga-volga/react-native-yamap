@@ -74,11 +74,10 @@ static RTNRegionListUpdatesListener *regionListUpdatesListener = nil;
 - (void)startDownloadRegionImpl:(nonnull NSNumber *)regionId resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject {
     [self initCacheManager];
     BOOL mayBeOutOfSpace = [cacheManager mayBeOutOfAvailableSpaceWithRegionId:regionId.unsignedIntegerValue];
-    if (!mayBeOutOfSpace) {
-        [cacheManager startDownloadWithRegionId:regionId.unsignedIntegerValue];
-        resolve(@(YES));
-    } else {
+    if (mayBeOutOfSpace) {
         resolve(@(NO));
+    } else {
+        resolve(@(YES));
     }
 }
 
@@ -150,24 +149,29 @@ static RTNRegionListUpdatesListener *regionListUpdatesListener = nil;
     [self searchRegionsImpl:resolve rejecter:reject];
 }
 
-- (void)getRegionInfo:(nonnull NSNumber *)regionId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [self getRegionInfoImpl:regionId resolver:resolve rejecter:reject];
+- (void)getRegionInfo:(double)regionId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    NSNumber *regionIdNumber = @(regionId);
+    [self getRegionInfoImpl:regionIdNumber resolver:resolve rejecter:reject];
 }
 
-- (void)startDownloadRegion:(nonnull NSNumber *)regionId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [self startDownloadRegionImpl:regionId resolver:resolve rejecter:reject];
+- (void)startDownloadRegion:(double)regionId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    NSNumber *regionIdNumber = @(regionId);
+    [self startDownloadRegionImpl:regionIdNumber resolver:resolve rejecter:reject];
 }
 
-- (void)stopDownloadRegion:(nonnull NSNumber *)regionId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [self stopDownloadRegionImpl:regionId resolver:resolve rejecter:reject];
+- (void)stopDownloadRegion:(double)regionId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    NSNumber *regionIdNumber = @(regionId);
+    [self stopDownloadRegionImpl:regionIdNumber resolver:resolve rejecter:reject];
 }
 
-- (void)pauseDownloadRegion:(nonnull NSNumber *)regionId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [self pauseDownloadRegionImpl:regionId resolver:resolve rejecter:reject];
+- (void)pauseDownloadRegion:(double)regionId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    NSNumber *regionIdNumber = @(regionId);
+    [self pauseDownloadRegionImpl:regionIdNumber resolver:resolve rejecter:reject];
 }
 
-- (void)dropRegion:(nonnull NSNumber *)regionId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [self dropRegionImpl:regionId resolver:resolve rejecter:reject];
+- (void)dropRegion:(double)regionId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    NSNumber *regionIdNumber = @(regionId);
+    [self dropRegionImpl:regionIdNumber resolver:resolve rejecter:reject];
 }
 
 #else
