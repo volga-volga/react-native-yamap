@@ -3,9 +3,15 @@ package ru.yamap.cache
 import com.facebook.react.bridge.WritableArray
 import ru.yamap.utils.Callback
 
+interface RegionEventsListener {
+    fun onRegionStateChanged(regionId: Int, state: Int)
+    fun onRegionProgress(regionId: Int, progress: Float)
+}
+
 interface MapCacheClient {
 
     fun initCache()
+    fun setRegionEventsListener(listener: RegionEventsListener?)
     fun searchRegions(onSuccess: Callback<WritableArray>?,
                       onError: Callback<Throwable?>?)
     fun getRegionState(id: Int, onSuccess: Callback<Number?>?,

@@ -4,6 +4,7 @@ import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
+import ru.yamap.module.CacheModule
 import ru.yamap.module.SearchModule
 import ru.yamap.module.SuggestsModule
 import ru.yamap.module.TransportModule
@@ -22,7 +23,8 @@ class YamapPackage : ReactPackage {
             TransportModule(reactContext),
             SearchModule(reactContext),
             SuggestsModule(reactContext),
-            YamapModule(reactContext)
+            YamapModule(reactContext),
+            CacheModule(reactContext)
         )
 
     override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> =

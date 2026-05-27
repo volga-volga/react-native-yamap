@@ -2,10 +2,11 @@ package ru.yamap.module
 
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactMethod
 import ru.yamap.NativeCacheModuleSpec
 
 class CacheModule(reactContext: ReactApplicationContext) : NativeCacheModuleSpec(reactContext) {
-    private val implementation = CacheModuleImpl()
+    private val implementation = CacheModuleImpl(reactContext)
 
     override fun getName() = CacheModuleImpl.NAME
 
@@ -48,6 +49,16 @@ class CacheModule(reactContext: ReactApplicationContext) : NativeCacheModuleSpec
 
     override fun dropRegion(regionId: Double, promise: Promise?) {
         implementation.dropRegion(regionId.toInt())
+    }
+
+    @ReactMethod
+    fun addListener(eventName: String?) {
+        implementation.addListener(eventName)
+    }
+
+    @ReactMethod
+    fun removeListeners(count: Double) {
+        implementation.removeListeners(count)
     }
 
 }

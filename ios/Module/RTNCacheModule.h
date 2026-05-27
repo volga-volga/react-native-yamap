@@ -5,8 +5,8 @@
 
 #else
 
-#import <React/RCTBridgeModule.h>
-@interface RTNCacheModule : NSObject <RCTBridgeModule>
+#import <React/RCTEventEmitter.h>
+@interface RTNCacheModule : RCTEventEmitter <RCTBridgeModule>
 
 #endif
 

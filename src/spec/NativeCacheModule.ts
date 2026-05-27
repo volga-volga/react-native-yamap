@@ -1,5 +1,5 @@
 // eslint-disable-next-line @react-native/no-deep-imports
-import {type Double} from 'react-native/Libraries/Types/CodegenTypes';
+import type {Double, EventEmitter} from 'react-native/Libraries/Types/CodegenTypes';
 import {type TurboModule, TurboModuleRegistry} from 'react-native';
 
 export interface Region {
@@ -18,6 +18,8 @@ interface Spec extends TurboModule {
   stopDownloadRegion(regionId: Double): Promise<void>
   pauseDownloadRegion(regionId: Double): Promise<void>
   dropRegion(regionId: Double): Promise<void>
+  readonly onRegionStateChanged: EventEmitter<{regionId: Double, state: Double}>
+  readonly onRegionProgress: EventEmitter<{regionId: Double, progress: Double}>
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('RTNCacheModule');

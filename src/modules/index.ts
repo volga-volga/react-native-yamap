@@ -1,5 +1,5 @@
 export {Search} from './Search';
-export {Cache} from './Cache';
+export {Cache, type CacheRegionProgressEvent, type CacheRegionStateChangedEvent} from './Cache';
 export {Suggest} from './Suggest';
 export {YamapInstance} from './YamapInstance';
 export {Transport} from './Transport';

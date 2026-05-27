@@ -5,11 +5,38 @@
 #import <YandexMapsMobile/YMKOfflineCacheManager.h>
 #import <YandexMapsMobile/YMKOfflineCacheRegion.h>
 
-@interface RTNRegionListUpdatesListener : NSObject <YMKOfflineMapRegionListUpdatesListener>
+@class RTNCacheModule;
+@interface RTNCacheModule (RegionUpdates)
+- (void)onRegionStateChangedWithRegionId:(NSUInteger)regionId;
+- (void)onRegionProgressWithRegionId:(NSUInteger)regionId;
+@end
+
+@interface RTNRegionListUpdatesListener : NSObject <YMKOfflineMapRegionListUpdatesListener, YMKOfflineCacheRegionListener>
+
+@property(nonatomic, weak) RTNCacheModule *module;
+
+- (instancetype)initWithModule:(RTNCacheModule *)module;
 @end
 
 @implementation RTNRegionListUpdatesListener
+
+- (instancetype)initWithModule:(RTNCacheModule *)module {
+    self = [super init];
+    if (self) {
+        _module = module;
+    }
+    return self;
+}
+
 - (void)onListUpdated {
+}
+
+- (void)onRegionStateChangedWithRegionId:(NSUInteger)regionId {
+    [_module onRegionStateChangedWithRegionId:regionId];
+}
+
+- (void)onRegionProgressWithRegionId:(NSUInteger)regionId {
+    [_module onRegionProgressWithRegionId:regionId];
 }
 @end
 
@@ -18,6 +45,23 @@
 @implementation RTNCacheModule
 
 NSString *ERR_CACHE_FAILED = @"CACHE_FAILED";
+NSString *EVENT_REGION_STATE_CHANGED = @"cacheRegionStateChanged";
+NSString *EVENT_REGION_PROGRESS = @"cacheRegionProgress";
+BOOL hasRegionEventsListeners = NO;
+
+- (void)emitCacheEvent:(NSString *)eventName payload:(NSDictionary *)payload {
+#ifdef RCT_NEW_ARCH_ENABLED
+    if ([eventName isEqualToString:EVENT_REGION_STATE_CHANGED]) {
+        [self emitOnRegionStateChanged:payload];
+    } else if ([eventName isEqualToString:EVENT_REGION_PROGRESS]) {
+        [self emitOnRegionProgress:payload];
+    }
+#else
+    if (hasRegionEventsListeners) {
+        [self sendEventWithName:eventName body:payload];
+    }
+#endif
+}
 
 #ifdef USE_YANDEX_MAPS_FULL
 static YMKOfflineCacheManager *cacheManager = nil;
@@ -27,8 +71,14 @@ static RTNRegionListUpdatesListener *regionListUpdatesListener = nil;
     if (cacheManager == nil) {
         cacheManager = [YMKMapKit sharedInstance].offlineCacheManager;
         [cacheManager enableAutoUpdateWithEnable:YES];
-        regionListUpdatesListener = [RTNRegionListUpdatesListener new];
+    }
+
+    if (regionListUpdatesListener == nil) {
+        regionListUpdatesListener = [[RTNRegionListUpdatesListener alloc] initWithModule:self];
+        [cacheManager addRegionListenerWithRegionListener:regionListUpdatesListener];
         [cacheManager addRegionListUpdatesListenerWithRegionListUpdatesListener:regionListUpdatesListener];
+    } else if (regionListUpdatesListener.module != self) {
+        regionListUpdatesListener.module = self;
     }
 }
 
@@ -39,7 +89,7 @@ static RTNRegionListUpdatesListener *regionListUpdatesListener = nil;
     };
 }
 
-- (void)initManager:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject {
+- (void)initImpl:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject {
     [self initCacheManager];
     resolve(nil);
 }
@@ -77,6 +127,7 @@ static RTNRegionListUpdatesListener *regionListUpdatesListener = nil;
     if (mayBeOutOfSpace) {
         resolve(@(NO));
     } else {
+        [cacheManager startDownloadWithRegionId:regionId.unsignedIntegerValue];
         resolve(@(YES));
     }
 }
@@ -97,6 +148,24 @@ static RTNRegionListUpdatesListener *regionListUpdatesListener = nil;
     [self initCacheManager];
     [cacheManager dropWithRegionId:regionId.unsignedIntegerValue];
     resolve(nil);
+}
+
+- (void)onRegionStateChangedWithRegionId:(NSUInteger)regionId {
+//    [self initCacheManager];
+    YMKOfflineCacheRegionState state = [cacheManager getStateWithRegionId:regionId];
+    [self emitCacheEvent:EVENT_REGION_STATE_CHANGED payload:@{
+        @"regionId": @(regionId),
+        @"state": @(state),
+    }];
+}
+
+- (void)onRegionProgressWithRegionId:(NSUInteger)regionId {
+//    [self initCacheManager];
+    float progress = [cacheManager getProgressWithRegionId:regionId];
+    [self emitCacheEvent:EVENT_REGION_PROGRESS payload:@{
+        @"regionId": @(regionId),
+        @"progress": @(progress),
+    }];
 }
 
 #else
@@ -135,6 +204,22 @@ static RTNRegionListUpdatesListener *regionListUpdatesListener = nil;
     return dispatch_get_main_queue();
 }
 
+#ifndef RCT_NEW_ARCH_ENABLED
+
+- (NSArray<NSString *> *)supportedEvents {
+    return @[EVENT_REGION_STATE_CHANGED, EVENT_REGION_PROGRESS];
+}
+
+- (void)startObserving {
+    hasRegionEventsListeners = YES;
+}
+
+- (void)stopObserving {
+    hasRegionEventsListeners = NO;
+}
+
+#endif
+
 #ifdef RCT_NEW_ARCH_ENABLED
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const facebook::react::ObjCTurboModule::InitParams &)params {
@@ -142,7 +227,7 @@ static RTNRegionListUpdatesListener *regionListUpdatesListener = nil;
 }
 
 - (void)initManager:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [self initManager:resolve rejecter:reject];
+    [self initImpl:resolve rejecter:reject];
 }
 
 - (void)searchRegions:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
@@ -176,7 +261,7 @@ static RTNRegionListUpdatesListener *regionListUpdatesListener = nil;
 
 #else
 
-RCT_EXPORT_METHOD(init:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+RCT_EXPORT_METHOD(initManager:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
     [self initImpl:resolve rejecter:reject];
 }
 
