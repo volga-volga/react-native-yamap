@@ -143,7 +143,7 @@ class MarkerView(context: Context?) : ReactViewGroup(context), MapObjectTapListe
                 _icon3dSource?.let { source ->
                     ModelCacheManager.getModel(context, source, fun (model: MapModel?) {
                         val newModelStyle = ModelStyle(1f, ModelStyle.UnitType.METER,
-                            ModelStyle.RenderMode.USER_MODEL, source)
+                            ModelStyle.RenderMode.BUILDING, source)
                         val mod = (rnMapObject as PlacemarkMapObject).useModel()
                         mod.setData(model!!, object : com.yandex.mapkit.map.Callback {
                             override fun onTaskFinished() {

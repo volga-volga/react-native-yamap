@@ -244,7 +244,7 @@ using namespace facebook::react;
                     [markModel setDataWithGltfDataProvider:model callback:^{
 //
                     }];
-                    YMKModelStyle *style = [YMKModelStyle modelStyleWithScale:[self->scale floatValue] unitType:YMKModelStyleUnitTypeMeter renderMode:YMKModelStyleRenderModeUserModel variantName:self->source3d];
+                    YMKModelStyle *style = [YMKModelStyle modelStyleWithScale:[self->scale floatValue] unitType:YMKModelStyleUnitTypeMeter renderMode:YMKModelStyleRenderModeBuilding variantName:self->source3d];
                     [markModel setModelStyle:style];
                 }];
             }
