@@ -94,6 +94,12 @@ static RTNRegionListUpdatesListener *regionListUpdatesListener = nil;
     resolve(nil);
 }
 
+- (void)allowUseCellularNetworkImpl:(BOOL)useCellular resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject {
+    [self initCacheManager];
+    [cacheManager allowUseCellularNetworkWithUseCellular:useCellular];
+    resolve(nil);
+}
+
 - (void)searchRegionsImpl:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject {
     [self initCacheManager];
 
@@ -174,6 +180,10 @@ static RTNRegionListUpdatesListener *regionListUpdatesListener = nil;
     reject(ERR_CACHE_FAILED, @"CACHE module is not available in Lite version", nil);
 }
 
+- (void)allowUseCellularNetworkImpl:(BOOL)useCellular resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject {
+    reject(ERR_CACHE_FAILED, @"CACHE module is not available in Lite version", nil);
+}
+
 - (void)searchRegionsImpl:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject {
     reject(ERR_CACHE_FAILED, @"CACHE module is not available in Lite version", nil);
 }
@@ -230,6 +240,10 @@ static RTNRegionListUpdatesListener *regionListUpdatesListener = nil;
     [self initImpl:resolve rejecter:reject];
 }
 
+- (void)allowUseCellularNetwork:(BOOL)useCellular resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [self allowUseCellularNetworkImpl:useCellular resolver:resolve rejecter:reject];
+}
+
 - (void)searchRegions:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [self searchRegionsImpl:resolve rejecter:reject];
 }
@@ -263,6 +277,10 @@ static RTNRegionListUpdatesListener *regionListUpdatesListener = nil;
 
 RCT_EXPORT_METHOD(initManager:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
     [self initImpl:resolve rejecter:reject];
+}
+
+RCT_EXPORT_METHOD(allowUseCellularNetwork:(BOOL)useCellular resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+    [self allowUseCellularNetworkImpl:useCellular resolver:resolve rejecter:reject];
 }
 
 RCT_EXPORT_METHOD(searchRegions:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {

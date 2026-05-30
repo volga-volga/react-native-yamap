@@ -18,6 +18,7 @@ const cacheEventsEmitter = new NativeEventEmitter(NativeCacheModule as any);
 
 export const Cache = {
   init: NativeCacheModule.initManager,
+  allowUseCellularNetwork: (useCellular: boolean) => NativeCacheModule.allowUseCellularNetwork(useCellular),
   searchRegions: NativeCacheModule.searchRegions,
   getRegionInfo: (regionId: number) => NativeCacheModule.getRegionInfo(regionId),
   startDownloadRegion: (regionId: number) => NativeCacheModule.startDownloadRegion(regionId),

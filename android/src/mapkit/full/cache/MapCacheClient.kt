@@ -11,6 +11,7 @@ interface RegionEventsListener {
 interface MapCacheClient {
 
     fun initCache()
+    fun allowUseCellularNetwork(useCellular: Boolean)
     fun setRegionEventsListener(listener: RegionEventsListener?)
     fun searchRegions(onSuccess: Callback<WritableArray>?,
                       onError: Callback<Throwable?>?)

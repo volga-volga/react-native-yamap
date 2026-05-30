@@ -12,10 +12,19 @@ class CacheModule(reactContext: ReactApplicationContext) : NativeCacheModuleSpec
 
     override fun initManager(promise: Promise?) {
         implementation.initManager()
+        promise?.resolve(null)
     }
 
     override fun searchRegions(promise: Promise?) {
         implementation.getRegionsList(promise!!)
+    }
+
+    override fun allowUseCellularNetwork(
+        useCellular: Boolean,
+        promise: Promise?
+    ) {
+        implementation.allowUseCellularNetwork(useCellular)
+        promise?.resolve(null)
     }
 
     override fun getRegionInfo(
@@ -49,6 +58,7 @@ class CacheModule(reactContext: ReactApplicationContext) : NativeCacheModuleSpec
 
     override fun dropRegion(regionId: Double, promise: Promise?) {
         implementation.dropRegion(regionId.toInt())
+        promise?.resolve(null)
     }
 
     @ReactMethod

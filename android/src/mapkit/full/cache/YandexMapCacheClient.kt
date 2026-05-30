@@ -46,6 +46,12 @@ class YandexMapCacheClient : MapCacheClient {
         }
     }
 
+    override fun allowUseCellularNetwork(useCellular: Boolean) {
+        UiThreadUtil.runOnUiThread {
+            _cacheManager?.allowUseCellularNetwork(useCellular)
+        }
+    }
+
     override fun setRegionEventsListener(listener: RegionEventsListener?) {
         regionEventsListener = listener
     }

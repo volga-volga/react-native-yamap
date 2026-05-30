@@ -26,6 +26,10 @@ class CacheModuleImpl(private val reactContext: ReactApplicationContext) {
         getCacheClient().initCache()
     }
 
+    fun allowUseCellularNetwork(useCellular: Boolean) {
+        getCacheClient().allowUseCellularNetwork(useCellular)
+    }
+
     fun getRegionsList(promise: Promise) {
         UiThreadUtil.runOnUiThread {
             getCacheClient().searchRegions(

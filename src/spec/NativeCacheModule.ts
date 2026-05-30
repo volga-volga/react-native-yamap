@@ -12,6 +12,7 @@ export interface Region {
 
 interface Spec extends TurboModule {
   initManager(): Promise<void>
+  allowUseCellularNetwork(useCellular: boolean): Promise<void>
   searchRegions(): Promise<Region[]>
   getRegionInfo(regionId: Double): Promise<void>
   startDownloadRegion(regionId: Double): Promise<void>
