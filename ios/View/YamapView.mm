@@ -27,6 +27,19 @@
 
 using namespace facebook::react;
 
+template <typename T>
+static NSNumber *YamapNumberFromPropValue(T value) {
+    return [NSNumber numberWithDouble:static_cast<double>(value)];
+}
+
+template <typename T>
+static NSNumber *YamapNumberFromPropValue(const std::optional<T> &value) {
+    if (!value.has_value()) {
+        return nil;
+    }
+    return [NSNumber numberWithDouble:static_cast<double>(value.value())];
+}
+
 @interface YamapView () <YMKUserLocationObjectListener, YMKMapCameraListener, YMKMapLoadedListener, YMKTrafficDelegate, YMKClusterListener, YMKClusterTapListener>
 
 @end
@@ -69,6 +82,8 @@ using namespace facebook::react;
     NSMutableArray<YMKPlacemarkMapObject *> *clusterPlacemarks;
     YMKClusterizedPlacemarkCollection *clusterCollection;
     BOOL mapLoaded;
+    NSNumber *minZoomPreference;
+    NSNumber *maxZoomPreference;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -90,7 +105,7 @@ using namespace facebook::react;
 
         _reactSubviews = [[NSMutableArray alloc] init];
         userLocationImageScale = [NSNumber numberWithFloat:1.f];
-        userLocationAccuracyFillColor = nil;
+        userLocationAccuracyFillColor = UIColor.clearColor;
         userLocationAccuracyStrokeColor = nil;
         userLocationAccuracyStrokeWidth = 0.f;
         [mapView.mapWindow.map addCameraListenerWithCameraListener:self];
@@ -108,6 +123,8 @@ using namespace facebook::react;
         clusterTextSize = 45;
         clusterTextYOffset = 0;
         clusterTextXOffset = 0;
+        minZoomPreference = nil;
+        maxZoomPreference = nil;
         [self addSubview:mapView];
     }
 
@@ -129,8 +146,16 @@ using namespace facebook::react;
 
     if (![NewArchUtils yamapInitialRegionsEquals:oldViewProps.initialRegion initialRegion2:newViewProps.initialRegion]) {
         YMKPoint *center = [YMKPoint pointWithLatitude:newViewProps.initialRegion.lat longitude:newViewProps.initialRegion.lon];
-        YMKCameraPosition *cameraPosition = [YMKCameraPosition cameraPositionWithTarget:center zoom:newViewProps.initialRegion.zoom azimuth:newViewProps.initialRegion.azimuth tilt:newViewProps.initialRegion.tilt];
+        YMKCameraPosition *cameraPosition = [YMKCameraPosition cameraPositionWithTarget:center zoom:[self clampZoom:newViewProps.initialRegion.zoom] azimuth:newViewProps.initialRegion.azimuth tilt:newViewProps.initialRegion.tilt];
         [mapView.mapWindow.map moveWithCameraPosition:cameraPosition];
+    }
+
+    if (oldViewProps.minZoom != newViewProps.minZoom) {
+        [self setMinZoom:YamapNumberFromPropValue(newViewProps.minZoom)];
+    }
+
+    if (oldViewProps.maxZoom != newViewProps.maxZoom) {
+        [self setMaxZoom:YamapNumberFromPropValue(newViewProps.maxZoom)];
     }
 
     if (oldViewProps.mapType != newViewProps.mapType) {
@@ -450,17 +475,20 @@ using namespace facebook::react;
 
 // REF
 - (void)setCenter:(YMKCameraPosition *)position withDuration:(float)duration withAnimation:(int)animation {
+    float zoom = [self clampZoom:position.zoom];
+    YMKCameraPosition *normalizedPosition = [YMKCameraPosition cameraPositionWithTarget:position.target zoom:zoom azimuth:position.azimuth tilt:position.tilt];
+
     if (duration > 0) {
         YMKAnimationType anim = animation == 0 ? YMKAnimationTypeSmooth : YMKAnimationTypeLinear;
-        [mapView.mapWindow.map moveWithCameraPosition:position animation:[YMKAnimation animationWithType:anim duration: duration] cameraCallback:^(BOOL completed) {}];
+        [mapView.mapWindow.map moveWithCameraPosition:normalizedPosition animation:[YMKAnimation animationWithType:anim duration: duration] cameraCallback:^(BOOL completed) {}];
     } else {
-        [mapView.mapWindow.map moveWithCameraPosition:position];
+        [mapView.mapWindow.map moveWithCameraPosition:normalizedPosition];
     }
 }
 
 - (void)setZoom:(float)zoom withDuration:(float)duration withAnimation:(int)animation {
     YMKCameraPosition *prevPosition = mapView.mapWindow.map.cameraPosition;
-    YMKCameraPosition *position = [YMKCameraPosition cameraPositionWithTarget:prevPosition.target zoom:zoom azimuth:prevPosition.azimuth tilt:prevPosition.tilt];
+    YMKCameraPosition *position = [YMKCameraPosition cameraPositionWithTarget:prevPosition.target zoom:[self clampZoom:zoom] azimuth:prevPosition.azimuth tilt:prevPosition.tilt];
     [self setCenter:position withDuration:duration withAnimation:animation];
 }
 
@@ -490,6 +518,57 @@ using namespace facebook::react;
     }
 }
 
+- (void)applyZoomBoundsIfNeeded {
+    if (minZoomPreference == nil || maxZoomPreference == nil) {
+        return;
+    }
+
+    float minZoom = [minZoomPreference floatValue];
+    float maxZoom = [maxZoomPreference floatValue];
+
+    if (minZoom > maxZoom) {
+        float temp = minZoom;
+        minZoom = maxZoom;
+        maxZoom = temp;
+    }
+
+    [mapView.mapWindow.map.cameraBounds setMinZoomPreferenceWithZoom:minZoom];
+    [mapView.mapWindow.map.cameraBounds setMaxZoomPreferenceWithZoom:maxZoom];
+}
+
+- (float)clampZoom:(float)zoom {
+    if (minZoomPreference == nil || maxZoomPreference == nil) {
+        return zoom;
+    }
+
+    float minZoom = [minZoomPreference floatValue];
+    float maxZoom = [maxZoomPreference floatValue];
+
+    if (minZoom > maxZoom) {
+        float temp = minZoom;
+        minZoom = maxZoom;
+        maxZoom = temp;
+    }
+
+    if (zoom < minZoom) {
+        return minZoom;
+    }
+    if (zoom > maxZoom) {
+        return maxZoom;
+    }
+    return zoom;
+}
+
+- (void)setMinZoom:(NSNumber *)minZoom {
+    minZoomPreference = minZoom;
+    [self applyZoomBoundsIfNeeded];
+}
+
+- (void)setMaxZoom:(NSNumber *)maxZoom {
+    maxZoomPreference = maxZoom;
+    [self applyZoomBoundsIfNeeded];
+}
+
 #ifndef RCT_NEW_ARCH_ENABLED
 
 - (void)setInitialRegion:(NSDictionary *)initialParams {
@@ -507,7 +586,7 @@ using namespace facebook::react;
     if ([initialParams valueForKey:@"tilt"] != nil) initialTilt = [initialParams[@"tilt"] floatValue];
 
     YMKPoint *initialRegionCenter = [RCTConvert YMKPoint:@{@"lat" : [initialParams valueForKey:@"lat"], @"lon" : [initialParams valueForKey:@"lon"]}];
-    YMKCameraPosition *initialRegionPosition = [YMKCameraPosition cameraPositionWithTarget:initialRegionCenter zoom:initialZoom azimuth:initialAzimuth tilt:initialTilt];
+    YMKCameraPosition *initialRegionPosition = [YMKCameraPosition cameraPositionWithTarget:initialRegionCenter zoom:[self clampZoom:initialZoom] azimuth:initialAzimuth tilt:initialTilt];
     [mapView.mapWindow.map moveWithCameraPosition:initialRegionPosition];
     initializedRegion = YES;
 }
@@ -792,11 +871,11 @@ using namespace facebook::react;
 
     if ([points count] == 1) {
         YMKPoint *center = [points objectAtIndex:0];
-        [mapView.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:15 azimuth:0 tilt:0] animation:anim cameraCallback:^(BOOL completed){}];
+        [mapView.mapWindow.map moveWithCameraPosition:[YMKCameraPosition cameraPositionWithTarget:center zoom:[self clampZoom:15] azimuth:0 tilt:0] animation:anim cameraCallback:^(BOOL completed){}];
         return;
     }
     YMKCameraPosition *cameraPosition = [mapView.mapWindow.map cameraPositionWithGeometry:[YMKGeometry geometryWithBoundingBox:[self calculateBoundingBox:points]]];
-    cameraPosition = [YMKCameraPosition cameraPositionWithTarget:cameraPosition.target zoom:cameraPosition.zoom - 0.8f azimuth:cameraPosition.azimuth tilt:cameraPosition.tilt];
+    cameraPosition = [YMKCameraPosition cameraPositionWithTarget:cameraPosition.target zoom:[self clampZoom:cameraPosition.zoom - 0.8f] azimuth:cameraPosition.azimuth tilt:cameraPosition.tilt];
     [mapView.mapWindow.map moveWithCameraPosition:cameraPosition animation:anim cameraCallback:^(BOOL completed){}];
 }
 

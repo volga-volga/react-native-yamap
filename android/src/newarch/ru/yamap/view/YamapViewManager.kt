@@ -109,6 +109,14 @@ class YamapViewManager : ViewGroupManager<YamapView>(), YamapViewManagerInterfac
         implementation.setFollowUser(view, value)
     }
 
+    override fun setMinZoom(view: YamapView, value: Float) {
+        implementation.setMinZoom(view, value)
+    }
+
+    override fun setMaxZoom(view: YamapView, value: Float) {
+        implementation.setMaxZoom(view, value)
+    }
+
     override fun addView(parent: YamapView, child: View, index: Int) {
         parent.addFeature(child, index)
         super.addView(parent, child, index)

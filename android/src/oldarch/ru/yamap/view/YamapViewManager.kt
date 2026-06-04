@@ -123,6 +123,16 @@ class YamapViewManager : ViewGroupManager<YamapView>() {
         implementation.setFollowUser(view, value)
     }
 
+    @ReactProp(name = "minZoom")
+    fun setMinZoom(view: YamapView, value: Float) {
+        implementation.setMinZoom(view, value)
+    }
+
+    @ReactProp(name = "maxZoom")
+    fun setMaxZoom(view: YamapView, value: Float) {
+        implementation.setMaxZoom(view, value)
+    }
+
     override fun addView(parent: YamapView, child: View, index: Int) {
         parent.addFeature(child, index)
         super.addView(parent, child, index)

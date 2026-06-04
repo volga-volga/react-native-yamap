@@ -124,6 +124,8 @@ export interface ClusteredYamapNativeProps extends ViewProps {
   followUser?: boolean;
   logoPosition?: YandexLogoPosition;
   logoPadding?: YandexLogoPadding;
+  minZoom?: Float;
+  maxZoom?: Float;
   userLocationIcon: string | undefined;
   interactiveDisabled?: boolean;
 

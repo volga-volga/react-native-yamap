@@ -2,6 +2,7 @@ package ru.yamap.view
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.PointF
 import android.view.MotionEvent
 import android.view.View
@@ -70,12 +71,14 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
     private var userLocationIconScale = 1f
     private var userLocationBitmap: Bitmap? = null
     private var userLocationLayer: UserLocationLayer? = null
-    private var userLocationAccuracyFillColor = 0
+    private var userLocationAccuracyFillColor = Color.TRANSPARENT
     private var userLocationAccuracyStrokeColor = 0
     private var userLocationAccuracyStrokeWidth = 0f
     private var trafficLayer: TrafficLayer? = null
     private var initializedRegion = false
     private var userLocationView: UserLocationView? = null
+    private var minZoomPreference: Float? = null
+    private var maxZoomPreference: Float? = null
 
     private val pedestrianRouter = TransportFactory.getInstance().createPedestrianRouter()
 
@@ -83,17 +86,59 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
         mapWindow.map.addCameraListener(this)
         mapWindow.map.addInputListener(this)
         mapWindow.map.setMapLoadedListener(this)
-        map.cameraBounds.setMinZoomPreference(15f)  // минимальный зум
-        map.cameraBounds.setMaxZoomPreference(20f)  // максимальный зум
+    }
+
+    private fun getZoomBounds(): Pair<Float, Float>? {
+        val minZoom = minZoomPreference
+        val maxZoom = maxZoomPreference
+        if (minZoom == null || maxZoom == null) {
+            return null
+        }
+        return if (minZoom <= maxZoom) {
+            minZoom to maxZoom
+        } else {
+            maxZoom to minZoom
+        }
+    }
+
+    private fun applyZoomBounds() {
+        val zoomBounds = getZoomBounds() ?: return
+        val (minZoom, maxZoom) = zoomBounds
+        mapWindow.map.cameraBounds.setMinZoomPreference(minZoom)
+        mapWindow.map.cameraBounds.setMaxZoomPreference(maxZoom)
+    }
+
+    private fun clampZoom(zoom: Float): Float {
+        val zoomBounds = getZoomBounds() ?: return zoom
+        val (minZoom, maxZoom) = zoomBounds
+        return zoom.coerceIn(minZoom, maxZoom)
+    }
+
+    fun setMinZoom(minZoom: Float) {
+        minZoomPreference = minZoom
+        applyZoomBounds()
+    }
+
+    fun setMaxZoom(maxZoom: Float) {
+        maxZoomPreference = maxZoom
+        applyZoomBounds()
     }
 
     // REF
     fun setCenter(position: CameraPosition?, duration: Float, animation: Int) {
+        val currentPosition = position ?: return
+        val normalizedPosition = CameraPosition(
+            currentPosition.target,
+            clampZoom(currentPosition.zoom),
+            currentPosition.azimuth,
+            currentPosition.tilt
+        )
+
         if (duration > 0) {
             val anim = if (animation == 0) Animation.Type.SMOOTH else Animation.Type.LINEAR
-            mapWindow.map.move(position!!, Animation(anim, duration), null)
+            mapWindow.map.move(normalizedPosition, Animation(anim, duration), null)
         } else {
-            mapWindow.map.move(position!!)
+            mapWindow.map.move(normalizedPosition)
         }
     }
 
@@ -250,7 +295,12 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
     fun setZoom(zoom: Float?, duration: Float, animation: Int) {
         val prevPosition = mapWindow.map.cameraPosition
         val position =
-            CameraPosition(prevPosition.target, zoom!!, prevPosition.azimuth, prevPosition.tilt)
+            CameraPosition(
+                prevPosition.target,
+                clampZoom(zoom ?: prevPosition.zoom),
+                prevPosition.azimuth,
+                prevPosition.tilt
+            )
         setCenter(position, duration, animation)
     }
 
@@ -311,7 +361,7 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
                 points[0].latitude, points[0].longitude
             )
             mapWindow.map.move(
-                CameraPosition(center, 15f, 0f, 0f),
+                CameraPosition(center, clampZoom(15f), 0f, 0f),
                 anim,
                 null
             )
@@ -320,7 +370,7 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
         var cameraPosition = mapWindow.map.cameraPosition(Geometry.fromBoundingBox(calculateBoundingBox(points)))
         cameraPosition = CameraPosition(
             cameraPosition.target,
-            cameraPosition.zoom - 0.8f,
+            clampZoom(cameraPosition.zoom - 0.8f),
             cameraPosition.azimuth,
             cameraPosition.tilt
         )
@@ -397,7 +447,7 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
 
         val initialCameraPosition = CameraPosition(
             initialPosition,
-            initialRegionZoom,
+            clampZoom(initialRegionZoom),
             initialRegionAzimuth,
             initialRegionTilt
         )
@@ -571,9 +621,7 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
         }
 
         val circle = userLocationView!!.accuracyCircle
-        if (userLocationAccuracyFillColor != 0) {
-            circle.fillColor = userLocationAccuracyFillColor
-        }
+        circle.fillColor = userLocationAccuracyFillColor
         if (userLocationAccuracyStrokeColor != 0) {
             circle.strokeColor = userLocationAccuracyStrokeColor
         }

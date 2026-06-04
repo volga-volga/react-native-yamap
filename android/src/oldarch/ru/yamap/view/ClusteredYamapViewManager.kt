@@ -166,6 +166,16 @@ class ClusteredYamapViewManager : ViewGroupManager<ClusteredYamapView>() {
         implementation.setLogoPadding(view, params)
     }
 
+    @ReactProp(name = "minZoom")
+    fun setMinZoom(view: ClusteredYamapView, value: Float) {
+        implementation.setMinZoom(view, value)
+    }
+
+    @ReactProp(name = "maxZoom")
+    fun setMaxZoom(view: ClusteredYamapView, value: Float) {
+        implementation.setMaxZoom(view, value)
+    }
+
     override fun addView(parent: ClusteredYamapView, child: View, index: Int) {
         parent.addFeature(child, index)
         super.addView(parent, child, index)

@@ -54,6 +54,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setClusterTextXOffset:(double)size;
 - (void)setClusterTextYOffset:(double)size;
 - (void)setMapStyle: (NSString *) style;
+- (void)setMinZoom:(NSNumber * _Nullable)minZoom;
+- (void)setMaxZoom:(NSNumber * _Nullable)maxZoom;
 
 // REF
 

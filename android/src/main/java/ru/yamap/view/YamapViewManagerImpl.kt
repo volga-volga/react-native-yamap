@@ -198,6 +198,14 @@ class YamapViewManagerImpl() {
         view.setFollowUser(value)
     }
 
+    fun setMinZoom(view: YamapView, value: Float) {
+        view.setMinZoom(value)
+    }
+
+    fun setMaxZoom(view: YamapView, value: Float) {
+        view.setMaxZoom(value)
+    }
+
     companion object {
         const val NAME = "YamapView"
 
