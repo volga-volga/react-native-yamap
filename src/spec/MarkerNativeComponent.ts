@@ -18,10 +18,14 @@ export interface MarkerNativeProps extends ViewProps {
   scale?: Float;
   rotated?: boolean;
   onPress?: BubblingEventHandler<undefined>;
+  onDragStart?: BubblingEventHandler<Point>;
+  onDrag?: BubblingEventHandler<Point>;
+  onDragEnd?: BubblingEventHandler<Point>;
   point: Point;
   anchor?: Anchor;
   visible?: boolean;
   handled?: boolean;
+  draggable?: boolean;
   source?: string;
   source3d?: string;
   zI?: Float;

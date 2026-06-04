@@ -2,6 +2,9 @@ package ru.yamap.view
 
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
+import ru.yamap.events.YamapMarkerDragEndEvent
+import ru.yamap.events.YamapMarkerDragEvent
+import ru.yamap.events.YamapMarkerDragStartEvent
 import ru.yamap.events.YamapMarkerPressEvent
 import ru.yamap.utils.PointUtil
 
@@ -29,6 +32,10 @@ class MarkerViewManagerImpl() {
 
     fun setHandled(view: MarkerView, handled: Boolean) {
         view.setHandled(handled)
+    }
+
+    fun setDraggable(view: MarkerView, draggable: Boolean) {
+        view.setDraggable(draggable)
     }
 
     fun setRotated(view: MarkerView, rotated: Boolean) {
@@ -88,7 +95,13 @@ class MarkerViewManagerImpl() {
 
         val exportedCustomBubblingEventTypeConstants = mapOf(
             YamapMarkerPressEvent.EVENT_NAME to
-                    mapOf("phasedRegistrationNames" to mapOf("bubbled" to "onPress"))
+                    mapOf("phasedRegistrationNames" to mapOf("bubbled" to "onPress")),
+            YamapMarkerDragStartEvent.EVENT_NAME to
+                    mapOf("phasedRegistrationNames" to mapOf("bubbled" to "onDragStart")),
+            YamapMarkerDragEvent.EVENT_NAME to
+                    mapOf("phasedRegistrationNames" to mapOf("bubbled" to "onDrag")),
+            YamapMarkerDragEndEvent.EVENT_NAME to
+                    mapOf("phasedRegistrationNames" to mapOf("bubbled" to "onDragEnd"))
         )
     }
 }

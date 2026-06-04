@@ -22,7 +22,7 @@
 
 using namespace facebook::react;
 
-@interface MarkerView () <RCTMarkerViewViewProtocol, YMKMapObjectTapListener>
+@interface MarkerView () <RCTMarkerViewViewProtocol, YMKMapObjectTapListener, YMKMapObjectDragListener>
 
 @end
 
@@ -43,6 +43,7 @@ using namespace facebook::react;
     NSValue *anchor;
     BOOL visible;
     BOOL handled;
+    BOOL draggable;
     NSMutableArray<UIView*> *_reactSubviews;
     YRTViewProvider *_markerViewProvider;
 }
@@ -63,6 +64,7 @@ using namespace facebook::react;
         _rotated = NO;
         visible = YES;
         handled = NO;
+        draggable = NO;
         _reactSubviews = [[NSMutableArray alloc] init];
         source = @"";
         source3d = @"";
@@ -114,6 +116,7 @@ using namespace facebook::react;
     visible = newViewProps.visible;
     _rotated = newViewProps.rotated;
     handled = newViewProps.handled;
+    draggable = newViewProps.draggable;
 
     [self updateMarker];
 }
@@ -140,6 +143,7 @@ using namespace facebook::react;
     _rotated = NO;
     visible = YES;
     handled = NO;
+    draggable = NO;
     source = nil;
     source3d = nil;
     lastSource = nil;
@@ -174,6 +178,11 @@ using namespace facebook::react;
 
 - (void)setHandled:(BOOL)_handled {
     handled = _handled;
+}
+
+- (void)setDraggable:(BOOL)_draggable {
+    draggable = _draggable;
+    [self updateMarker];
 }
 
 - (void)setPoint:(YMKPoint*)point {
@@ -215,12 +224,74 @@ using namespace facebook::react;
     return handled;
 }
 
+- (void)onMapObjectDragStartWithMapObject:(nonnull YMKMapObject *)_mapObject {
+    YMKPlacemarkMapObject *placemark = (YMKPlacemarkMapObject *)_mapObject;
+    _point = placemark.geometry;
+
+#ifdef RCT_NEW_ARCH_ENABLED
+
+    if (_eventEmitter) {
+        std::dynamic_pointer_cast<const MarkerViewEventEmitter>(_eventEmitter)->onDragStart({
+            .lat = _point.latitude,
+            .lon = _point.longitude
+        });
+    }
+
+#else
+
+    if (self.onDragStart)
+        self.onDragStart(@{@"lat": @(_point.latitude), @"lon": @(_point.longitude)});
+
+#endif
+}
+
+- (void)onMapObjectDragWithMapObject:(nonnull YMKMapObject *)_mapObject point:(nonnull YMKPoint *)point {
+    _point = point;
+
+#ifdef RCT_NEW_ARCH_ENABLED
+
+    if (_eventEmitter) {
+        std::dynamic_pointer_cast<const MarkerViewEventEmitter>(_eventEmitter)->onDrag({
+            .lat = point.latitude,
+            .lon = point.longitude
+        });
+    }
+
+#else
+
+    if (self.onDrag)
+        self.onDrag(@{@"lat": @(point.latitude), @"lon": @(point.longitude)});
+
+#endif
+}
+
+- (void)onMapObjectDragEndWithMapObject:(nonnull YMKMapObject *)_mapObject {
+    YMKPlacemarkMapObject *placemark = (YMKPlacemarkMapObject *)_mapObject;
+    _point = placemark.geometry;
+
+#ifdef RCT_NEW_ARCH_ENABLED
+
+    if (_eventEmitter) {
+        std::dynamic_pointer_cast<const MarkerViewEventEmitter>(_eventEmitter)->onDragEnd({
+            .lat = _point.latitude,
+            .lon = _point.longitude
+        });
+    }
+
+#else
+
+    if (self.onDragEnd)
+        self.onDragEnd(@{@"lat": @(_point.latitude), @"lon": @(_point.longitude)});
+
+#endif
+}
+
 - (void)updateMarker {
     if (mapObject != nil && [mapObject isValid]) {
         [mapObject setGeometry:_point];
         [mapObject setZIndex:zIndex];
         [mapObject setDirection:direction];
-        [mapObject setDraggable:YES];
+        [mapObject setDraggable:draggable];
         YMKIconStyle* iconStyle = [[YMKIconStyle alloc] init];
         [iconStyle setScale:scale];
         [iconStyle setVisible:[NSNumber numberWithInt:visible]];
@@ -297,6 +368,7 @@ using namespace facebook::react;
     mapObject = _mapObject;
     if ([mapObject isValid]) {
         [mapObject addTapListenerWithTapListener:self];
+        [mapObject setDragListenerWithDragListener:self];
     }
     [self updateMarker];
 }

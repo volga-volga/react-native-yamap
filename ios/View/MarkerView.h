@@ -21,9 +21,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 #else
 
-@interface MarkerView: UIView<YMKMapObjectTapListener, RCTComponent>
+@interface MarkerView: UIView<YMKMapObjectTapListener, YMKMapObjectDragListener, RCTComponent>
 
 @property (nonatomic, copy) RCTBubblingEventBlock onPress;
+@property (nonatomic, copy) RCTBubblingEventBlock onDragStart;
+@property (nonatomic, copy) RCTBubblingEventBlock onDrag;
+@property (nonatomic, copy) RCTBubblingEventBlock onDragEnd;
 
 // REF
 - (void)animatedMoveTo:(YMKPoint*)point withDuration:(float)duration;

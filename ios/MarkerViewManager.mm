@@ -13,7 +13,7 @@
 RCT_EXPORT_MODULE(MarkerView)
 
 - (NSArray<NSString*>*)supportedEvents {
-    return @[@"onPress"];
+    return @[@"onPress", @"onDragStart", @"onDrag", @"onDragEnd"];
 }
 
 - (UIView *)view {
@@ -22,12 +22,16 @@ RCT_EXPORT_MODULE(MarkerView)
 
 // PROPS
 RCT_EXPORT_VIEW_PROPERTY(onPress, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onDragStart, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onDrag, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onDragEnd, RCTBubblingEventBlock)
 
 RCT_EXPORT_VIEW_PROPERTY(point, YMKPoint)
 RCT_EXPORT_VIEW_PROPERTY(scale, NSNumber)
 RCT_EXPORT_VIEW_PROPERTY(rotated, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(visible, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(handled, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(draggable, BOOL)
 RCT_CUSTOM_VIEW_PROPERTY(anchor, NSDictionary, MarkerView) {
     CGPoint point;
 

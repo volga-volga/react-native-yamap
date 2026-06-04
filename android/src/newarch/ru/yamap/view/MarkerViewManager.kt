@@ -43,6 +43,10 @@ class MarkerViewManager : ViewGroupManager<MarkerView>(), MarkerViewManagerInter
         implementation.setHandled(view, handled)
     }
 
+    override fun setDraggable(view: MarkerView, draggable: Boolean) {
+        implementation.setDraggable(view, draggable)
+    }
+
     override fun setRotated(view: MarkerView, rotated: Boolean) {
         implementation.setRotated(view, rotated)
     }

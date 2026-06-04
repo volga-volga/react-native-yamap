@@ -39,6 +39,11 @@ class MarkerViewManager : ViewGroupManager<MarkerView>() {
         implementation.setHandled(view, handled)
     }
 
+    @ReactProp(name = "draggable")
+    fun setDraggable(view: MarkerView, draggable: Boolean) {
+        implementation.setDraggable(view, draggable)
+    }
+
     @ReactProp(name = "rotated")
     fun setRotated(view: MarkerView, rotated: Boolean) {
         implementation.setRotated(view, rotated)

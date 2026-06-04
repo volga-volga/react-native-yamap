@@ -15,12 +15,16 @@ import com.facebook.react.views.view.ReactViewGroup
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.map.IconStyle
 import com.yandex.mapkit.map.MapObject
+import com.yandex.mapkit.map.MapObjectDragListener
 import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.ModelStyle
 import com.yandex.mapkit.map.PlacemarkMapObject
 import com.yandex.mapkit.map.RotationType
 import com.yandex.runtime.DataProviderWithId
 import com.yandex.runtime.image.ImageProvider
+import ru.yamap.events.YamapMarkerDragEndEvent
+import ru.yamap.events.YamapMarkerDragEvent
+import ru.yamap.events.YamapMarkerDragStartEvent
 import ru.yamap.events.YamapMarkerPressEvent
 import ru.yamap.models.ReactMapObject
 import ru.yamap.utils.Callback
@@ -30,7 +34,7 @@ import ru.yamap.utils.ModelCacheManager
 import java.io.File
 
 
-class MarkerView(context: Context?) : ReactViewGroup(context), MapObjectTapListener,
+class MarkerView(context: Context?) : ReactViewGroup(context), MapObjectTapListener, MapObjectDragListener,
     ReactMapObject {
     @JvmField
     var point: Point? = null
@@ -39,6 +43,7 @@ class MarkerView(context: Context?) : ReactViewGroup(context), MapObjectTapListe
     private var _direction = 0f
     private var _visible = true
     private var _handled = false
+    private var _draggable = false
     private var _rotated = false
     private var _markerAnchor: PointF? = null
     private var _iconSource: String? = null
@@ -79,6 +84,11 @@ class MarkerView(context: Context?) : ReactViewGroup(context), MapObjectTapListe
         _handled = handled
     }
 
+    fun setDraggable(draggable: Boolean) {
+        _draggable = draggable
+        updateMarker()
+    }
+
     fun setRotated(rotated: Boolean) {
         _rotated = rotated
         updateMarker()
@@ -116,6 +126,7 @@ class MarkerView(context: Context?) : ReactViewGroup(context), MapObjectTapListe
             (rnMapObject as PlacemarkMapObject).geometry = point!!
             (rnMapObject as PlacemarkMapObject).zIndex = _zIndex
             (rnMapObject as PlacemarkMapObject).direction = _direction
+            (rnMapObject as PlacemarkMapObject).isDraggable = _draggable
             (rnMapObject as PlacemarkMapObject).setIconStyle(iconStyle)
 
             if (_childView != null) {
@@ -161,6 +172,7 @@ class MarkerView(context: Context?) : ReactViewGroup(context), MapObjectTapListe
     fun setMarkerMapObject(obj: MapObject?) {
         rnMapObject = obj as PlacemarkMapObject?
         rnMapObject!!.addTapListener(this)
+        rnMapObject!!.setDragListener(this)
         updateMarker()
     }
 
@@ -236,5 +248,43 @@ class MarkerView(context: Context?) : ReactViewGroup(context), MapObjectTapListe
         eventDispatcher?.dispatchEvent(YamapMarkerPressEvent(getSurfaceId(context), id))
 
         return _handled
+    }
+
+    override fun onMapObjectDragStart(mapObject: MapObject) {
+        val placemark = mapObject as PlacemarkMapObject
+        point = placemark.geometry
+        val eventDispatcher = UIManagerHelper.getEventDispatcherForReactTag(context as ThemedReactContext, id)
+        eventDispatcher?.dispatchEvent(
+            YamapMarkerDragStartEvent(
+                getSurfaceId(context),
+                id,
+                placemark.geometry
+            )
+        )
+    }
+
+    override fun onMapObjectDrag(mapObject: MapObject, point: Point) {
+        this.point = point
+        val eventDispatcher = UIManagerHelper.getEventDispatcherForReactTag(context as ThemedReactContext, id)
+        eventDispatcher?.dispatchEvent(
+            YamapMarkerDragEvent(
+                getSurfaceId(context),
+                id,
+                point
+            )
+        )
+    }
+
+    override fun onMapObjectDragEnd(mapObject: MapObject) {
+        val placemark = mapObject as PlacemarkMapObject
+        point = placemark.geometry
+        val eventDispatcher = UIManagerHelper.getEventDispatcherForReactTag(context as ThemedReactContext, id)
+        eventDispatcher?.dispatchEvent(
+            YamapMarkerDragEndEvent(
+                getSurfaceId(context),
+                id,
+                placemark.geometry
+            )
+        )
     }
 }
