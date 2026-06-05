@@ -522,16 +522,16 @@ static NSNumber *YamapNumberFromPropValue(const std::optional<T> &value) {
     if (minZoomPreference == nil || maxZoomPreference == nil) {
         return;
     }
-
+    
     float minZoom = [minZoomPreference floatValue];
     float maxZoom = [maxZoomPreference floatValue];
-
+    
     if (minZoom > maxZoom) {
         float temp = minZoom;
         minZoom = maxZoom;
         maxZoom = temp;
     }
-
+    
     [mapView.mapWindow.map.cameraBounds setMinZoomPreferenceWithZoom:minZoom];
     [mapView.mapWindow.map.cameraBounds setMaxZoomPreferenceWithZoom:maxZoom];
 }

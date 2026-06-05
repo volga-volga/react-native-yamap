@@ -17,6 +17,6 @@ class TransportModule(reactContext: ReactApplicationContext) : NativeTransportMo
     }
 
     override fun findParkRoutes(start: ReadableMap, end: ReadableMap, zones: ReadableArray, promise: Promise) {
-
+        implementation.findParkRoutes(start, end, zones, promise)
     }
 }

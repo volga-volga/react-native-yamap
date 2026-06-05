@@ -1,4 +1,5 @@
 #import "RTNTransportModule.h"
+#import <math.h>
 
 #ifdef USE_YANDEX_MAPS_FULL
 
@@ -12,6 +13,8 @@
 #import <YandexMapsMobile/YMKDrivingRoute.h>
 #import <YandexMapsMobile/YMKSubpolylineHelper.h>
 #import <YandexMapsMobile/YMKDrivingVehicleOptions.h>
+#import <YandexMapsMobile/YMKRequestPoint.h>
+#import <YandexMapsMobile/YMKOptions.h>
 
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 
@@ -20,6 +23,10 @@
 @implementation RTNTransportModule
 
 #ifdef USE_YANDEX_MAPS_FULL
+
+static const NSInteger kMaxParkRouteIterations = 10;
+static const double kParkRouteBufferMeters = 5.0;
+static const double kDetourEpsilonDegrees = 1e-6;
 
 YMKMasstransitSession *masstransitSession;
 YMKMasstransitSession *walkSession;
@@ -77,7 +84,7 @@ NSMutableDictionary *vehicleColors;
             }
             
             NSMutableDictionary* response = [[NSMutableDictionary alloc] init];
-            [response setValue:@"status" forKey:@"success"];
+            [response setValue:@"success" forKey:@"status"];
             NSMutableArray* jsonRoutes = [[NSMutableArray alloc] init];
             
             for (int i = 0; i < [routes count]; ++i) {
@@ -144,6 +151,290 @@ NSMutableDictionary *vehicleColors;
                      zones:(NSArray *)zones
                    resolve:(RCTPromiseResolveBlock)resolve
                     reject:(RCTPromiseRejectBlock)reject {
+    YMKPoint *startPoint = [YMKPoint pointWithLatitude:start.lat() longitude:start.lon()];
+    YMKPoint *endPoint = [YMKPoint pointWithLatitude:end.lat() longitude:end.lon()];
+    NSArray<NSArray<YMKPoint *> *> *parsedZones = [self parseZones:zones];
+
+    if ([parsedZones count] == 0) {
+        reject(@"findParkRoutesError", @"zones should contain at least one polygon", nil);
+        return;
+    }
+
+    [self requestParkRouteFrom:startPoint
+                           end:endPoint
+                         zones:parsedZones
+                       detours:@[]
+                     iteration:0
+                       resolve:resolve
+                        reject:reject];
+}
+
+- (void)requestParkRouteFrom:(YMKPoint *)startPoint
+                         end:(YMKPoint *)endPoint
+                       zones:(NSArray<NSArray<YMKPoint *> *> *)zones
+                     detours:(NSArray<YMKPoint *> *)detours
+                   iteration:(NSInteger)iteration
+                     resolve:(RCTPromiseResolveBlock)resolve
+                      reject:(RCTPromiseRejectBlock)reject {
+    if (iteration >= kMaxParkRouteIterations) {
+        reject(@"findParkRoutesError", @"failed to build route around restricted zones", nil);
+        return;
+    }
+
+    NSMutableArray<YMKRequestPoint *> *requestPoints = [[NSMutableArray alloc] init];
+    [requestPoints addObject:[YMKRequestPoint requestPointWithPoint:startPoint
+                                                               type:YMKRequestPointTypeWaypoint
+                                                       pointContext:nil
+                                               drivingArrivalPointId:nil
+                                                       indoorLevelId:nil]];
+    for (YMKPoint *detour in detours) {
+        [requestPoints addObject:[YMKRequestPoint requestPointWithPoint:detour
+                                                                   type:YMKRequestPointTypeWaypoint
+                                                           pointContext:nil
+                                                   drivingArrivalPointId:nil
+                                                           indoorLevelId:nil]];
+    }
+    [requestPoints addObject:[YMKRequestPoint requestPointWithPoint:endPoint
+                                                               type:YMKRequestPointTypeWaypoint
+                                                       pointContext:nil
+                                               drivingArrivalPointId:nil
+                                                       indoorLevelId:nil]];
+
+    YMKPedestrianRouter *pedestrianRouter = [[YMKTransportFactory instance] createPedestrianRouter];
+    walkSession = [pedestrianRouter requestRoutesWithPoints:requestPoints
+                                                timeOptions:_timeOptions
+                                               routeOptions:_routeOptions
+                                               routeHandler:^(NSArray<YMKMasstransitRoute *> *routes, NSError *error) {
+        if (error != nil) {
+            reject(@"findParkRoutesError", error.userInfo.description, error);
+            return;
+        }
+
+        YMKMasstransitRoute *route = routes.firstObject;
+        if (route == nil) {
+            reject(@"findParkRoutesError", @"empty route response", nil);
+            return;
+        }
+
+        NSArray<YMKPoint *> *intersectedZone = [self firstIntersectedZoneForRoute:route zones:zones];
+        if (intersectedZone == nil) {
+            NSMutableDictionary *response = [[NSMutableDictionary alloc] init];
+            [response setValue:@"success" forKey:@"status"];
+
+            NSMutableArray *jsonRoutes = [[NSMutableArray alloc] init];
+            NSMutableDictionary *jsonRoute = [[NSMutableDictionary alloc] init];
+            [jsonRoute setValue:@"0" forKey:@"id"];
+
+            NSMutableArray *sections = [[NSMutableArray alloc] init];
+            for (YMKMasstransitSection *section in route.sections) {
+                NSDictionary *jsonSection = [self convertRouteSection:route withSection:section];
+                [sections addObject:jsonSection];
+            }
+            [jsonRoute setValue:sections forKey:@"sections"];
+            [jsonRoutes addObject:jsonRoute];
+            [response setValue:jsonRoutes forKey:@"routes"];
+            resolve(response);
+            return;
+        }
+
+        YMKPoint *detour = [self chooseDetourPointForZone:intersectedZone endPoint:endPoint existingDetours:detours];
+        if (detour == nil) {
+            reject(@"findParkRoutesError", @"failed to build detour outside restricted zone", nil);
+            return;
+        }
+
+        NSMutableArray<YMKPoint *> *nextDetours = [detours mutableCopy];
+        [nextDetours addObject:detour];
+
+        [self requestParkRouteFrom:startPoint
+                               end:endPoint
+                             zones:zones
+                           detours:nextDetours
+                         iteration:iteration + 1
+                           resolve:resolve
+                            reject:reject];
+    }];
+}
+
+- (NSArray<NSArray<YMKPoint *> *> *)parseZones:(NSArray *)zones {
+    NSMutableArray<NSArray<YMKPoint *> *> *parsed = [[NSMutableArray alloc] init];
+    for (id rawZone in zones) {
+        if (![rawZone isKindOfClass:[NSArray class]]) {
+            continue;
+        }
+        NSArray<YMKPoint *> *zonePoints = [RCTConvert YMKPointArray:(NSArray *)rawZone];
+        if ([zonePoints count] >= 3) {
+            [parsed addObject:zonePoints];
+        }
+    }
+    return parsed;
+}
+
+- (NSArray<YMKPoint *> * _Nullable)firstIntersectedZoneForRoute:(YMKMasstransitRoute *)route
+                                                           zones:(NSArray<NSArray<YMKPoint *> *> *)zones {
+    NSArray<YMKPoint *> *routePoints = route.geometry.points;
+    if ([routePoints count] < 2) {
+        return nil;
+    }
+
+    for (NSArray<YMKPoint *> *zone in zones) {
+        if ([self polyline:routePoints intersectsPolygon:zone]) {
+            return zone;
+        }
+    }
+    return nil;
+}
+
+- (BOOL)polyline:(NSArray<YMKPoint *> *)polyline intersectsPolygon:(NSArray<YMKPoint *> *)polygon {
+    if ([polyline count] < 2 || [polygon count] < 3) {
+        return NO;
+    }
+
+    for (NSInteger i = 0; i < [polyline count] - 1; i++) {
+        if ([self segmentFrom:polyline[i] to:polyline[i + 1] intersectsPolygon:polygon]) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
+- (BOOL)segmentFrom:(YMKPoint *)a to:(YMKPoint *)b intersectsPolygon:(NSArray<YMKPoint *> *)polygon {
+    if ([self isPoint:a insidePolygon:polygon] || [self isPoint:b insidePolygon:polygon]) {
+        return YES;
+    }
+
+    for (NSInteger i = 0; i < [polygon count]; i++) {
+        YMKPoint *c = polygon[i];
+        YMKPoint *d = polygon[(i + 1) % [polygon count]];
+        if ([self segmentFrom:a to:b intersectsSegmentFrom:c to:d]) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
+- (BOOL)segmentFrom:(YMKPoint *)a
+                 to:(YMKPoint *)b
+intersectsSegmentFrom:(YMKPoint *)c
+                 to:(YMKPoint *)d {
+    double o1 = [self orientationA:a b:b c:c];
+    double o2 = [self orientationA:a b:b c:d];
+    double o3 = [self orientationA:c b:d c:a];
+    double o4 = [self orientationA:c b:d c:b];
+    const double eps = 1e-9;
+
+    if (o1 * o2 < 0 && o3 * o4 < 0) {
+        return YES;
+    }
+    if (fabs(o1) < eps && [self point:c onSegmentFrom:a to:b]) return YES;
+    if (fabs(o2) < eps && [self point:d onSegmentFrom:a to:b]) return YES;
+    if (fabs(o3) < eps && [self point:a onSegmentFrom:c to:d]) return YES;
+    if (fabs(o4) < eps && [self point:b onSegmentFrom:c to:d]) return YES;
+    return NO;
+}
+
+- (double)orientationA:(YMKPoint *)a b:(YMKPoint *)b c:(YMKPoint *)c {
+    return (b.longitude - a.longitude) * (c.latitude - a.latitude) -
+           (b.latitude - a.latitude) * (c.longitude - a.longitude);
+}
+
+- (BOOL)point:(YMKPoint *)p onSegmentFrom:(YMKPoint *)a to:(YMKPoint *)b {
+    return p.longitude <= MAX(a.longitude, b.longitude) &&
+           p.longitude >= MIN(a.longitude, b.longitude) &&
+           p.latitude <= MAX(a.latitude, b.latitude) &&
+           p.latitude >= MIN(a.latitude, b.latitude);
+}
+
+- (BOOL)isPoint:(YMKPoint *)point insidePolygon:(NSArray<YMKPoint *> *)polygon {
+    BOOL inside = NO;
+    NSInteger j = [polygon count] - 1;
+    for (NSInteger i = 0; i < [polygon count]; i++) {
+        YMKPoint *pi = polygon[i];
+        YMKPoint *pj = polygon[j];
+        BOOL intersectsLatitude = (pi.latitude > point.latitude) != (pj.latitude > point.latitude);
+        if (intersectsLatitude) {
+            double xIntersection = (pj.longitude - pi.longitude) * (point.latitude - pi.latitude) /
+                                   (pj.latitude - pi.latitude + 1e-12) + pi.longitude;
+            if (point.longitude < xIntersection) {
+                inside = !inside;
+            }
+        }
+        j = i;
+    }
+    return inside;
+}
+
+- (YMKPoint * _Nullable)chooseDetourPointForZone:(NSArray<YMKPoint *> *)zone
+                                        endPoint:(YMKPoint *)endPoint
+                                  existingDetours:(NSArray<YMKPoint *> *)existingDetours {
+    YMKPoint *centroid = [self polygonCentroid:zone];
+    NSMutableArray<YMKPoint *> *candidates = [[NSMutableArray alloc] init];
+    for (YMKPoint *vertex in zone) {
+        [candidates addObject:[self projectPointOutsideZone:vertex centroid:centroid meters:kParkRouteBufferMeters]];
+    }
+
+    [candidates sortUsingComparator:^NSComparisonResult(YMKPoint *lhs, YMKPoint *rhs) {
+        double ld = [self distanceBetween:lhs and:endPoint];
+        double rd = [self distanceBetween:rhs and:endPoint];
+        if (ld < rd) return NSOrderedAscending;
+        if (ld > rd) return NSOrderedDescending;
+        return NSOrderedSame;
+    }];
+
+    for (YMKPoint *candidate in candidates) {
+        BOOL alreadyUsed = NO;
+        for (YMKPoint *existing in existingDetours) {
+            if ([self distanceBetween:candidate and:existing] < kDetourEpsilonDegrees) {
+                alreadyUsed = YES;
+                break;
+            }
+        }
+        if (!alreadyUsed) {
+            return candidate;
+        }
+    }
+    return nil;
+}
+
+- (YMKPoint *)polygonCentroid:(NSArray<YMKPoint *> *)points {
+    double lat = 0;
+    double lon = 0;
+    for (YMKPoint *point in points) {
+        lat += point.latitude;
+        lon += point.longitude;
+    }
+    return [YMKPoint pointWithLatitude:lat / [points count] longitude:lon / [points count]];
+}
+
+- (YMKPoint *)projectPointOutsideZone:(YMKPoint *)point centroid:(YMKPoint *)centroid meters:(double)meters {
+    double dLat = point.latitude - centroid.latitude;
+    double dLon = point.longitude - centroid.longitude;
+    double norm = hypot(dLat, dLon);
+    if (norm < 1e-12) {
+        return point;
+    }
+
+    double latDeg = [self metersToLatitudeDegrees:meters];
+    double lonDeg = [self metersToLongitudeDegrees:meters atLatitude:point.latitude];
+    double projectedLat = point.latitude + (dLat / norm) * latDeg;
+    double projectedLon = point.longitude + (dLon / norm) * lonDeg;
+    return [YMKPoint pointWithLatitude:projectedLat longitude:projectedLon];
+}
+
+- (double)metersToLatitudeDegrees:(double)meters {
+    return meters / 111320.0;
+}
+
+- (double)metersToLongitudeDegrees:(double)meters atLatitude:(double)latitude {
+    double scale = cos(latitude * M_PI / 180.0);
+    if (scale < 1e-6) {
+        scale = 1e-6;
+    }
+    return meters / (111320.0 * scale);
+}
+
+- (double)distanceBetween:(YMKPoint *)a and:(YMKPoint *)b {
+    return hypot(a.latitude - b.latitude, a.longitude - b.longitude);
 }
 
 
@@ -284,6 +575,14 @@ NSMutableDictionary *vehicleColors;
 #else
 
 - (void)findRoutesImpl:(nonnull NSArray *)points vehicles:(nonnull NSArray *)vehicles resolve:(nonnull RCTPromiseResolveBlock)resolve reject:(nonnull RCTPromiseRejectBlock)reject {
+    reject(@"TRANSPORT_FAILED", @"TRANSPORT module is not available in Lite version", nil);
+}
+
+- (void)findParkRoutesImpl:(JS::NativeTransportModule::Point &)start
+                       end:(JS::NativeTransportModule::Point &)end
+                     zones:(NSArray *)zones
+                   resolve:(RCTPromiseResolveBlock)resolve
+                    reject:(RCTPromiseRejectBlock)reject {
     reject(@"TRANSPORT_FAILED", @"TRANSPORT module is not available in Lite version", nil);
 }
 

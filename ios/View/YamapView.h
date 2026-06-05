@@ -19,6 +19,7 @@
 #import <YandexMapsMobile/YMKTrafficListener.h>
 #import <YandexMapsMobile/YMKClusterListener.h>
 #import <YandexMapsMobile/YMKClusterTapListener.h>
+#import <YandexMapsMobile/YMKCameraBounds.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
