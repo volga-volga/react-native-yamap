@@ -63,6 +63,14 @@ class YamapViewManagerImpl() {
             "getUserPosition" -> view.emitGetUserPosition(
                 args.getString("id")
             )
+            "setLatLngBounds" -> {
+                val bounds = if (args.hasKey("bounds") && !args.isNull("bounds")) {
+                    args.getMap("bounds")
+                } else {
+                    null
+                }
+                view.setLatLngBounds(bounds)
+            }
 
             else -> throw IllegalArgumentException(
                 String.format(
@@ -206,6 +214,10 @@ class YamapViewManagerImpl() {
         view.setMaxZoom(value)
     }
 
+    fun setLatLngBounds(view: YamapView, params: ReadableMap?) {
+        view.setLatLngBounds(params)
+    }
+
     companion object {
         const val NAME = "YamapView"
 
@@ -245,6 +257,7 @@ class YamapViewManagerImpl() {
             "fitMarkers" to 7,
             "getScreenPoints" to 8,
             "getWorldPoints" to 9,
+            "setLatLngBounds" to 10,
         )
     }
 }

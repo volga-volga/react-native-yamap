@@ -47,6 +47,11 @@ interface Point {
   lon: Double;
 }
 
+interface LatLngBounds {
+  southWest: Point;
+  northEast: Point;
+}
+
 interface CameraPositionResponse {
   id: string;
   point: {
@@ -126,6 +131,7 @@ export interface ClusteredYamapNativeProps extends ViewProps {
   logoPadding?: YandexLogoPadding;
   minZoom?: Float;
   maxZoom?: Float;
+  latLngBounds?: LatLngBounds;
   userLocationIcon: string | undefined;
   interactiveDisabled?: boolean;
 

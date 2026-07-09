@@ -4,7 +4,7 @@ import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativ
 import {type Double} from 'react-native/Libraries/Types/CodegenTypes';
 import {type YamapComponentType} from '../YamapNativeComponent';
 import {type ClusteredYamapComponentType} from '../ClusteredYamapNativeComponent';
-import {Animation, type ScreenPoint} from '../../interfaces';
+import {Animation, type BoundingBox, type ScreenPoint} from '../../interfaces';
 import type {Point} from '../../';
 
 export interface YamapNativeCommands {
@@ -89,6 +89,12 @@ export interface YamapNativeCommands {
       id: string,
     }>>,
   ) => void;
+  setLatLngBounds: (
+    viewRef: React.ElementRef<YamapComponentType | ClusteredYamapComponentType>,
+    args: Array<Readonly<{
+      bounds?: BoundingBox | null,
+    }>>,
+  ) => void;
 }
 
 export const Commands = codegenNativeCommands<YamapNativeCommands>({
@@ -104,5 +110,6 @@ export const Commands = codegenNativeCommands<YamapNativeCommands>({
     'getWorldPoints',
     'getUserPosition',
     'findParkRoute',
+    'setLatLngBounds',
   ],
 });

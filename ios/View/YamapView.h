@@ -57,6 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setMapStyle: (NSString *) style;
 - (void)setMinZoom:(NSNumber * _Nullable)minZoom;
 - (void)setMaxZoom:(NSNumber * _Nullable)maxZoom;
+- (void)setLatLngBounds:(NSDictionary * _Nullable)params;
 
 // REF
 

@@ -152,6 +152,10 @@ class ClusteredYamapViewManager : ViewGroupManager<ClusteredYamapView>(),
         implementation.setMaxZoom(view, value)
     }
 
+    override fun setLatLngBounds(view: ClusteredYamapView, params: ReadableMap?) {
+        implementation.setLatLngBounds(view, params)
+    }
+
     override fun addView(parent: ClusteredYamapView, child: View, index: Int) {
         parent.addFeature(child, index)
         super.addView(parent, child, index)

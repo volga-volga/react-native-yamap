@@ -1,5 +1,5 @@
 import {type ForwardedRef, type RefObject, useImperativeHandle} from 'react';
-import {Animation} from '../interfaces';
+import {Animation, type BoundingBox} from '../interfaces';
 import {CallbacksManager} from '../utils';
 import {type YamapRef} from '../components';
 import {type YamapNativeCommands} from '../spec/commands/yamap';
@@ -43,5 +43,7 @@ export const useYamap = (
       const id = CallbacksManager.addCallback(callback);
       nativeCommands.getWorldPoints(nativeRef.current!, [{points, id}]);
     },
+    setLatLngBounds: (bounds: BoundingBox | null) =>
+      nativeCommands.setLatLngBounds(nativeRef.current!, [{bounds}]),
   }), [nativeCommands, nativeRef]);
 };

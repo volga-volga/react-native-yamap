@@ -84,6 +84,7 @@ static NSNumber *YamapNumberFromPropValue(const std::optional<T> &value) {
     BOOL mapLoaded;
     NSNumber *minZoomPreference;
     NSNumber *maxZoomPreference;
+    NSDictionary *latLngBoundsPreference;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -125,6 +126,7 @@ static NSNumber *YamapNumberFromPropValue(const std::optional<T> &value) {
         clusterTextXOffset = 0;
         minZoomPreference = nil;
         maxZoomPreference = nil;
+        latLngBoundsPreference = nil;
         [self addSubview:mapView];
     }
 
@@ -156,6 +158,26 @@ static NSNumber *YamapNumberFromPropValue(const std::optional<T> &value) {
 
     if (oldViewProps.maxZoom != newViewProps.maxZoom) {
         [self setMaxZoom:YamapNumberFromPropValue(newViewProps.maxZoom)];
+    }
+
+    if (oldViewProps.latLngBounds.northEast.lat != newViewProps.latLngBounds.northEast.lat || oldViewProps.latLngBounds.northEast.lon != newViewProps.latLngBounds.northEast.lon || oldViewProps.latLngBounds.southWest.lat != newViewProps.latLngBounds.southWest.lat || oldViewProps.latLngBounds.southWest.lon != newViewProps.latLngBounds.southWest.lon) {
+        if (newViewProps.latLngBounds.southWest.lat == 0.0 &&
+            newViewProps.latLngBounds.southWest.lon == 0.0 &&
+            newViewProps.latLngBounds.northEast.lat == 0.0 &&
+            newViewProps.latLngBounds.northEast.lon == 0.0) {
+            [self setLatLngBounds:nil];
+        } else {
+            NSMutableDictionary *bounds = [[NSMutableDictionary alloc] init];
+            NSMutableDictionary *southWest = [[NSMutableDictionary alloc] init];
+            NSMutableDictionary *northEast = [[NSMutableDictionary alloc] init];
+            [southWest setValue:[NSNumber numberWithDouble:newViewProps.latLngBounds.southWest.lat] forKey:@"lat"];
+            [southWest setValue:[NSNumber numberWithDouble:newViewProps.latLngBounds.southWest.lon] forKey:@"lon"];
+            [northEast setValue:[NSNumber numberWithDouble:newViewProps.latLngBounds.northEast.lat] forKey:@"lat"];
+            [northEast setValue:[NSNumber numberWithDouble:newViewProps.latLngBounds.northEast.lon] forKey:@"lon"];
+            [bounds setValue:southWest forKey:@"southWest"];
+            [bounds setValue:northEast forKey:@"northEast"];
+            [self setLatLngBounds:bounds];
+        }
     }
 
     if (oldViewProps.mapType != newViewProps.mapType) {
@@ -444,6 +466,9 @@ static NSNumber *YamapNumberFromPropValue(const std::optional<T> &value) {
                 .worldPoints = worldPoints
             });
         }
+    } else if ([commandName isEqual:@"setLatLngBounds"]) {
+        NSDictionary *bounds = args[0][0][@"bounds"];
+        [self setLatLngBounds:bounds];
     }
 }
 
@@ -567,6 +592,25 @@ static NSNumber *YamapNumberFromPropValue(const std::optional<T> &value) {
 - (void)setMaxZoom:(NSNumber *)maxZoom {
     maxZoomPreference = maxZoom;
     [self applyZoomBoundsIfNeeded];
+}
+
+- (void)setLatLngBounds:(NSDictionary * _Nullable)params {
+    latLngBoundsPreference = params;
+
+    if (params == nil || params[@"southWest"] == nil || params[@"northEast"] == nil) {
+        [mapView.mapWindow.map.cameraBounds setLatLngBounds:nil];
+        return;
+    }
+
+    NSDictionary *southWest = params[@"southWest"];
+    NSDictionary *northEast = params[@"northEast"];
+    YMKPoint *southWestPoint = [YMKPoint pointWithLatitude:[southWest[@"lat"] doubleValue]
+                                                longitude:[southWest[@"lon"] doubleValue]];
+    YMKPoint *northEastPoint = [YMKPoint pointWithLatitude:[northEast[@"lat"] doubleValue]
+                                                longitude:[northEast[@"lon"] doubleValue]];
+    YMKBoundingBox *boundingBox = [YMKBoundingBox boundingBoxWithSouthWest:southWestPoint
+                                                                 northEast:northEastPoint];
+    [mapView.mapWindow.map.cameraBounds setLatLngBounds:boundingBox];
 }
 
 #ifndef RCT_NEW_ARCH_ENABLED

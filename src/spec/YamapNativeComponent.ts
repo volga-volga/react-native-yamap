@@ -35,6 +35,11 @@ export interface Point {
   lon: Double;
 }
 
+export interface LatLngBounds {
+  southWest: Point;
+  northEast: Point;
+}
+
 export interface CameraPositionNativeResponse {
   id: string;
   point: {
@@ -124,6 +129,7 @@ export interface YamapNativeProps extends ViewProps {
   logoPadding?: YandexLogoPadding;
   minZoom?: Float;
   maxZoom?: Float;
+  latLngBounds?: LatLngBounds;
   userLocationIcon: string | undefined;
   interactiveDisabled?: boolean;
 

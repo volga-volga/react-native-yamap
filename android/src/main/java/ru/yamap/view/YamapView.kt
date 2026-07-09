@@ -79,6 +79,7 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
     private var userLocationView: UserLocationView? = null
     private var minZoomPreference: Float? = null
     private var maxZoomPreference: Float? = null
+    private var latLngBoundsPreference: BoundingBox? = null
 
     private val pedestrianRouter = TransportFactory.getInstance().createPedestrianRouter()
 
@@ -122,6 +123,23 @@ open class YamapView(context: Context?) : MapView(context), UserLocationObjectLi
     fun setMaxZoom(maxZoom: Float) {
         maxZoomPreference = maxZoom
         applyZoomBounds()
+    }
+
+    fun setLatLngBounds(bounds: ReadableMap?) {
+        if (bounds == null || !bounds.hasKey("southWest") || !bounds.hasKey("northEast")) {
+            latLngBoundsPreference = null
+            mapWindow.map.cameraBounds.setLatLngBounds(null)
+            return
+        }
+
+        val southWestMap = bounds.getMap("southWest") ?: return
+        val northEastMap = bounds.getMap("northEast") ?: return
+        val southWest = Point(southWestMap.getDouble("lat"), southWestMap.getDouble("lon"))
+        val northEast = Point(northEastMap.getDouble("lat"), northEastMap.getDouble("lon"))
+        val boundingBox = BoundingBox(southWest, northEast)
+
+        latLngBoundsPreference = boundingBox
+        mapWindow.map.cameraBounds.setLatLngBounds(boundingBox)
     }
 
     // REF

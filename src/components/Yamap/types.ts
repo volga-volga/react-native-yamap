@@ -1,6 +1,7 @@
 import {type ImageSourcePropType} from 'react-native';
 import type {
   Animation,
+  BoundingBox,
   CameraPositionCallback,
   ScreenPoint,
   ScreenPointsCallback, UserPositionCallback,
@@ -44,4 +45,5 @@ export type YamapRef = {
   setTrafficVisible: (isVisible: boolean) => void;
   getScreenPoints: (points: Point[], callback: ScreenPointsCallback) => void;
   getWorldPoints: (points: ScreenPoint[], callback: WorldPointsCallback) => void;
+  setLatLngBounds: (bounds: BoundingBox | null) => void;
 };

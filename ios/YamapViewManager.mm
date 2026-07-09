@@ -66,6 +66,7 @@ RCT_EXPORT_VIEW_PROPERTY(logoPosition, NSDictionary)
 RCT_EXPORT_VIEW_PROPERTY(logoPadding, NSDictionary)
 RCT_EXPORT_VIEW_PROPERTY(minZoom, NSNumber)
 RCT_EXPORT_VIEW_PROPERTY(maxZoom, NSNumber)
+RCT_EXPORT_VIEW_PROPERTY(latLngBounds, NSDictionary)
 RCT_EXPORT_VIEW_PROPERTY(mapStyle, NSString)
 RCT_EXPORT_VIEW_PROPERTY(zoomGesturesDisabled, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(scrollGesturesDisabled, BOOL)
@@ -167,6 +168,15 @@ RCT_EXPORT_METHOD(getWorldPoints:(nonnull NSNumber *)reactTag argsArr:(NSArray*)
         NSDictionary* args = argsArr.firstObject;
         NSArray<YMKScreenPoint *> *screenPoints = [RCTConvert ScreenPoints:args[@"points"]];
         [view emitScreenToWorldPoint:screenPoints withId:args[@"id"]];
+    }];
+}
+
+RCT_EXPORT_METHOD(setLatLngBounds:(nonnull NSNumber *)reactTag argsArr:(NSArray*)argsArr) {
+    [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
+        YamapView *view = (YamapView *)viewRegistry[reactTag];
+
+        NSDictionary* args = argsArr.firstObject;
+        [view setLatLngBounds:args[@"bounds"]];
     }];
 }
 

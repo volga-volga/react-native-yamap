@@ -133,6 +133,11 @@ class YamapViewManager : ViewGroupManager<YamapView>() {
         implementation.setMaxZoom(view, value)
     }
 
+    @ReactProp(name = "latLngBounds")
+    fun setLatLngBounds(view: YamapView, params: ReadableMap?) {
+        implementation.setLatLngBounds(view, params)
+    }
+
     override fun addView(parent: YamapView, child: View, index: Int) {
         parent.addFeature(child, index)
         super.addView(parent, child, index)
